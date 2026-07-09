@@ -20,9 +20,15 @@ async fn main() -> anyhow::Result<()> {
         .unwrap_or_else(|_| "0.0.0.0:8080".into())
         .parse()?;
 
+    // Build dept service registry from env vars.
+    // Pattern: TPT__GOV__DEPT_IRD_URL=http://localhost:8090
+    let dept_registry = routes::DeptRegistry::from_env();
+
     let app = Router::new()
         .route("/health", get(routes::health))
         .route("/v1/citizen/resolve", axum::routing::post(routes::citizen_resolve))
+        .route("/v1/dept/:dept_id/{*path}", axum::routing::any(routes::proxy_dept))
+        .with_state(dept_registry)
         .layer(TraceLayer::new_for_http());
 
     info!(listen = %addr, "gov-gateway starting");

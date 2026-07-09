@@ -23,11 +23,16 @@ async fn main() -> anyhow::Result<()> {
     let database_url = std::env::var("DATABASE_URL")?;
     let pool = sqlx::PgPool::connect(&database_url).await?;
 
+    sqlx::migrate!("./migrations").run(&pool).await?;
+    info!("Migrations applied");
+
     let app = Router::new()
         .route("/health", get(routes::health))
         .route("/v1/did/register", axum::routing::post(routes::register_did))
         .route("/v1/did/:did", get(routes::get_did_document))
         .route("/v1/grants", axum::routing::post(routes::issue_grant))
+        .route("/v1/grants", get(routes::list_grants))
+        .route("/v1/grants/:id", axum::routing::delete(routes::revoke_grant))
         .with_state(pool)
         .layer(TraceLayer::new_for_http());
 

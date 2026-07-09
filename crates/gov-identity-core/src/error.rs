@@ -16,4 +16,7 @@ pub enum IdentityError {
 
     #[error("Serialisation error: {0}")]
     Serialisation(#[from] serde_json::Error),
+
+    #[error("Crypto error: {0}")]
+    Crypto(String),
 }

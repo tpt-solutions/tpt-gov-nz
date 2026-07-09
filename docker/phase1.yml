@@ -35,6 +35,40 @@ services:
       dept-ird:
         condition: service_healthy
 
+  # --- Gateway ---
+
+  gov-gateway:
+    build:
+      context: ..
+      dockerfile: services/gov-gateway/Dockerfile
+    environment:
+      TPT__GOV__GATEWAY_LISTEN: "0.0.0.0:8080"
+      TPT__GOV__DEPT_IRD_URL: "http://gov-dept-ird:8090"
+      TPT__GOV__DEPT_WINZ_URL: "http://gov-dept-winz:8091"
+      TPT__GOV__DEPT_MOH_URL: "http://gov-dept-moh:8092"
+      TPT__GOV__DEPT_DIA_URL: "http://gov-dept-dia:8093"
+      RUST_LOG: "gov_gateway=info,tower_http=debug"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - gov-dept-ird
+
+  # --- Identity Server ---
+
+  gov-identity-server:
+    build:
+      context: ..
+      dockerfile: services/gov-identity-server/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://identity:identity_dev_password@identity-db:5432/gov_identity
+      TPT__GOV__IDENTITY_LISTEN: "0.0.0.0:8081"
+      RUST_LOG: "gov_identity_server=info"
+    ports:
+      - "8081:8081"
+    depends_on:
+      identity-db:
+        condition: service_healthy
+
   dept-winz:
     image: postgres:17-alpine
     environment:
@@ -83,6 +117,11 @@ services:
       - "5400:5432"
     volumes:
       - identity-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U identity"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   # --- Audit log (append-only) ---
 
