@@ -1,0 +1,106 @@
+name: tpt-gov-nz-phase1
+
+services:
+  # --- Department mock nodes ---
+
+  dept-ird:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ird
+      POSTGRES_USER: ird
+      POSTGRES_PASSWORD: ird_dev_password
+    ports:
+      - "5401:5432"
+    volumes:
+      - ird-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ird"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  gov-dept-ird:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-ird/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://ird:ird_dev_password@dept-ird:5432/ird
+      TPT__GOV__DEPT_ID: ird
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8090"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7001"
+      RUST_LOG: "gov_dept_ird=info,tower_http=debug"
+    ports:
+      - "8090:8090"
+    depends_on:
+      dept-ird:
+        condition: service_healthy
+
+  dept-winz:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: winz
+      POSTGRES_USER: winz
+      POSTGRES_PASSWORD: winz_dev_password
+    ports:
+      - "5402:5432"
+    volumes:
+      - winz-data:/var/lib/postgresql/data
+      - ./init/winz.sql:/docker-entrypoint-initdb.d/init.sql
+
+  dept-moh:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: moh
+      POSTGRES_USER: moh
+      POSTGRES_PASSWORD: moh_dev_password
+    ports:
+      - "5403:5432"
+    volumes:
+      - moh-data:/var/lib/postgresql/data
+      - ./init/moh.sql:/docker-entrypoint-initdb.d/init.sql
+
+  dept-dia:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: dia
+      POSTGRES_USER: dia
+      POSTGRES_PASSWORD: dia_dev_password
+    ports:
+      - "5404:5432"
+    volumes:
+      - dia-data:/var/lib/postgresql/data
+      - ./init/dia.sql:/docker-entrypoint-initdb.d/init.sql
+
+  # --- Identity database ---
+
+  identity-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: gov_identity
+      POSTGRES_USER: identity
+      POSTGRES_PASSWORD: identity_dev_password
+    ports:
+      - "5400:5432"
+    volumes:
+      - identity-data:/var/lib/postgresql/data
+
+  # --- Audit log (append-only) ---
+
+  audit-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: gov_audit
+      POSTGRES_USER: audit
+      POSTGRES_PASSWORD: audit_dev_password
+    ports:
+      - "5410:5432"
+    volumes:
+      - audit-data:/var/lib/postgresql/data
+
+volumes:
+  ird-data:
+  winz-data:
+  moh-data:
+  dia-data:
+  identity-data:
+  audit-data:

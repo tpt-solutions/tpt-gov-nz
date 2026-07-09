@@ -1,0 +1,6 @@
+packages:
+  - "apps/*"
+  - "services/gov-ai"
+  - "services/gov-analytics"
+  - "packages/@tpt/*"
+  - "packages/adapters/@tpt/*"

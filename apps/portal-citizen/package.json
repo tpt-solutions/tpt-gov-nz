@@ -1,0 +1,33 @@
+{
+  "name": "@tpt/portal-citizen",
+  "version": "0.1.0",
+  "description": "Citizen-facing portal for tpt-gov-nz",
+  "license": "Apache-2.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@tpt/gov-schema": "workspace:*",
+    "@tpt/gov-ai-client": "workspace:*",
+    "@tpt/adapter-ird": "workspace:*",
+    "@tpt/adapter-winz": "workspace:*",
+    "@tpt/adapter-moh": "workspace:*",
+    "@tpt/adapter-dia": "workspace:*",
+    "next": "^15.3.3",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "zod": "^3.24.4"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.6",
+    "@types/react-dom": "^19.1.5",
+    "typescript": "^5.8.3",
+    "eslint": "^9.28.0",
+    "eslint-config-next": "^15.3.3"
+  }
+}

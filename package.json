@@ -1,0 +1,26 @@
+{
+  "name": "tpt-gov-nz",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Unified NZ government digital platform — open source, federated, AI-optional",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "format": "prettier --write \"**/*.{ts,tsx,json,md}\""
+  },
+  "devDependencies": {
+    "turbo": "^2.5.4",
+    "typescript": "^5.8.3",
+    "prettier": "^3.5.3",
+    "@types/node": "^22.15.29"
+  },
+  "packageManager": "pnpm@9.15.4"
+}

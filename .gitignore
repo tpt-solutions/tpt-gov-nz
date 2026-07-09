@@ -1,0 +1,30 @@
+node_modules/
+.next/
+out/
+next-env.d.ts
+dist/
+build/
+coverage/
+.turbo/
+*.tsbuildinfo
+target/
+.tpt/
+.pnpm-store/
+*.log
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Docker volumes
+docker/volumes/

@@ -1,0 +1,17 @@
+[package]
+name = "gov-identity-core"
+description = "Verifiable Credentials, DID, and identity logic for tpt-gov-nz"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+ed25519-dalek = { workspace = true }
+sha2 = { workspace = true }
+base64 = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }

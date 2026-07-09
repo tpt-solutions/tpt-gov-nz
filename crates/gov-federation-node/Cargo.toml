@@ -1,0 +1,18 @@
+[package]
+name = "gov-federation-node"
+description = "QUIC-based federation protocol node for tpt-gov-nz"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+gov-federation-core = { path = "../gov-federation-core" }
+tokio = { workspace = true }
+quinn = { workspace = true }
+rustls = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+tracing = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
