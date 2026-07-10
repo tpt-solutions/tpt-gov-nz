@@ -57,20 +57,20 @@ export class DIAAdapter implements DeptAdapter {
         requiredScopes: ["dia:passport"],
       },
       {
-        id: "dia:birth-certificate",
+        id: "dia:documents",
         name: "Birth Certificate",
         description: "Request a copy of your birth certificate",
-        requiredScopes: ["dia:birth-certificate"],
+        requiredScopes: ["dia:documents"],
       },
     ];
   }
 
   produceAiContext(bundle: DIADataBundle): AiContextChunk[] {
     const lines: string[] = [];
-    if (bundle.citizenshipStatus) lines.push(`Citizenship: ${bundle.citizenshipStatus}`);
-    if (bundle.passportExpiry) {
-      lines.push(`Passport expires: ${bundle.passportExpiry}`);
-      if (bundle.passportRenewable) lines.push("Passport is eligible for renewal");
+    if (bundle.citizenship) lines.push(`Citizenship: ${bundle.citizenship.status}`);
+    if (bundle.passport) {
+      lines.push(`Passport expires: ${bundle.passport.expiryDate}`);
+      if (bundle.passport.renewable) lines.push("Passport is eligible for renewal");
     }
     return [{ deptId: this.deptId, content: lines.join("\n") }];
   }

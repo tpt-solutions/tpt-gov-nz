@@ -81,6 +81,66 @@ services:
       dept-winz:
         condition: service_healthy
 
+  gov-dept-moh:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-moh/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://moh:moh_dev_password@dept-moh:5432/moh
+      TPT__GOV__DEPT_ID: moh
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8092"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7003"
+      RUST_LOG: "gov_dept_moh=info,tower_http=debug"
+    ports:
+      - "8092:8092"
+    depends_on:
+      dept-moh:
+        condition: service_healthy
+
+  gov-ingester-moh:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-moh/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://moh:moh_dev_password@dept-moh:5432/moh
+      MOH_TRANSPORT: mock
+      MOH_MOCK_FIXTURE: /fixtures/moh_batch.json
+      MOH_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_moh=info,sqlx=warn"
+    depends_on:
+      dept-moh:
+        condition: service_healthy
+
+  gov-dept-dia:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-dia/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://dia:dia_dev_password@dept-dia:5432/dia
+      TPT__GOV__DEPT_ID: dia
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8093"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7004"
+      RUST_LOG: "gov_dept_dia=info,tower_http=debug"
+    ports:
+      - "8093:8093"
+    depends_on:
+      dept-dia:
+        condition: service_healthy
+
+  gov-ingester-dia:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-dia/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://dia:dia_dev_password@dept-dia:5432/dia
+      DIA_TRANSPORT: mock
+      DIA_MOCK_FIXTURE: /fixtures/dia_batch.json
+      DIA_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_dia=info,sqlx=warn"
+    depends_on:
+      dept-dia:
+        condition: service_healthy
+
   gov-gateway:
     build:
       context: ..
@@ -141,6 +201,11 @@ services:
     volumes:
       - moh-data:/var/lib/postgresql/data
       - ./init/moh.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U moh"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   dept-dia:
     image: postgres:17-alpine
@@ -153,6 +218,11 @@ services:
     volumes:
       - dia-data:/var/lib/postgresql/data
       - ./init/dia.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dia"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   # --- Identity database ---
 

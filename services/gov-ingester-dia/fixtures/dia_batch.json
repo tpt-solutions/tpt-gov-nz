@@ -1,0 +1,33 @@
+{
+  "batchId": "DIA-2026-07-B001",
+  "generatedAt": "2026-07-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "passportNumber": "XA123456",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "passport": { "expiryDate": "2028-03-15", "renewable": true },
+      "birthCert": {
+        "certificateNumber": "BC-9001",
+        "dateOfBirth": "1990-05-20",
+        "placeOfBirth": "Auckland, New Zealand",
+        "parents": "R. Tane and H. Tane"
+      },
+      "citizenship": { "status": "citizen-by-birth" }
+    },
+    {
+      "passportNumber": "ZB654321",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kāre",
+      "passport": { "expiryDate": "2027-09-30", "renewable": true },
+      "birthCert": {
+        "certificateNumber": "BC-9012",
+        "dateOfBirth": "1992-11-03",
+        "placeOfBirth": "Wellington, New Zealand",
+        "parents": "T. Kāre and M. Kāre"
+      },
+      "citizenship": { "status": "citizen-by-grant", "certificateNumber": "CTZ-7741", "grantedAt": "2020-01-15" }
+    }
+  ]
+}

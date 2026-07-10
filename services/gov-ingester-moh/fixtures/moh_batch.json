@@ -1,0 +1,70 @@
+{
+  "batchId": "MOH-2026-07-B001",
+  "generatedAt": "2026-07-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "nhi": "NBA1234",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "gpEnrolment": {
+        "practiceName": "Pukekohe Family Health",
+        "address": "12 Queen St, Pukekohe",
+        "phone": "09 238 0000",
+        "enrolledAt": "2023-03-01"
+      },
+      "prescriptions": [
+        {
+          "medication": "Atorvastatin",
+          "dose": "20mg once daily",
+          "repeatsTotal": 3,
+          "repeatsRemaining": 2,
+          "issuedAt": "2026-06-01"
+        }
+      ],
+      "appointments": [
+        {
+          "provider": "Dr. K. Pewhairangi",
+          "date": "2026-07-20T10:30:00+12:00",
+          "type": "General check-up",
+          "status": "booked"
+        }
+      ],
+      "vaccinations": [
+        { "vaccine": "Influenza", "date": "2025-04-15", "dueForBooster": false },
+        { "vaccine": "COVID-19", "date": "2025-11-02", "dueForBooster": true }
+      ]
+    },
+    {
+      "nhi": "ZZA9876",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kāre",
+      "gpEnrolment": {
+        "practiceName": "Ponsonby Medical Centre",
+        "address": "5 Ponsonby Rd, Auckland",
+        "phone": "09 376 1234",
+        "enrolledAt": "2024-08-10"
+      },
+      "prescriptions": [
+        {
+          "medication": "Salbutamol",
+          "dose": "100mcg inhaler",
+          "repeatsTotal": 6,
+          "repeatsRemaining": 5,
+          "issuedAt": "2026-05-12"
+        }
+      ],
+      "appointments": [
+        {
+          "provider": "Dr. R. Smith",
+          "date": "2026-07-15T14:00:00+12:00",
+          "type": "Asthma review",
+          "status": "booked"
+        }
+      ],
+      "vaccinations": [
+        { "vaccine": "Measles", "date": "2024-02-20", "dueForBooster": false }
+      ]
+    }
+  ]
+}

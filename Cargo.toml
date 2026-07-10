@@ -12,6 +12,10 @@ members = [
     "services/gov-ingester-ird",
     "services/gov-dept-winz",
     "services/gov-ingester-winz",
+    "services/gov-dept-moh",
+    "services/gov-ingester-moh",
+    "services/gov-dept-dia",
+    "services/gov-ingester-dia",
 ]
 
 [workspace.package]

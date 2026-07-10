@@ -174,16 +174,15 @@ describe("DIADataBundleSchema", () => {
   it("accepts bundle with passport data", () => {
     const result = DIADataBundleSchema.parse({
       passportNumber: "PA123456",
-      passportExpiry: "2028-12-31",
-      passportRenewable: true,
-      citizenshipStatus: "citizen-by-birth",
+      passport: { passportNumber: "PA123456", expiryDate: "2028-12-31", renewable: true },
+      citizenship: { status: "citizen-by-birth" },
     });
-    expect(result.citizenshipStatus).toBe("citizen-by-birth");
+    expect(result.citizenship?.status).toBe("citizen-by-birth");
   });
 
   it("rejects invalid citizenship status", () => {
     expect(() =>
-      DIADataBundleSchema.parse({ citizenshipStatus: "invalid" })
+      DIADataBundleSchema.parse({ citizenship: { status: "invalid" } })
     ).toThrow();
   });
 });

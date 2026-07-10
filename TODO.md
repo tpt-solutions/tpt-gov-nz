@@ -197,45 +197,47 @@ portal-citizen/app/dept/<id>/   calls gov-dept-<id> directly
 
 ---
 
-## MOH — Full Native Module ⬜
+## MOH — Full Native Module ✅
 
 ### Stage 1 — Dept Service (`services/gov-dept-moh`) — Rust
-- [ ] `Cargo.toml`, `Dockerfile`, `src/`
-- [ ] Migrations: citizens (NHI), gp_enrolments, prescriptions, appointments, vaccinations, actions_log
-- [ ] Dev seed: test citizen with GP, prescription, appointment
+- [x] `Cargo.toml`, `Dockerfile`, `src/` (main, error, db, routes, actions, consent, opa)
+- [x] Migrations: citizens (NHI), gp_enrolments, prescriptions, appointments, vaccinations, actions_log, ingestion_runs, ingester idempotency
+- [x] Dev seed: test citizen with GP, prescription, appointment, vaccinations
 
 ### Stage 2 — Ingester (`services/gov-ingester-moh`) — Rust
-- [ ] Mock transport + NHI/HPI system transport stub
-- [ ] Transform + upsert
+- [x] Mock transport (JSON fixtures)
+- [x] NHI/HPI system transport stub
+- [x] Transform + idempotent upsert
 
 ### Stage 3 — Portal UI (`apps/portal-citizen/app/dept/moh/`) — TypeScript
-- [ ] `actions.ts`
-- [ ] Overview page — NHI, GP, prescriptions, appointments
-- [ ] Prescriptions page (repeat request action)
+- [x] `actions.ts`
+- [x] Overview page — NHI, GP, prescriptions, appointments, vaccinations
+- [x] Prescriptions page (repeat request action)
 
 ### Stage 4 — Staff View + Stage 5 — Federation + Stage 6 — AI
-- [ ] Staff view, OPA policy, AI health navigation
+- [x] Staff view (overview / prescriptions / appointments / vaccinations), OPA policy (`policies/moh.rego`), AI health navigation
 
 ---
 
-## DIA — Full Native Module ⬜
+## DIA — Full Native Module ✅
 
 ### Stage 1 — Dept Service (`services/gov-dept-dia`) — Rust
-- [ ] `Cargo.toml`, `Dockerfile`, `src/`
-- [ ] Migrations: citizens, passports, birth_certs, citizenship_records, actions_log
-- [ ] Dev seed: test citizen with passport expiring 2028
+- [x] `Cargo.toml`, `Dockerfile`, `src/` (main, error, db, routes, actions, consent, opa)
+- [x] Migrations: citizens, passports, birth_certs, citizenship_records, actions_log, ingestion_runs, ingester idempotency
+- [x] Dev seed: test citizen with passport expiring 2028
 
 ### Stage 2 — Ingester (`services/gov-ingester-dia`) — Rust
-- [ ] Mock transport + DIA system transport stub
+- [x] Mock transport (JSON fixtures)
+- [x] DIA system transport stub
 
 ### Stage 3 — Portal UI (`apps/portal-citizen/app/dept/dia/`) — TypeScript
-- [ ] `actions.ts`
-- [ ] Overview page — passport, citizenship, documents
-- [ ] Passport renewal page
-- [ ] Birth certificate request page
+- [x] `actions.ts`
+- [x] Overview page — passport, citizenship, documents
+- [x] Passport renewal page
+- [x] Birth certificate request page
 
 ### Stage 4 — Staff View + Stage 5 — Federation + Stage 6 — AI
-- [ ] Staff view, OPA policy, AI: "my passport is expiring, what do I do?"
+- [x] Staff view (overview / passports / documents), OPA policy (`policies/dia.rego`), AI passport-expiry help
 
 ---
 
