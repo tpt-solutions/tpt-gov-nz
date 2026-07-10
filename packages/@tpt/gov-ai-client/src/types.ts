@@ -17,7 +17,7 @@ export interface ChatResponse {
 }
 
 export interface AiProvider {
-  chat(messages: ChatMessage[], model: string): Promise<ChatResponse>;
+  chat(messages: ChatMessage[], model?: string): Promise<ChatResponse>;
   isAvailable(): Promise<boolean>;
 }
 

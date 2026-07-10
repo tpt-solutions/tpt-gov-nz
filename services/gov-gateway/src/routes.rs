@@ -34,6 +34,21 @@ impl DeptRegistry {
     }
 }
 
+/// Extract the `dept_id` segment from a `/v1/dept/{dept_id}/...` path.
+///
+/// Returns a lowercased department id, or `None` if the path is not a dept
+/// proxy path. Used by the rate-limit and circuit-breaker middleware, which
+/// run before the typed `Path` extractor in the handler.
+pub fn extract_dept_id(path: &str) -> Option<String> {
+    let rest = path.strip_prefix("/v1/dept/")?;
+    let dept = rest.split('/').next()?;
+    if dept.is_empty() {
+        None
+    } else {
+        Some(dept.to_lowercase())
+    }
+}
+
 #[derive(Serialize)]
 pub struct HealthResponse {
     pub status: &'static str,
@@ -128,4 +143,23 @@ pub async fn proxy_dept(
             .to_bytes(),
     );
     Ok(axum::response::Response::from_parts(parts, axum::body::Body::from(body_bytes)))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::extract_dept_id;
+
+    #[test]
+    fn extracts_dept_id_from_proxy_path() {
+        assert_eq!(extract_dept_id("/v1/dept/ird/citizen/data").as_deref(), Some("ird"));
+        assert_eq!(extract_dept_id("/v1/dept/WINZ/health").as_deref(), Some("winz"));
+        assert_eq!(extract_dept_id("/v1/dept/moh").as_deref(), Some("moh"));
+    }
+
+    #[test]
+    fn returns_none_for_non_dept_paths() {
+        assert_eq!(extract_dept_id("/health"), None);
+        assert_eq!(extract_dept_id("/v1/citizen/resolve"), None);
+        assert_eq!(extract_dept_id("/v1/dept/"), None);
+    }
 }

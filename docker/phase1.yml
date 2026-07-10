@@ -35,6 +35,20 @@ services:
       dept-ird:
         condition: service_healthy
 
+  gov-ingester-ird:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-ird/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://ird:ird_dev_password@dept-ird:5432/ird
+      IRD_TRANSPORT: mock
+      IRD_MOCK_FIXTURE: /fixtures/ird_batch.json
+      IRD_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_ird=info,sqlx=warn"
+    depends_on:
+      dept-ird:
+        condition: service_healthy
+
   # --- Gateway ---
 
   gov-gateway:

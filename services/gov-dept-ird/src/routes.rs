@@ -5,12 +5,13 @@ use axum::{
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use sqlx::PgPool;
-use uuid::Uuid;
 
 use crate::{
     actions,
+    consent,
     db,
     error::IrdError,
+    opa,
 };
 
 // ── Health ────────────────────────────────────────────────────────────────────
@@ -56,6 +57,23 @@ pub async fn resolve_citizen(
 pub struct DataRequest {
     pub did: String,
     pub scopes: Vec<String>,
+    /// Set on cross-department / federation requests. Absent for citizen (self) and
+    /// staff (case-worker) access, which IRD authorises directly.
+    #[serde(default)]
+    pub requesting_dept_id: Option<String>,
+    /// Signed consent grants accompanying a cross-department request. Verified
+    /// against `policies/ird.rego` (or the local [`crate::consent`] mirror).
+    #[serde(default)]
+    pub consent_grants: Vec<gov_identity_core::DataGrantCredential>,
+}
+
+/// Departments that may access citizen data without presenting a federation
+/// consent grant (the citizen themselves, and authorised case workers).
+fn is_direct_access(requesting_dept_id: &Option<String>) -> bool {
+    match requesting_dept_id.as_deref() {
+        None | Some("citizen") | Some("staff") => true,
+        Some(_) => false,
+    }
 }
 
 pub async fn fetch_data(
@@ -65,6 +83,23 @@ pub async fn fetch_data(
     let citizen = db::resolve_by_did(&pool, &req.did)
         .await?
         .ok_or(IrdError::CitizenNotFound)?;
+
+    // Consent gate: cross-department requests must present valid consent grants
+    // covering every requested scope (verified via OPA when available, else locally).
+    if !is_direct_access(&req.requesting_dept_id) {
+        let input = consent::ConsentInput {
+            requesting_dept_id: req.requesting_dept_id.as_deref().unwrap_or("unknown"),
+            citizen_did: &citizen.did,
+            requested_scopes: &req.scopes,
+            consent_grants: &req.consent_grants,
+        };
+
+        match opa::evaluate(&input).await {
+            Some(true) => {}
+            Some(false) => return Err(IrdError::ScopeNotGranted(req.scopes.join(","))),
+            None => consent::verify_access(&input, None)?,
+        }
+    }
 
     let has_scope = |s: &str| req.scopes.contains(&s.to_owned());
 

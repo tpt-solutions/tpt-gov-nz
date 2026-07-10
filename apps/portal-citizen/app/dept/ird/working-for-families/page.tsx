@@ -1,10 +1,13 @@
 import Link from "next/link";
 import { fetchIrdData } from "../actions";
+import { getAiLevel } from "../../../ai/level";
+import WffAiPrompt from "./ai-prompt";
 
 export const metadata = { title: "Working for Families — IRD — My Gov NZ" };
 
 export default async function WorkingForFamiliesPage() {
   const data = await fetchIrdData(["ird:wff"]);
+  const aiLevel = getAiLevel();
 
   if (!data) {
     return (
@@ -127,6 +130,17 @@ export default async function WorkingForFamiliesPage() {
           </dl>
         </section>
       )}
+
+      <section style={{ marginTop: "1.5rem" }}>
+        <h2>Life events</h2>
+        <p>
+          <Link href="/dept/ird/working-for-families/wizard">
+            I just had a baby — check my eligibility →
+          </Link>
+        </p>
+      </section>
+
+      {aiLevel !== "none" && <WffAiPrompt />}
     </main>
   );
 }

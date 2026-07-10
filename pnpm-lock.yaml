@@ -70,6 +70,43 @@ importers:
         specifier: ^5.8.3
         version: 5.9.3
 
+  apps/portal-staff:
+    dependencies:
+      '@tpt/gov-ai-client':
+        specifier: workspace:*
+        version: link:../../packages/@tpt/gov-ai-client
+      '@tpt/gov-schema':
+        specifier: workspace:*
+        version: link:../../packages/@tpt/gov-schema
+      next:
+        specifier: ^15.3.3
+        version: 15.5.20(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      react:
+        specifier: ^19.1.0
+        version: 19.2.7
+      react-dom:
+        specifier: ^19.1.0
+        version: 19.2.7(react@19.2.7)
+      zod:
+        specifier: ^3.24.4
+        version: 3.25.76
+    devDependencies:
+      '@types/react':
+        specifier: ^19.1.6
+        version: 19.2.17
+      '@types/react-dom':
+        specifier: ^19.1.5
+        version: 19.2.3(@types/react@19.2.17)
+      eslint:
+        specifier: ^9.28.0
+        version: 9.39.4
+      eslint-config-next:
+        specifier: ^15.3.3
+        version: 15.5.20(eslint@9.39.4)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.8.3
+        version: 5.9.3
+
   packages/@tpt/gov-ai-client:
     dependencies:
       '@tpt/gov-schema':

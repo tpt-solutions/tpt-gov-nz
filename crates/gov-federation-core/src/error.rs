@@ -22,4 +22,7 @@ pub enum FederationError {
 
     #[error("Crypto error: {0}")]
     Crypto(String),
+
+    #[error("Transport error: {0}")]
+    Transport(String),
 }

@@ -9,6 +9,7 @@ members = [
     "services/gov-identity-server",
     "services/gov-dept-node",
     "services/gov-dept-ird",
+    "services/gov-ingester-ird",
 ]
 
 [workspace.package]
@@ -45,13 +46,13 @@ prost = "0.13"
 prost-types = "0.13"
 
 # Storage
-sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "postgres", "uuid", "chrono", "json"] }
+sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "postgres", "uuid", "chrono", "json", "rust_decimal"] }
 uuid = { version = "1", features = ["v4", "serde"] }
 
 # Observability
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
-opentelemetry = "0.27"
+opentelemetry = "0.28"
 
 # Config
 config = "0.14"

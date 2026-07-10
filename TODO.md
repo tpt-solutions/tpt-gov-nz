@@ -73,16 +73,16 @@ portal-citizen/app/dept/<id>/   calls gov-dept-<id> directly
 
 ### Rust — Federation Node (`crates/gov-federation-node`)
 - [x] `FederationNodeConfig` + `FederationNode` stub
-- [ ] HTTP mock transport for Phase 1 local dev
+- [x] HTTP mock transport for Phase 1 local dev
 - [ ] QUIC transport (Phase 2)
 
 ### Rust — API Gateway (`services/gov-gateway`)
 - [x] Axum skeleton + `/health` + `/v1/citizen/resolve` stub
-- [ ] JWT validation middleware
-- [ ] Per-department rate limiting
+- [x] JWT validation middleware
+- [x] Per-department rate limiting
 - [x] Route `/v1/dept/:dept_id/*` → dept service proxy
-- [ ] Circuit breaker middleware
-- [ ] OpenTelemetry tracing
+- [x] Circuit breaker middleware
+- [x] OpenTelemetry tracing
 
 ### Rust — Identity Server (`services/gov-identity-server`)
 - [x] Axum skeleton + route stubs
@@ -117,20 +117,20 @@ portal-citizen/app/dept/<id>/   calls gov-dept-<id> directly
 - [x] `src/routes.rs` — `/health`, `/citizen/resolve`, `/citizen/data`, `/citizen/action`, `/citizen/:did/tax-years`, `/citizen/:did/gst-periods`
 - [x] `src/actions.rs` — `update-kiwisaver-rate`, `file-gst-return`, `request-tax-summary`
 - [x] Migrations 001–008 (citizens, income, tax assessments, GST, KiwiSaver, WFF, actions log, dev seed)
-- [ ] Unit tests: resolve (found + not found)
-- [ ] Unit tests: fetch_data with each scope combination
-- [ ] Unit tests: actions (valid + invalid inputs)
-- [ ] Integration test: full HTTP round-trip with real PgPool
+- [x] Unit tests: resolve (found + not found)
+- [x] Unit tests: fetch_data with each scope combination
+- [x] Unit tests: actions (valid + invalid inputs)
+- [x] Integration test: full HTTP round-trip with real PgPool
 
-### Stage 2 — Ingester (`services/gov-ingester-ird`) — Rust ⬜
-- [ ] `Cargo.toml`, basic structure
-- [ ] Ingester trait/interface (swap transport without changing logic)
-- [ ] Mock transport — reads from JSON fixture files (for dev/demo, no legacy system needed)
-- [ ] SFTP transport stub — structure for real IRD batch file integration
-- [ ] Transform layer — maps raw IRD data format → dept DB schema
-- [ ] Scheduler — run on configurable interval (cron or event-triggered)
-- [ ] Idempotent upserts (safe to re-run)
-- [ ] Ingestion audit log (what was pulled, when, row counts)
+### Stage 2 — Ingester (`services/gov-ingester-ird`) — Rust ✅
+- [x] `Cargo.toml`, basic structure
+- [x] Ingester trait/interface (swap transport without changing logic)
+- [x] Mock transport — reads from JSON fixture files (for dev/demo, no legacy system needed)
+- [x] SFTP transport stub — structure for real IRD batch file integration
+- [x] Transform layer — maps raw IRD data format → dept DB schema
+- [x] Scheduler — run on configurable interval (cron or event-triggered)
+- [x] Idempotent upserts (safe to re-run)
+- [x] Ingestion audit log (what was pulled, when, row counts)
 
 ### Stage 3 — Portal UI (`apps/portal-citizen/app/dept/ird/`) — TypeScript ✅🔄
 - [x] `actions.ts` — `fetchIrdData`, `submitIrdAction` (server actions calling `gov-dept-ird`)
@@ -143,19 +143,19 @@ portal-citizen/app/dept/<id>/   calls gov-dept-<id> directly
 - [x] `gst/file-return/page.tsx` — GST filing form
 - [x] Error states + loading skeletons on all pages
 
-### Stage 4 — Staff View (`apps/portal-staff/app/dept/ird/`) — TypeScript ⬜
-- [ ] Read-only case worker view (same data, no action buttons)
+### Stage 4 — Staff View (`apps/portal-staff/app/dept/ird/`) — TypeScript ✅
+- [x] Read-only case worker view (same data, no action buttons)
 
-### Stage 5 — Federation ⬜
-- [ ] OPA policy file (`policies/ird.rego`)
-- [ ] Consent verification wired into `/citizen/data`
-- [ ] Cross-dept data request test (e.g. WINZ requests IRD income)
+### Stage 5 — Federation ✅
+- [x] OPA policy file (`policies/ird.rego`)
+- [x] Consent verification wired into `/citizen/data`
+- [x] Cross-dept data request test (e.g. WINZ requests IRD income)
 
-### Stage 6 — AI Integration ⬜
-- [ ] Richer `produceAiContext()` for WFF + KiwiSaver
-- [ ] Life-event wizard: "I just had a baby" → WFF eligibility check
-- [ ] Entitlement prompt: "Am I eligible for WFF?"
-- [ ] AI action suggestion (level ≥ assisted): KiwiSaver rate recommendation
+### Stage 6 — AI Integration ✅
+- [x] Richer `produceAiContext()` for WFF + KiwiSaver
+- [x] Life-event wizard: "I just had a baby" → WFF eligibility check
+- [x] Entitlement prompt: "Am I eligible for WFF?"
+- [x] AI action suggestion (level ≥ assisted): KiwiSaver rate recommendation
 
 ---
 

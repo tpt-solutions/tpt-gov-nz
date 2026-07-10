@@ -1,0 +1,99 @@
+{
+  "batchId": "IRD-2025-07-B001",
+  "generatedAt": "2025-07-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "irdNumber": "123-456-789",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "income": {
+        "assessmentYear": 2025,
+        "employmentIncome": 65000.00,
+        "selfEmploymentIncome": 0.00,
+        "rentalIncome": 0.00,
+        "otherIncome": 1200.00,
+        "totalDeductions": 0.00
+      },
+      "taxAssessment": {
+        "assessmentYear": 2025,
+        "taxCode": "M",
+        "totalIncome": 66200.00,
+        "taxableIncome": 66200.00,
+        "taxLiability": 14833.00,
+        "taxPaid": 15000.00,
+        "taxRefundDue": 167.00,
+        "taxOwing": 0.00,
+        "assessmentStatus": "final"
+      },
+      "gst": {
+        "registered": false
+      },
+      "kiwisaver": {
+        "membershipStatus": "active",
+        "contributionRate": 3.0,
+        "employerContributionRate": 3.0,
+        "scheme": "ANZ Default KiwiSaver Scheme",
+        "totalBalance": 18500.00,
+        "governmentContributionEligible": true,
+        "firstHomeBuyerEligible": true
+      },
+      "workingForFamilies": {
+        "eligible": true,
+        "numberOfDependantChildren": 2,
+        "incomeThreshold": 42700.00,
+        "familyTaxCredit": 127.00,
+        "inWorkTaxCredit": 72.50,
+        "bestStartPayment": 0.00,
+        "minimumFamilyTaxCredit": 0.00,
+        "paymentFrequency": "weekly"
+      }
+    },
+    {
+      "irdNumber": "987-654-321",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kāre",
+      "income": {
+        "assessmentYear": 2025,
+        "employmentIncome": 42000.00,
+        "selfEmploymentIncome": 8000.00,
+        "rentalIncome": 0.00,
+        "otherIncome": 300.00,
+        "totalDeductions": 1200.00
+      },
+      "taxAssessment": {
+        "assessmentYear": 2025,
+        "taxCode": "M",
+        "totalIncome": 50300.00,
+        "taxableIncome": 49100.00,
+        "taxLiability": 7325.00,
+        "taxPaid": 7100.00,
+        "taxRefundDue": 0.00,
+        "taxOwing": 225.00,
+        "assessmentStatus": "provisional"
+      },
+      "gst": {
+        "registered": true,
+        "gstNumber": "098-765-432",
+        "filingFrequency": "two-monthly"
+      },
+      "kiwisaver": {
+        "membershipStatus": "active",
+        "contributionRate": 4.0,
+        "employerContributionRate": 4.0,
+        "scheme": "Simplicity KiwiSaver",
+        "totalBalance": 9200.00,
+        "governmentContributionEligible": true,
+        "firstHomeBuyerEligible": true
+      },
+      "workingForFamilies": {
+        "eligible": false,
+        "numberOfDependantChildren": 0,
+        "incomeThreshold": 42700.00,
+        "familyTaxCredit": 0.00,
+        "inWorkTaxCredit": 0.00,
+        "paymentFrequency": "weekly"
+      }
+    }
+  ]
+}

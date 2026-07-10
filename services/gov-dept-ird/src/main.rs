@@ -1,14 +1,7 @@
-use axum::{routing::get, Router};
 use std::net::SocketAddr;
-use tower_http::trace::TraceLayer;
 use tracing::info;
 
-mod actions;
-mod db;
-mod error;
-mod routes;
-
-pub use error::IrdError;
+use gov_dept_ird::build_app;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -32,15 +25,7 @@ async fn main() -> anyhow::Result<()> {
     sqlx::migrate!("./migrations").run(&pool).await?;
     info!("Migrations applied");
 
-    let app = Router::new()
-        .route("/health", get(routes::health))
-        .route("/citizen/resolve", axum::routing::post(routes::resolve_citizen))
-        .route("/citizen/data", axum::routing::post(routes::fetch_data))
-        .route("/citizen/action", axum::routing::post(routes::submit_action))
-        .route("/citizen/:did/tax-years", get(routes::list_tax_years))
-        .route("/citizen/:did/gst-periods", get(routes::list_gst_periods))
-        .with_state(pool)
-        .layer(TraceLayer::new_for_http());
+    let app = build_app(pool);
 
     info!(listen = %http_listen, dept = "ird", "gov-dept-ird starting");
     let listener = tokio::net::TcpListener::bind(http_listen).await?;
