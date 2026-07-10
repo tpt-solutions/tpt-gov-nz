@@ -1,0 +1,77 @@
+{
+  "batchId": "WINZ-2026-07-B001",
+  "generatedAt": "2026-07-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "clientId": "WINZ-CLIENT-001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "benefits": [
+        {
+          "benefitType": "jobseeker",
+          "weeklyAmount": 275.40,
+          "startDate": "2024-02-01",
+          "reviewDate": "2026-02-01",
+          "status": "active"
+        },
+        {
+          "benefitType": "accommodation-supplement",
+          "weeklyAmount": 130.00,
+          "startDate": "2024-02-01",
+          "reviewDate": "2026-02-01",
+          "status": "active"
+        }
+      ],
+      "payments": [
+        {
+          "benefitType": "jobseeker",
+          "paymentDate": "2026-07-06",
+          "amount": 275.40,
+          "method": "bank-deposit"
+        },
+        {
+          "benefitType": "accommodation-supplement",
+          "paymentDate": "2026-07-06",
+          "amount": 130.00,
+          "method": "bank-deposit"
+        }
+      ]
+    },
+    {
+      "clientId": "WINZ-CLIENT-002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kāre",
+      "benefits": [
+        {
+          "benefitType": "sole-parent",
+          "weeklyAmount": 389.10,
+          "startDate": "2025-05-12",
+          "reviewDate": "2027-05-12",
+          "status": "active"
+        },
+        {
+          "benefitType": "working-for-families",
+          "weeklyAmount": 199.50,
+          "startDate": "2025-05-12",
+          "reviewDate": "2027-05-12",
+          "status": "active"
+        }
+      ],
+      "payments": [
+        {
+          "benefitType": "sole-parent",
+          "paymentDate": "2026-07-07",
+          "amount": 389.10,
+          "method": "bank-deposit"
+        },
+        {
+          "benefitType": "working-for-families",
+          "paymentDate": "2026-07-07",
+          "amount": 199.50,
+          "method": "bank-deposit"
+        }
+      ]
+    }
+  ]
+}

@@ -51,6 +51,36 @@ services:
 
   # --- Gateway ---
 
+  gov-dept-winz:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-winz/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://winz:winz_dev_password@dept-winz:5432/winz
+      TPT__GOV__DEPT_ID: winz
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8091"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7002"
+      RUST_LOG: "gov_dept_winz=info,tower_http=debug"
+    ports:
+      - "8091:8091"
+    depends_on:
+      dept-winz:
+        condition: service_healthy
+
+  gov-ingester-winz:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-winz/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://winz:winz_dev_password@dept-winz:5432/winz
+      WINZ_TRANSPORT: mock
+      WINZ_MOCK_FIXTURE: /fixtures/winz_batch.json
+      WINZ_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_winz=info,sqlx=warn"
+    depends_on:
+      dept-winz:
+        condition: service_healthy
+
   gov-gateway:
     build:
       context: ..
@@ -94,6 +124,11 @@ services:
     volumes:
       - winz-data:/var/lib/postgresql/data
       - ./init/winz.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U winz"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   dept-moh:
     image: postgres:17-alpine

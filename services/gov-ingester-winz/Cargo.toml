@@ -1,0 +1,30 @@
+[package]
+name = "gov-ingester-winz"
+description = "Work and Income (MSD) data ingester for tpt-gov-nz (pulls from legacy WINZ, writes to dept DB)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "gov-ingester-winz"
+path = "src/main.rs"
+
+[dependencies]
+gov-federation-core = { path = "../../crates/gov-federation-core" }
+tokio = { workspace = true }
+axum = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+sqlx = { workspace = true, features = ["macros", "migrate"] }
+uuid = { workspace = true }
+chrono = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+dotenvy = { workspace = true }
+async-trait = "0.1"
+
+[dev-dependencies]
+tokio = { workspace = true }
+uuid = { workspace = true }

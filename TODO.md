@@ -159,28 +159,41 @@ portal-citizen/app/dept/<id>/   calls gov-dept-<id> directly
 
 ---
 
-## WINZ — Full Native Module ⬜
+## WINZ — Full Native Module ✅
 
 > Note: WINZ (Work and Income) is a service line of the **Ministry of Social Development (MSD)**, not a separate department. This module covers Work and Income specifically; broader MSD services (e.g. StudyLink) are scoped under the Phase 2 `MSD` line.
 
-### Stage 1 — Dept Service (`services/gov-dept-winz`) — Rust
-- [ ] `Cargo.toml`, `Dockerfile`, `src/` (main, error, db, routes, actions)
-- [ ] Migrations: citizens, benefits, payments, case_notes, actions_log
-- [ ] Dev seed: test citizen with jobseeker + accommodation supplement
+### Stage 1 — Dept Service (`services/gov-dept-winz`) — Rust ✅
+- [x] `Cargo.toml`, `Dockerfile`, `src/` (main, error, db, routes, actions)
+- [x] Migrations: citizens, benefits, payments, case_notes, actions_log, ingestion_runs, payments idempotency key
+- [x] Dev seed: test citizen with jobseeker + accommodation supplement
+- [x] Unit + integration tests (resolve, fetch_data, actions, consent)
+- [x] Registered in root `Cargo.toml` workspace members
+- [x] `gov-dept-winz` + `gov-ingester-winz` containers in `docker/phase1.yml`, DB healthcheck
 
-### Stage 2 — Ingester (`services/gov-ingester-winz`) — Rust
-- [ ] Mock transport (JSON fixtures)
-- [ ] WINZ legacy system transport stub
-- [ ] Transform + idempotent upsert
+### Stage 2 — Ingester (`services/gov-ingester-winz`) — Rust ✅
+- [x] Mock transport (JSON fixtures)
+- [x] WINZ legacy system transport stub
+- [x] Transform + idempotent upsert
+- [x] Scheduler (configurable interval)
 
-### Stage 3 — Portal UI (`apps/portal-citizen/app/dept/winz/`) — TypeScript
-- [ ] `actions.ts`
-- [ ] Overview page — active benefits, weekly total, next appointment
-- [ ] Benefits detail page
-- [ ] Payment history page
+### Stage 3 — Portal UI (`apps/portal-citizen/app/dept/winz/`) — TypeScript ✅
+- [x] `actions.ts`
+- [x] Overview page — active benefits, weekly total, next appointment
+- [x] Benefits detail page
+- [x] Payment history page
+- [x] Benefit review + request-appointment action pages
 
-### Stage 4 — Staff View + Stage 5 — Federation + Stage 6 — AI
-- [ ] Staff view, OPA policy, AI benefit calculator
+### Stage 4 — Staff View (`apps/portal-staff/app/dept/winz/`) — TypeScript ✅
+- [x] Read-only case worker view (same data, no action buttons)
+
+### Stage 5 — Federation ✅
+- [x] OPA policy file (`policies/winz.rego`)
+- [x] Consent verification wired into `/citizen/data` (`consent.rs` + `opa.rs` fallback)
+- [x] Cross-dept data request test (IRD requests WINZ benefits, with + without grant)
+
+### Stage 6 — AI ✅
+- [x] Entitlement prompt: "What support am I entitled to?" (`ai-prompt.tsx`)
 
 ---
 
@@ -272,7 +285,7 @@ Each: dept service → ingester → portal pages → staff view → federation �
 - [ ] **LINZ** — property titles, land ownership
 
 ### Staff Portal (`apps/portal-staff`) — TypeScript
-- [ ] Next.js 15 scaffold
+- [x] Next.js 15 scaffold (+ IRD staff views: overview, tax-summary, GST, KiwiSaver, WFF)
 - [ ] Staff authentication
 - [ ] Citizen search (consent-gated)
 - [ ] Cross-dept case view, case notes, referral flow
