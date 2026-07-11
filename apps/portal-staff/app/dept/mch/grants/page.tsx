@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { fetchMchDataForCitizen } from "../actions";
 
 export const metadata = { title: "Grants — Ministry for Culture and Heritage — Case File — My Gov NZ" };

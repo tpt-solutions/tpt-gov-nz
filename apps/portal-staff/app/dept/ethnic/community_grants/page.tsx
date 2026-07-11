@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { fetchEthnicDataForCitizen } from "../actions";
 
 export const metadata = { title: "Community grants — Ministry for Ethnic Communities — Case File — My Gov NZ" };

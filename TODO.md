@@ -616,11 +616,11 @@ Each: dept service → ingester → portal pages → staff view → federation �
 - [x] Cross-dept case view, case notes, referral flow — `/citizens/[did]` aggregates consented dept bundles, case notes + referrals persisted locally; department detail pages consent-gated
 
 ### Production Hardening
-- [ ] RealMe SAML2 integration (staff portal currently uses a shared-passphrase stand-in, see `auth-actions.ts`)
+- [x] RealMe SAML2 integration (scaffold) — `apps/portal-staff/app/lib/realme.ts`, `/login/realme` + callback route; signed Redirect-binding AuthnRequest and best-effort POST-binding verification. Live IdP cert + credentials still required for production (see `auth-actions.ts`)
 - [x] mTLS between all internal services — `crates/gov-mtls` (rustls server/client configs, internal CA, `scripts/gen-mtls-certs.sh`)
 - [x] QUIC transport in `gov-federation-node` — `quic.rs`, gated behind `quic` feature
 - [x] ZK-SNARK age/residency proofs — `crates/gov-zk` (Schnorr/OR-proof range proofs over Ristretto; no trusted setup, demo-grade/unaudited)
-- [ ] Schema registry
+- [x] Schema registry — `services/gov-schema-registry` (Rust + Postgres; register/resolve/validate schemas), `SchemaRegistryClient` in `@tpt/gov-schema`, container in `docker/phase1.yml`
 - [x] Load test (k6) — `load-tests/k6/` (gateway, identity, dept-ird)
 - [ ] External security audit
 - [x] te reo Māori opt-in toggle
@@ -629,61 +629,61 @@ Each: dept service → ingester → portal pages → staff view → federation �
 
 ## Phase 3 — Full Vision
 
-- [ ] Remaining NZ Public Service departments + major Crown entities (each Stages 1–6). Departments already covered in Phase 1/2 (IRD, WINZ/MSD, MOH, DIA, NZTA, ACC, MoE/NZQA, MBIE, LINZ) are excluded below.
+- [x] Remaining NZ Public Service departments + major Crown entities (each Stages 1–6). Departments already covered in Phase 1/2 (IRD, WINZ/MSD, MOH, DIA, NZTA, ACC, MoE/NZQA, MBIE, LINZ) are excluded below. Each listed dept below now has a Rust dept service + ingester, a `DataBundle` schema (`packages/@tpt/gov-schema`), an OPA policy (`policies/`), and citizen + staff portal UIs.
   - **Central government**
-    - [ ] The Treasury — economic/fiscal data, Budget
-    - [ ] Department of the Prime Minister and Cabinet (DPMC)
-    - [ ] Te Kawa Mataaho Public Service Commission
+    - [x] The Treasury — economic/fiscal data, Budget (`gov-dept-treasury`)
+    - [x] Department of the Prime Minister and Cabinet (DPMC) (`gov-dept-dpmc`)
+    - [x] Te Kawa Mataaho Public Service Commission (`gov-dept-publicservice`)
     - [x] Stats NZ — census, profile data (see "Stats NZ — Full Native Module" above)
-    - [ ] Crown Law Office
+    - [x] Crown Law Office (`gov-dept-crownlaw`)
   - **Justice & safety**
     - [x] Ministry of Justice — fines, Disputes Tribunal, name changes, court records (see "MOJ — Full Native Module" below)
     - [x] New Zealand Police — infringements, disputes (see "Police — Full Native Module" below)
     - [x] Department of Corrections — case management, probation (see "Corrections — Full Native Module" above)
-    - [ ] Serious Fraud Office
+    - [x] Serious Fraud Office (`gov-dept-sfo`)
     - [x] New Zealand Customs Service — traveller declarations (see "Customs — Full Native Module" above)
   - **Social & community**
-    - [ ] Oranga Tamariki — Ministry for Children
+    - [x] Oranga Tamariki — Ministry for Children (`gov-dept-oranga`)
     - [x] Ministry of Housing and Urban Development / Kāinga Ora — social housing (see "HUD — Full Native Module" below)
-    - [ ] Ministry for Women
-    - [ ] Ministry for Pacific Peoples
-    - [ ] Ministry for Ethnic Communities
+    - [x] Ministry for Women (`gov-dept-women`)
+    - [x] Ministry for Pacific Peoples (`gov-dept-pacific`)
+    - [x] Ministry for Ethnic Communities (`gov-dept-ethnic`)
     - [x] Ministry of Māori Development (Te Puni Kōkiri) — funding, programmes (see "Te Puni Kōkiri (TPK) — Full Native Module" above)
-    - [ ] Te Arawhiti (Office for Māori Crown Relations)
+    - [x] Te Arawhiti (Office for Māori Crown Relations) (`gov-dept-tearawhiti`)
   - **Economic & regulatory**
-    - [ ] Ministry for Regulation
-    - [ ] Immigration New Zealand — visas (part of MBIE; cross-ref Phase 2 MBIE line)
-    - [ ] WorkSafe New Zealand
-    - [ ] Companies Office (part of MBIE)
-    - [ ] Retirement Commission (Te Ara Ahunga Ora)
+    - [x] Ministry for Regulation (`gov-dept-regulation`)
+    - [x] Immigration New Zealand — visas (part of MBIE; cross-ref Phase 2 MBIE line)
+    - [x] WorkSafe New Zealand (`gov-dept-worksafe`)
+    - [x] Companies Office (part of MBIE)
+    - [x] Retirement Commission (Te Ara Ahunga Ora) (`gov-dept-retirement`)
   - **Environment & primary industries**
     - [x] Ministry for Primary Industries (MPI) — certifications, registrations (see "MPI — Full Native Module" above)
-    - [ ] Ministry for the Environment (MfE)
+    - [x] Ministry for the Environment (MfE) (`gov-dept-mfe`)
     - [x] Department of Conservation (DOC) — concessions, permits (see "DOC — Full Native Module" above)
-    - [ ] Earthquake Commission — Toka Tū Ake (EQC)
+    - [x] Earthquake Commission — Toka Tū Ake (EQC) (`gov-dept-eqc`)
   - **Transport & infrastructure**
-    - [ ] Ministry of Transport
-    - [ ] Civil Aviation Authority
-    - [ ] Maritime New Zealand
-    - [ ] Fire and Emergency New Zealand (FENZ)
+    - [x] Ministry of Transport (`gov-dept-mot`)
+    - [x] Civil Aviation Authority (`gov-dept-caa`)
+    - [x] Maritime New Zealand (`gov-dept-maritime`)
+    - [x] Fire and Emergency New Zealand (FENZ) (`gov-dept-fenz`)
   - **Education & culture**
-    - [ ] Ministry of Education (core, beyond NZQA already in Phase 2)
-    - [ ] Education Review Office (ERO)
-    - [ ] Tertiary Education Commission
-    - [ ] Ministry for Culture and Heritage
+    - [x] Ministry of Education (core, beyond NZQA already in Phase 2) (`gov-dept-moe`)
+    - [x] Education Review Office (ERO) (`gov-dept-ero`)
+    - [x] Tertiary Education Commission (`gov-dept-tec`)
+    - [x] Ministry for Culture and Heritage (`gov-dept-mch`)
   - **Foreign affairs & defence**
-    - [ ] Ministry of Foreign Affairs and Trade (MFAT)
-    - [ ] Ministry of Defence
-    - [ ] New Zealand Defence Force
-    - [ ] Government Communications Security Bureau (GCSB)
-    - [ ] New Zealand Security Intelligence Service (NZSIS)
+    - [x] Ministry of Foreign Affairs and Trade (MFAT) (`gov-dept-mfat`)
+    - [x] Ministry of Defence (`gov-dept-defence`)
+    - [x] New Zealand Defence Force (`gov-dept-nzdf`)
+    - [x] Government Communications Security Bureau (GCSB) (`gov-dept-gcsb`)
+    - [x] New Zealand Security Intelligence Service (NZSIS) (`gov-dept-nzsis`)
   - [ ] + any further agencies identified
-- [ ] `apps/portal-policy` — AI policy simulation
+- [x] `apps/portal-policy` — AI policy simulation (`apps/portal-policy`, Next.js 15; scenario catalog + AI cross-dept impact simulation via `GovAiClient`)
 - [ ] AI level 3 (automated) — routine benefit renewals, document classification
-- [ ] Sovereign Ollama deployment guide (government hardware)
+- [x] Sovereign Ollama deployment guide (government hardware) — `docs/sovereign-ollama.md`
 - [ ] Local council federation (opt-in)
-- [ ] ISO 27001 compliance documentation
-- [ ] International fork guide
+- [x] ISO 27001 compliance documentation — `docs/iso-27001-compliance.md` (control mapping + gap register)
+- [x] International fork guide — `docs/international-fork-guide.md`
 - [ ] Optional Māori data sovereignty layer (iwi-controlled nodes)
 
 ---

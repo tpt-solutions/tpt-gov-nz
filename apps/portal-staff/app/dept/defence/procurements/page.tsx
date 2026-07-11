@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { fetchDefenceDataForCitizen } from "../actions";
 
 export const metadata = { title: "Procurements — Ministry of Defence — Case File — My Gov NZ" };

@@ -9,6 +9,7 @@ members = [
     "crates/gov-zk",
     "services/gov-gateway",
     "services/gov-identity-server",
+    "services/gov-schema-registry",
     "services/gov-dept-node",
     "services/gov-dept-ird",
     "services/gov-ingester-ird",

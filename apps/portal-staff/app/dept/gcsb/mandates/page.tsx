@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { fetchGcsbDataForCitizen } from "../actions";
 
 export const metadata = { title: "Mandates — Government Communications Security Bureau — Case File — My Gov NZ" };

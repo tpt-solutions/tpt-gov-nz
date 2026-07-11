@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { fetchFenzDataForCitizen } from "../actions";
 
 export const metadata = { title: "Incidents — Fire and Emergency New Zealand — Case File — My Gov NZ" };

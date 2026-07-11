@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { fetchRetirementDataForCitizen } from "../actions";
 
 export const metadata = { title: "Retirement plan — Retirement Commission (Te Ara Ahunga Ora) — Case File — My Gov NZ" };

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { fetchRegulationDataForCitizen } from "../actions";
 
 export const metadata = { title: "Proposals — Ministry for Regulation — Case File — My Gov NZ" };

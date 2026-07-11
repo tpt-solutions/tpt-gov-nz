@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { fetchTecDataForCitizen } from "../actions";
 
 export const metadata = { title: "Funding — Tertiary Education Commission — Case File — My Gov NZ" };

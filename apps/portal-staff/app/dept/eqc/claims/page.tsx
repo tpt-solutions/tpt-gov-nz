@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { fetchEqcDataForCitizen } from "../actions";
 
 export const metadata = { title: "Claims — Earthquake Commission (Toka Tū Ake) — Case File — My Gov NZ" };

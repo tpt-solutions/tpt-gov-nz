@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { fetchPacificDataForCitizen } from "../actions";
 
 export const metadata = { title: "Language services — Ministry for Pacific Peoples — Case File — My Gov NZ" };

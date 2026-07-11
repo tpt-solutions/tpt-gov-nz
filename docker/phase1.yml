@@ -2348,6 +2348,39 @@ services:
     volumes:
       - audit-data:/var/lib/postgresql/data
 
+  # --- Schema registry ---
+
+  dept-schema:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: schema_registry
+      POSTGRES_USER: schema_registry
+      POSTGRES_PASSWORD: schema_dev_password
+    ports:
+      - "5411:5432"
+    volumes:
+      - schema-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U schema_registry"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  gov-schema-registry:
+    build:
+      context: ..
+      dockerfile: services/gov-schema-registry/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://schema_registry:schema_dev_password@dept-schema:5432/schema_registry
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8089"
+      SCHEMA_REGISTRY_KEY: ${SCHEMA_REGISTRY_KEY:-change-me}
+      RUST_LOG: "gov_schema_registry=info,tower_http=debug"
+    ports:
+      - "8089:8089"
+    depends_on:
+      dept-schema:
+        condition: service_healthy
+
 volumes:
   ird-data:
   winz-data:
@@ -2398,3 +2431,4 @@ volumes:
   tpk-data:
   identity-data:
   audit-data:
+  schema-data:

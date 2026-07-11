@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { fetchEroDataForCitizen } from "../actions";
 
 export const metadata = { title: "Reports — Education Review Office — Case File — My Gov NZ" };

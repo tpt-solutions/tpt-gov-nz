@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { fetchWomenDataForCitizen } from "../actions";
 
 export const metadata = { title: "Insights — Ministry for Women — Case File — My Gov NZ" };

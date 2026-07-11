@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { fetchMfeDataForCitizen } from "../actions";
 
 export const metadata = { title: "Emissions — Ministry for the Environment — Case File — My Gov NZ" };

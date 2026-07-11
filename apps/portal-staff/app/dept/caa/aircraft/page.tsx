@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { fetchCaaDataForCitizen } from "../actions";
 
 export const metadata = { title: "Aircraft — Civil Aviation Authority — Case File — My Gov NZ" };

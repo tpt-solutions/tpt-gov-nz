@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { fetchMoeDataForCitizen } from "../actions";
 
 export const metadata = { title: "Enrolment — Ministry of Education — Case File — My Gov NZ" };

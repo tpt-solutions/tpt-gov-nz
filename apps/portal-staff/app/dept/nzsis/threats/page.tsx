@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { fetchNzsisDataForCitizen } from "../actions";
 
 export const metadata = { title: "Threats — New Zealand Security Intelligence Service — Case File — My Gov NZ" };

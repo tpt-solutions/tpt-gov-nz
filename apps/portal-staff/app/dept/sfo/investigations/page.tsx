@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { fetchSfoDataForCitizen } from "../actions";
 
 export const metadata = { title: "Investigations — Serious Fraud Office — Case File — My Gov NZ" };

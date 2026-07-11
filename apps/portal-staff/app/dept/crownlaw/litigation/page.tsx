@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { fetchCrownlawDataForCitizen } from "../actions";
 
 export const metadata = { title: "Litigation — Crown Law Office — Case File — My Gov NZ" };

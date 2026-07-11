@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { fetchWorksafeDataForCitizen } from "../actions";
 
 export const metadata = { title: "Inspections — WorkSafe New Zealand — Case File — My Gov NZ" };

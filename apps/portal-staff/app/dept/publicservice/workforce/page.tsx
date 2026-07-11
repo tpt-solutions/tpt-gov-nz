@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { fetchPublicserviceDataForCitizen } from "../actions";
 
 export const metadata = { title: "Workforce — Te Kawa Mataaho Public Service Commission — Case File — My Gov NZ" };

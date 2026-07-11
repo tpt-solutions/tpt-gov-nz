@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { fetchMfatDataForCitizen } from "../actions";
 
 export const metadata = { title: "Overseas missions — Ministry of Foreign Affairs and Trade — Case File — My Gov NZ" };

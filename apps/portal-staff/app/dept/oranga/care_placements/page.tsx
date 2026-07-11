@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { fetchOrangaDataForCitizen } from "../actions";
 
 export const metadata = { title: "Care placements — Oranga Tamariki — Case File — My Gov NZ" };

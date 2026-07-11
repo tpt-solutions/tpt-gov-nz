@@ -68,7 +68,12 @@ export interface StaffDeptMeta {
   name: string;
   shortName: string;
   description: string;
-  scopes: string[  {
+  scopes: string[];
+  href: string;
+}
+
+export const STAFF_DEPARTMENTS_FULL: StaffDeptMeta[] = [
+  {
     id: "treasury",
     name: "The Treasury",
     shortName: "Treasury",
@@ -293,8 +298,6 @@ export interface StaffDeptMeta {
     href: "/dept/nzsis",
   },
 ];
-  href: string;
-}
 
 export const STAFF_DEPARTMENTS: StaffDeptMeta[] = [
   {

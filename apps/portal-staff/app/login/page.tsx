@@ -71,6 +71,19 @@ function StaffLoginForm() {
         </section>
       )}
 
+      {process.env.NEXT_PUBLIC_REALME_ENABLED === "true" && (
+        <section style={{ border: "1px solid #ccc", padding: "1rem", margin: "1rem 0" }}>
+          <h2>RealMe</h2>
+          <p>Sign in with your RealMe verified identity (SAML 2.0 SSO).</p>
+          <a
+            href="/login/realme"
+            style={{ display: "inline-block", padding: "0.5rem 1rem", background: "#007bff", color: "#fff", borderRadius: 6, textDecoration: "none", cursor: "pointer" }}
+          >
+            Sign in with RealMe
+          </a>
+        </section>
+      )}
+
       <p>
         <Link href="/">Return to portal home</Link>
       </p>
