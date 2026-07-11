@@ -1,0 +1,33 @@
+{
+  "batchId": "BATCH-ERO-001",
+  "generatedAt": "2026-06-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "ero_id": "ERO-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "reviews": [
+        {
+          "school": "Porirua College",
+          "rating": "Developing",
+          "reviewDate": "2025-09-01",
+          "nextReview": "2027-09-01"
+        }
+      ],
+      "reports": [
+        {
+          "title": "Porirua College annual report",
+          "published": "2025-10-15"
+        }
+      ]
+    },
+    {
+      "ero_id": "ERO-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "reviews": [],
+      "reports": []
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "batchId": "BATCH-GCSB-001",
+  "generatedAt": "2026-06-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "gcsb_id": "GCSB-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "mandates": [
+        {
+          "reference": "GCSB-M-2026-001",
+          "agency": "NZSIS",
+          "status": "active",
+          "issuedDate": "2026-01-05"
+        }
+      ],
+      "engagements": [
+        {
+          "partner": "CERT NZ",
+          "engagementType": "Cyber threat briefing",
+          "engagementDate": "2026-02-20"
+        }
+      ]
+    },
+    {
+      "gcsb_id": "GCSB-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "mandates": [],
+      "engagements": []
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "batchId": "BATCH-NZDF-001",
+  "generatedAt": "2026-06-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "nzdf_id": "NZDF-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "service_records": [
+        {
+          "serviceNo": "NZDF-55821",
+          "branch": "Army",
+          "status": "active"
+        }
+      ],
+      "deployments": [
+        {
+          "operation": "Burnham readiness",
+          "country": "NZ",
+          "year": 2025
+        }
+      ]
+    },
+    {
+      "nzdf_id": "NZDF-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "service_records": [],
+      "deployments": []
+    }
+  ]
+}

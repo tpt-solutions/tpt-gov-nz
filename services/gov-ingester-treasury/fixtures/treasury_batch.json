@@ -1,0 +1,33 @@
+{
+  "batchId": "BATCH-TREASURY-001",
+  "generatedAt": "2026-06-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "treasury_id": "TRE-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "budget": [
+        {
+          "fiscalYear": 2026,
+          "portfolio": "Health",
+          "appropriation": "Vote Health",
+          "amount": 1200000000
+        }
+      ],
+      "economic_outlook": {
+        "forecastYear": 2026,
+        "gdpGrowthPct": 2.4,
+        "inflationPct": 3.1,
+        "netDebtPct": 42
+      }
+    },
+    {
+      "treasury_id": "TRE-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "budget": [],
+      "economic_outlook": null
+    }
+  ]
+}

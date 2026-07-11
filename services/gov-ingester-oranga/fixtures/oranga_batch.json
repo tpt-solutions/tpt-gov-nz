@@ -1,0 +1,33 @@
+{
+  "batchId": "BATCH-ORANGA-001",
+  "generatedAt": "2026-06-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "oranga_id": "OT-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "care_placements": [
+        {
+          "placementType": "Whānau placement",
+          "startDate": "2025-08-01",
+          "region": "Waikato"
+        }
+      ],
+      "support_services": [
+        {
+          "service": "Intensive support",
+          "status": "active",
+          "nextReview": "2026-09-01"
+        }
+      ]
+    },
+    {
+      "oranga_id": "OT-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "care_placements": [],
+      "support_services": []
+    }
+  ]
+}

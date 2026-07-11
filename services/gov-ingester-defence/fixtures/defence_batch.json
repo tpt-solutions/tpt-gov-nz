@@ -1,0 +1,33 @@
+{
+  "batchId": "BATCH-DEFENCE-001",
+  "generatedAt": "2026-06-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "defence_id": "DEF-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "procurements": [
+        {
+          "programme": "Frigate sustainment",
+          "value": 450000000,
+          "status": "ongoing"
+        }
+      ],
+      "bases": [
+        {
+          "name": "Trentham Military Camp",
+          "location": "Upper Hutt",
+          "status": "operational"
+        }
+      ]
+    },
+    {
+      "defence_id": "DEF-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "procurements": [],
+      "bases": []
+    }
+  ]
+}

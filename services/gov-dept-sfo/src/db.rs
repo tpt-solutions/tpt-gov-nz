@@ -1,0 +1,82 @@
+use sqlx::PgPool;
+use uuid::Uuid;
+
+#[derive(Debug, sqlx::FromRow)]
+pub struct CitizenRow {
+    pub id: Uuid,
+    pub did: String,
+    pub sfo_id: String,
+}
+
+#[derive(Debug, sqlx::FromRow)]
+pub struct InvestigationsRow {
+    pub id: Uuid,
+    pub reference: String,
+    pub matter: String,
+    pub status: String,
+    pub opened_date: chrono::NaiveDate,
+}
+
+pub async fn fetch_investigations(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<InvestigationsRow>> {
+    sqlx::query_as!(
+        InvestigationsRow,
+        "SELECT id, reference, matter, status, opened_date FROM sfo_investigations WHERE citizen_id = $1 ORDER BY created_at DESC",
+        citizen_id
+    )
+    .fetch_all(pool)
+    .await
+}
+
+#[derive(Debug, sqlx::FromRow)]
+pub struct OutcomesRow {
+    pub id: Uuid,
+    pub reference: String,
+    pub result: String,
+    pub result_date: chrono::NaiveDate,
+}
+
+pub async fn fetch_outcomes(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<OutcomesRow>> {
+    sqlx::query_as!(
+        OutcomesRow,
+        "SELECT id, reference, result, result_date FROM sfo_outcomes WHERE citizen_id = $1 ORDER BY created_at DESC",
+        citizen_id
+    )
+    .fetch_all(pool)
+    .await
+}
+
+pub async fn resolve_by_did(pool: &PgPool, did: &str) -> sqlx::Result<Option<CitizenRow>> {
+    sqlx::query_as!(
+        CitizenRow,
+        "SELECT id, did, sfo_id FROM citizens WHERE did = $1",
+        did
+    )
+    .fetch_optional(pool)
+    .await
+}
+
+pub async fn log_action(
+    pool: &PgPool,
+    citizen_id: Uuid,
+    action_type: &str,
+    parameters: serde_json::Value,
+    performed_by: &str,
+    ai_level: Option<&str>,
+    result_success: bool,
+    result_message: Option<&str>,
+) -> sqlx::Result<()> {
+    sqlx::query!(
+        r#"INSERT INTO actions_log (citizen_id, action_type, parameters, performed_by, ai_level, result_success, result_message)
+           VALUES ($1, $2, $3, $4, $5, $6, $7)"#,
+        citizen_id,
+        action_type,
+        parameters,
+        performed_by,
+        ai_level,
+        result_success,
+        result_message
+    )
+    .execute(pool)
+    .await?;
+    Ok(())
+}

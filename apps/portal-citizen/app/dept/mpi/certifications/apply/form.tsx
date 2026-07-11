@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { submitMpiAction } from "../actions";
+import { submitMpiAction } from "../../actions";
 
 export default function MpiExportCertificateForm() {
   const [product, setProduct] = useState("");

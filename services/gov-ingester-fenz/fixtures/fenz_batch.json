@@ -1,0 +1,32 @@
+{
+  "batchId": "BATCH-FENZ-001",
+  "generatedAt": "2026-06-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "fenz_id": "FENZ-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "fire_safety": {
+        "property": "12 Totara Street, Porirua",
+        "grade": "Compliant",
+        "lastInspection": "2025-11-12"
+      },
+      "incidents": [
+        {
+          "reference": "FENZ-2026-050",
+          "incidentType": "Structure fire",
+          "incidentDate": "2026-01-30",
+          "status": "closed"
+        }
+      ]
+    },
+    {
+      "fenz_id": "FENZ-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "fire_safety": null,
+      "incidents": []
+    }
+  ]
+}

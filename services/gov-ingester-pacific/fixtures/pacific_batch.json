@@ -1,0 +1,33 @@
+{
+  "batchId": "BATCH-PACIFIC-001",
+  "generatedAt": "2026-06-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "pacific_id": "PAC-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "programmes": [
+        {
+          "programmeName": "Tokelau Language Week",
+          "status": "enrolled",
+          "year": 2026
+        }
+      ],
+      "language_services": [
+        {
+          "service": "Gagana Samoa classes",
+          "region": "Auckland",
+          "status": "available"
+        }
+      ]
+    },
+    {
+      "pacific_id": "PAC-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "programmes": [],
+      "language_services": []
+    }
+  ]
+}

@@ -636,6 +636,1322 @@ services:
         condition: service_healthy
 
   gov-gateway:
+  dept-nzsis:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: nzsis
+      POSTGRES_USER: nzsis
+      POSTGRES_PASSWORD: nzsis_dev_password
+    ports:
+      - "5487:5432"
+    volumes:
+      - nzsis-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nzsis"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  gov-dept-nzsis:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-nzsis/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://nzsis:nzsis_dev_password@dept-nzsis:5432/nzsis
+      TPT__GOV__DEPT_ID: nzsis
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8147"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7067"
+      RUST_LOG: "gov_dept_nzsis=info,tower_http=debug"
+    ports:
+      - "8147:8147"
+    depends_on:
+      dept-nzsis:
+        condition: service_healthy
+
+  gov-ingester-nzsis:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-nzsis/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://nzsis:nzsis_dev_password@dept-nzsis:5432/nzsis
+      NZSIS_TRANSPORT: mock
+      NZSIS_MOCK_FIXTURE: /fixtures/nzsis_batch.json
+      NZSIS_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_nzsis=info,sqlx=warn"
+    depends_on:
+      dept-nzsis:
+        condition: service_healthy
+
+  gov-gateway:
+  dept-gcsb:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: gcsb
+      POSTGRES_USER: gcsb
+      POSTGRES_PASSWORD: gcsb_dev_password
+    ports:
+      - "5486:5432"
+    volumes:
+      - gcsb-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gcsb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  gov-dept-gcsb:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-gcsb/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://gcsb:gcsb_dev_password@dept-gcsb:5432/gcsb
+      TPT__GOV__DEPT_ID: gcsb
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8146"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7066"
+      RUST_LOG: "gov_dept_gcsb=info,tower_http=debug"
+    ports:
+      - "8146:8146"
+    depends_on:
+      dept-gcsb:
+        condition: service_healthy
+
+  gov-ingester-gcsb:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-gcsb/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://gcsb:gcsb_dev_password@dept-gcsb:5432/gcsb
+      GCSB_TRANSPORT: mock
+      GCSB_MOCK_FIXTURE: /fixtures/gcsb_batch.json
+      GCSB_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_gcsb=info,sqlx=warn"
+    depends_on:
+      dept-gcsb:
+        condition: service_healthy
+
+  gov-gateway:
+  dept-nzdf:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: nzdf
+      POSTGRES_USER: nzdf
+      POSTGRES_PASSWORD: nzdf_dev_password
+    ports:
+      - "5485:5432"
+    volumes:
+      - nzdf-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nzdf"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  gov-dept-nzdf:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-nzdf/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://nzdf:nzdf_dev_password@dept-nzdf:5432/nzdf
+      TPT__GOV__DEPT_ID: nzdf
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8145"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7065"
+      RUST_LOG: "gov_dept_nzdf=info,tower_http=debug"
+    ports:
+      - "8145:8145"
+    depends_on:
+      dept-nzdf:
+        condition: service_healthy
+
+  gov-ingester-nzdf:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-nzdf/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://nzdf:nzdf_dev_password@dept-nzdf:5432/nzdf
+      NZDF_TRANSPORT: mock
+      NZDF_MOCK_FIXTURE: /fixtures/nzdf_batch.json
+      NZDF_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_nzdf=info,sqlx=warn"
+    depends_on:
+      dept-nzdf:
+        condition: service_healthy
+
+  gov-gateway:
+  dept-defence:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: defence
+      POSTGRES_USER: defence
+      POSTGRES_PASSWORD: defence_dev_password
+    ports:
+      - "5484:5432"
+    volumes:
+      - defence-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U defence"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  gov-dept-defence:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-defence/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://defence:defence_dev_password@dept-defence:5432/defence
+      TPT__GOV__DEPT_ID: defence
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8144"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7064"
+      RUST_LOG: "gov_dept_defence=info,tower_http=debug"
+    ports:
+      - "8144:8144"
+    depends_on:
+      dept-defence:
+        condition: service_healthy
+
+  gov-ingester-defence:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-defence/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://defence:defence_dev_password@dept-defence:5432/defence
+      DEFENCE_TRANSPORT: mock
+      DEFENCE_MOCK_FIXTURE: /fixtures/defence_batch.json
+      DEFENCE_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_defence=info,sqlx=warn"
+    depends_on:
+      dept-defence:
+        condition: service_healthy
+
+  gov-gateway:
+  dept-mfat:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: mfat
+      POSTGRES_USER: mfat
+      POSTGRES_PASSWORD: mfat_dev_password
+    ports:
+      - "5483:5432"
+    volumes:
+      - mfat-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mfat"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  gov-dept-mfat:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-mfat/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://mfat:mfat_dev_password@dept-mfat:5432/mfat
+      TPT__GOV__DEPT_ID: mfat
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8143"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7063"
+      RUST_LOG: "gov_dept_mfat=info,tower_http=debug"
+    ports:
+      - "8143:8143"
+    depends_on:
+      dept-mfat:
+        condition: service_healthy
+
+  gov-ingester-mfat:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-mfat/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://mfat:mfat_dev_password@dept-mfat:5432/mfat
+      MFAT_TRANSPORT: mock
+      MFAT_MOCK_FIXTURE: /fixtures/mfat_batch.json
+      MFAT_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_mfat=info,sqlx=warn"
+    depends_on:
+      dept-mfat:
+        condition: service_healthy
+
+  gov-gateway:
+  dept-mch:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: mch
+      POSTGRES_USER: mch
+      POSTGRES_PASSWORD: mch_dev_password
+    ports:
+      - "5482:5432"
+    volumes:
+      - mch-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mch"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  gov-dept-mch:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-mch/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://mch:mch_dev_password@dept-mch:5432/mch
+      TPT__GOV__DEPT_ID: mch
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8142"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7062"
+      RUST_LOG: "gov_dept_mch=info,tower_http=debug"
+    ports:
+      - "8142:8142"
+    depends_on:
+      dept-mch:
+        condition: service_healthy
+
+  gov-ingester-mch:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-mch/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://mch:mch_dev_password@dept-mch:5432/mch
+      MCH_TRANSPORT: mock
+      MCH_MOCK_FIXTURE: /fixtures/mch_batch.json
+      MCH_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_mch=info,sqlx=warn"
+    depends_on:
+      dept-mch:
+        condition: service_healthy
+
+  gov-gateway:
+  dept-tec:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: tec
+      POSTGRES_USER: tec
+      POSTGRES_PASSWORD: tec_dev_password
+    ports:
+      - "5481:5432"
+    volumes:
+      - tec-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tec"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  gov-dept-tec:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-tec/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://tec:tec_dev_password@dept-tec:5432/tec
+      TPT__GOV__DEPT_ID: tec
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8141"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7061"
+      RUST_LOG: "gov_dept_tec=info,tower_http=debug"
+    ports:
+      - "8141:8141"
+    depends_on:
+      dept-tec:
+        condition: service_healthy
+
+  gov-ingester-tec:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-tec/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://tec:tec_dev_password@dept-tec:5432/tec
+      TEC_TRANSPORT: mock
+      TEC_MOCK_FIXTURE: /fixtures/tec_batch.json
+      TEC_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_tec=info,sqlx=warn"
+    depends_on:
+      dept-tec:
+        condition: service_healthy
+
+  gov-gateway:
+  dept-ero:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ero
+      POSTGRES_USER: ero
+      POSTGRES_PASSWORD: ero_dev_password
+    ports:
+      - "5480:5432"
+    volumes:
+      - ero-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ero"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  gov-dept-ero:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-ero/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://ero:ero_dev_password@dept-ero:5432/ero
+      TPT__GOV__DEPT_ID: ero
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8140"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7060"
+      RUST_LOG: "gov_dept_ero=info,tower_http=debug"
+    ports:
+      - "8140:8140"
+    depends_on:
+      dept-ero:
+        condition: service_healthy
+
+  gov-ingester-ero:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-ero/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://ero:ero_dev_password@dept-ero:5432/ero
+      ERO_TRANSPORT: mock
+      ERO_MOCK_FIXTURE: /fixtures/ero_batch.json
+      ERO_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_ero=info,sqlx=warn"
+    depends_on:
+      dept-ero:
+        condition: service_healthy
+
+  gov-gateway:
+  dept-moe:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: moe
+      POSTGRES_USER: moe
+      POSTGRES_PASSWORD: moe_dev_password
+    ports:
+      - "5479:5432"
+    volumes:
+      - moe-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U moe"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  gov-dept-moe:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-moe/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://moe:moe_dev_password@dept-moe:5432/moe
+      TPT__GOV__DEPT_ID: moe
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8139"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7059"
+      RUST_LOG: "gov_dept_moe=info,tower_http=debug"
+    ports:
+      - "8139:8139"
+    depends_on:
+      dept-moe:
+        condition: service_healthy
+
+  gov-ingester-moe:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-moe/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://moe:moe_dev_password@dept-moe:5432/moe
+      MOE_TRANSPORT: mock
+      MOE_MOCK_FIXTURE: /fixtures/moe_batch.json
+      MOE_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_moe=info,sqlx=warn"
+    depends_on:
+      dept-moe:
+        condition: service_healthy
+
+  gov-gateway:
+  dept-fenz:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: fenz
+      POSTGRES_USER: fenz
+      POSTGRES_PASSWORD: fenz_dev_password
+    ports:
+      - "5478:5432"
+    volumes:
+      - fenz-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fenz"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  gov-dept-fenz:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-fenz/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://fenz:fenz_dev_password@dept-fenz:5432/fenz
+      TPT__GOV__DEPT_ID: fenz
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8138"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7058"
+      RUST_LOG: "gov_dept_fenz=info,tower_http=debug"
+    ports:
+      - "8138:8138"
+    depends_on:
+      dept-fenz:
+        condition: service_healthy
+
+  gov-ingester-fenz:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-fenz/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://fenz:fenz_dev_password@dept-fenz:5432/fenz
+      FENZ_TRANSPORT: mock
+      FENZ_MOCK_FIXTURE: /fixtures/fenz_batch.json
+      FENZ_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_fenz=info,sqlx=warn"
+    depends_on:
+      dept-fenz:
+        condition: service_healthy
+
+  gov-gateway:
+  dept-maritime:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: maritime
+      POSTGRES_USER: maritime
+      POSTGRES_PASSWORD: maritime_dev_password
+    ports:
+      - "5477:5432"
+    volumes:
+      - maritime-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U maritime"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  gov-dept-maritime:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-maritime/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://maritime:maritime_dev_password@dept-maritime:5432/maritime
+      TPT__GOV__DEPT_ID: maritime
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8137"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7057"
+      RUST_LOG: "gov_dept_maritime=info,tower_http=debug"
+    ports:
+      - "8137:8137"
+    depends_on:
+      dept-maritime:
+        condition: service_healthy
+
+  gov-ingester-maritime:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-maritime/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://maritime:maritime_dev_password@dept-maritime:5432/maritime
+      MARITIME_TRANSPORT: mock
+      MARITIME_MOCK_FIXTURE: /fixtures/maritime_batch.json
+      MARITIME_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_maritime=info,sqlx=warn"
+    depends_on:
+      dept-maritime:
+        condition: service_healthy
+
+  gov-gateway:
+  dept-caa:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: caa
+      POSTGRES_USER: caa
+      POSTGRES_PASSWORD: caa_dev_password
+    ports:
+      - "5476:5432"
+    volumes:
+      - caa-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U caa"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  gov-dept-caa:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-caa/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://caa:caa_dev_password@dept-caa:5432/caa
+      TPT__GOV__DEPT_ID: caa
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8136"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7056"
+      RUST_LOG: "gov_dept_caa=info,tower_http=debug"
+    ports:
+      - "8136:8136"
+    depends_on:
+      dept-caa:
+        condition: service_healthy
+
+  gov-ingester-caa:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-caa/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://caa:caa_dev_password@dept-caa:5432/caa
+      CAA_TRANSPORT: mock
+      CAA_MOCK_FIXTURE: /fixtures/caa_batch.json
+      CAA_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_caa=info,sqlx=warn"
+    depends_on:
+      dept-caa:
+        condition: service_healthy
+
+  gov-gateway:
+  dept-mot:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: mot
+      POSTGRES_USER: mot
+      POSTGRES_PASSWORD: mot_dev_password
+    ports:
+      - "5475:5432"
+    volumes:
+      - mot-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mot"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  gov-dept-mot:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-mot/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://mot:mot_dev_password@dept-mot:5432/mot
+      TPT__GOV__DEPT_ID: mot
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8135"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7055"
+      RUST_LOG: "gov_dept_mot=info,tower_http=debug"
+    ports:
+      - "8135:8135"
+    depends_on:
+      dept-mot:
+        condition: service_healthy
+
+  gov-ingester-mot:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-mot/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://mot:mot_dev_password@dept-mot:5432/mot
+      MOT_TRANSPORT: mock
+      MOT_MOCK_FIXTURE: /fixtures/mot_batch.json
+      MOT_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_mot=info,sqlx=warn"
+    depends_on:
+      dept-mot:
+        condition: service_healthy
+
+  gov-gateway:
+  dept-eqc:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: eqc
+      POSTGRES_USER: eqc
+      POSTGRES_PASSWORD: eqc_dev_password
+    ports:
+      - "5474:5432"
+    volumes:
+      - eqc-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U eqc"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  gov-dept-eqc:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-eqc/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://eqc:eqc_dev_password@dept-eqc:5432/eqc
+      TPT__GOV__DEPT_ID: eqc
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8134"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7054"
+      RUST_LOG: "gov_dept_eqc=info,tower_http=debug"
+    ports:
+      - "8134:8134"
+    depends_on:
+      dept-eqc:
+        condition: service_healthy
+
+  gov-ingester-eqc:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-eqc/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://eqc:eqc_dev_password@dept-eqc:5432/eqc
+      EQC_TRANSPORT: mock
+      EQC_MOCK_FIXTURE: /fixtures/eqc_batch.json
+      EQC_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_eqc=info,sqlx=warn"
+    depends_on:
+      dept-eqc:
+        condition: service_healthy
+
+  gov-gateway:
+  dept-mfe:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: mfe
+      POSTGRES_USER: mfe
+      POSTGRES_PASSWORD: mfe_dev_password
+    ports:
+      - "5473:5432"
+    volumes:
+      - mfe-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mfe"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  gov-dept-mfe:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-mfe/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://mfe:mfe_dev_password@dept-mfe:5432/mfe
+      TPT__GOV__DEPT_ID: mfe
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8133"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7053"
+      RUST_LOG: "gov_dept_mfe=info,tower_http=debug"
+    ports:
+      - "8133:8133"
+    depends_on:
+      dept-mfe:
+        condition: service_healthy
+
+  gov-ingester-mfe:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-mfe/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://mfe:mfe_dev_password@dept-mfe:5432/mfe
+      MFE_TRANSPORT: mock
+      MFE_MOCK_FIXTURE: /fixtures/mfe_batch.json
+      MFE_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_mfe=info,sqlx=warn"
+    depends_on:
+      dept-mfe:
+        condition: service_healthy
+
+  gov-gateway:
+  dept-retirement:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: retirement
+      POSTGRES_USER: retirement
+      POSTGRES_PASSWORD: retirement_dev_password
+    ports:
+      - "5472:5432"
+    volumes:
+      - retirement-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U retirement"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  gov-dept-retirement:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-retirement/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://retirement:retirement_dev_password@dept-retirement:5432/retirement
+      TPT__GOV__DEPT_ID: retirement
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8132"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7052"
+      RUST_LOG: "gov_dept_retirement=info,tower_http=debug"
+    ports:
+      - "8132:8132"
+    depends_on:
+      dept-retirement:
+        condition: service_healthy
+
+  gov-ingester-retirement:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-retirement/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://retirement:retirement_dev_password@dept-retirement:5432/retirement
+      RETIREMENT_TRANSPORT: mock
+      RETIREMENT_MOCK_FIXTURE: /fixtures/retirement_batch.json
+      RETIREMENT_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_retirement=info,sqlx=warn"
+    depends_on:
+      dept-retirement:
+        condition: service_healthy
+
+  gov-gateway:
+  dept-worksafe:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: worksafe
+      POSTGRES_USER: worksafe
+      POSTGRES_PASSWORD: worksafe_dev_password
+    ports:
+      - "5471:5432"
+    volumes:
+      - worksafe-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U worksafe"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  gov-dept-worksafe:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-worksafe/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://worksafe:worksafe_dev_password@dept-worksafe:5432/worksafe
+      TPT__GOV__DEPT_ID: worksafe
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8131"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7051"
+      RUST_LOG: "gov_dept_worksafe=info,tower_http=debug"
+    ports:
+      - "8131:8131"
+    depends_on:
+      dept-worksafe:
+        condition: service_healthy
+
+  gov-ingester-worksafe:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-worksafe/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://worksafe:worksafe_dev_password@dept-worksafe:5432/worksafe
+      WORKSAFE_TRANSPORT: mock
+      WORKSAFE_MOCK_FIXTURE: /fixtures/worksafe_batch.json
+      WORKSAFE_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_worksafe=info,sqlx=warn"
+    depends_on:
+      dept-worksafe:
+        condition: service_healthy
+
+  gov-gateway:
+  dept-regulation:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: regulation
+      POSTGRES_USER: regulation
+      POSTGRES_PASSWORD: regulation_dev_password
+    ports:
+      - "5470:5432"
+    volumes:
+      - regulation-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U regulation"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  gov-dept-regulation:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-regulation/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://regulation:regulation_dev_password@dept-regulation:5432/regulation
+      TPT__GOV__DEPT_ID: regulation
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8130"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7050"
+      RUST_LOG: "gov_dept_regulation=info,tower_http=debug"
+    ports:
+      - "8130:8130"
+    depends_on:
+      dept-regulation:
+        condition: service_healthy
+
+  gov-ingester-regulation:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-regulation/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://regulation:regulation_dev_password@dept-regulation:5432/regulation
+      REGULATION_TRANSPORT: mock
+      REGULATION_MOCK_FIXTURE: /fixtures/regulation_batch.json
+      REGULATION_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_regulation=info,sqlx=warn"
+    depends_on:
+      dept-regulation:
+        condition: service_healthy
+
+  gov-gateway:
+  dept-tearawhiti:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: tearawhiti
+      POSTGRES_USER: tearawhiti
+      POSTGRES_PASSWORD: tearawhiti_dev_password
+    ports:
+      - "5469:5432"
+    volumes:
+      - tearawhiti-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tearawhiti"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  gov-dept-tearawhiti:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-tearawhiti/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://tearawhiti:tearawhiti_dev_password@dept-tearawhiti:5432/tearawhiti
+      TPT__GOV__DEPT_ID: tearawhiti
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8129"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7049"
+      RUST_LOG: "gov_dept_tearawhiti=info,tower_http=debug"
+    ports:
+      - "8129:8129"
+    depends_on:
+      dept-tearawhiti:
+        condition: service_healthy
+
+  gov-ingester-tearawhiti:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-tearawhiti/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://tearawhiti:tearawhiti_dev_password@dept-tearawhiti:5432/tearawhiti
+      TEARAWHITI_TRANSPORT: mock
+      TEARAWHITI_MOCK_FIXTURE: /fixtures/tearawhiti_batch.json
+      TEARAWHITI_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_tearawhiti=info,sqlx=warn"
+    depends_on:
+      dept-tearawhiti:
+        condition: service_healthy
+
+  gov-gateway:
+  dept-ethnic:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ethnic
+      POSTGRES_USER: ethnic
+      POSTGRES_PASSWORD: ethnic_dev_password
+    ports:
+      - "5468:5432"
+    volumes:
+      - ethnic-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ethnic"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  gov-dept-ethnic:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-ethnic/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://ethnic:ethnic_dev_password@dept-ethnic:5432/ethnic
+      TPT__GOV__DEPT_ID: ethnic
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8128"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7048"
+      RUST_LOG: "gov_dept_ethnic=info,tower_http=debug"
+    ports:
+      - "8128:8128"
+    depends_on:
+      dept-ethnic:
+        condition: service_healthy
+
+  gov-ingester-ethnic:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-ethnic/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://ethnic:ethnic_dev_password@dept-ethnic:5432/ethnic
+      ETHNIC_TRANSPORT: mock
+      ETHNIC_MOCK_FIXTURE: /fixtures/ethnic_batch.json
+      ETHNIC_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_ethnic=info,sqlx=warn"
+    depends_on:
+      dept-ethnic:
+        condition: service_healthy
+
+  gov-gateway:
+  dept-pacific:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: pacific
+      POSTGRES_USER: pacific
+      POSTGRES_PASSWORD: pacific_dev_password
+    ports:
+      - "5467:5432"
+    volumes:
+      - pacific-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pacific"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  gov-dept-pacific:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-pacific/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://pacific:pacific_dev_password@dept-pacific:5432/pacific
+      TPT__GOV__DEPT_ID: pacific
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8127"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7047"
+      RUST_LOG: "gov_dept_pacific=info,tower_http=debug"
+    ports:
+      - "8127:8127"
+    depends_on:
+      dept-pacific:
+        condition: service_healthy
+
+  gov-ingester-pacific:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-pacific/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://pacific:pacific_dev_password@dept-pacific:5432/pacific
+      PACIFIC_TRANSPORT: mock
+      PACIFIC_MOCK_FIXTURE: /fixtures/pacific_batch.json
+      PACIFIC_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_pacific=info,sqlx=warn"
+    depends_on:
+      dept-pacific:
+        condition: service_healthy
+
+  gov-gateway:
+  dept-women:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: women
+      POSTGRES_USER: women
+      POSTGRES_PASSWORD: women_dev_password
+    ports:
+      - "5466:5432"
+    volumes:
+      - women-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U women"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  gov-dept-women:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-women/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://women:women_dev_password@dept-women:5432/women
+      TPT__GOV__DEPT_ID: women
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8126"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7046"
+      RUST_LOG: "gov_dept_women=info,tower_http=debug"
+    ports:
+      - "8126:8126"
+    depends_on:
+      dept-women:
+        condition: service_healthy
+
+  gov-ingester-women:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-women/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://women:women_dev_password@dept-women:5432/women
+      WOMEN_TRANSPORT: mock
+      WOMEN_MOCK_FIXTURE: /fixtures/women_batch.json
+      WOMEN_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_women=info,sqlx=warn"
+    depends_on:
+      dept-women:
+        condition: service_healthy
+
+  gov-gateway:
+  dept-oranga:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: oranga
+      POSTGRES_USER: oranga
+      POSTGRES_PASSWORD: oranga_dev_password
+    ports:
+      - "5465:5432"
+    volumes:
+      - oranga-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U oranga"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  gov-dept-oranga:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-oranga/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://oranga:oranga_dev_password@dept-oranga:5432/oranga
+      TPT__GOV__DEPT_ID: oranga
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8125"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7045"
+      RUST_LOG: "gov_dept_oranga=info,tower_http=debug"
+    ports:
+      - "8125:8125"
+    depends_on:
+      dept-oranga:
+        condition: service_healthy
+
+  gov-ingester-oranga:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-oranga/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://oranga:oranga_dev_password@dept-oranga:5432/oranga
+      ORANGA_TRANSPORT: mock
+      ORANGA_MOCK_FIXTURE: /fixtures/oranga_batch.json
+      ORANGA_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_oranga=info,sqlx=warn"
+    depends_on:
+      dept-oranga:
+        condition: service_healthy
+
+  gov-gateway:
+  dept-sfo:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: sfo
+      POSTGRES_USER: sfo
+      POSTGRES_PASSWORD: sfo_dev_password
+    ports:
+      - "5464:5432"
+    volumes:
+      - sfo-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sfo"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  gov-dept-sfo:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-sfo/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://sfo:sfo_dev_password@dept-sfo:5432/sfo
+      TPT__GOV__DEPT_ID: sfo
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8124"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7044"
+      RUST_LOG: "gov_dept_sfo=info,tower_http=debug"
+    ports:
+      - "8124:8124"
+    depends_on:
+      dept-sfo:
+        condition: service_healthy
+
+  gov-ingester-sfo:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-sfo/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://sfo:sfo_dev_password@dept-sfo:5432/sfo
+      SFO_TRANSPORT: mock
+      SFO_MOCK_FIXTURE: /fixtures/sfo_batch.json
+      SFO_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_sfo=info,sqlx=warn"
+    depends_on:
+      dept-sfo:
+        condition: service_healthy
+
+  gov-gateway:
+  dept-crownlaw:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: crownlaw
+      POSTGRES_USER: crownlaw
+      POSTGRES_PASSWORD: crownlaw_dev_password
+    ports:
+      - "5463:5432"
+    volumes:
+      - crownlaw-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U crownlaw"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  gov-dept-crownlaw:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-crownlaw/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://crownlaw:crownlaw_dev_password@dept-crownlaw:5432/crownlaw
+      TPT__GOV__DEPT_ID: crownlaw
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8123"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7043"
+      RUST_LOG: "gov_dept_crownlaw=info,tower_http=debug"
+    ports:
+      - "8123:8123"
+    depends_on:
+      dept-crownlaw:
+        condition: service_healthy
+
+  gov-ingester-crownlaw:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-crownlaw/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://crownlaw:crownlaw_dev_password@dept-crownlaw:5432/crownlaw
+      CROWNLAW_TRANSPORT: mock
+      CROWNLAW_MOCK_FIXTURE: /fixtures/crownlaw_batch.json
+      CROWNLAW_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_crownlaw=info,sqlx=warn"
+    depends_on:
+      dept-crownlaw:
+        condition: service_healthy
+
+  gov-gateway:
+  dept-publicservice:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: publicservice
+      POSTGRES_USER: publicservice
+      POSTGRES_PASSWORD: publicservice_dev_password
+    ports:
+      - "5462:5432"
+    volumes:
+      - publicservice-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U publicservice"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  gov-dept-publicservice:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-publicservice/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://publicservice:publicservice_dev_password@dept-publicservice:5432/publicservice
+      TPT__GOV__DEPT_ID: publicservice
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8122"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7042"
+      RUST_LOG: "gov_dept_publicservice=info,tower_http=debug"
+    ports:
+      - "8122:8122"
+    depends_on:
+      dept-publicservice:
+        condition: service_healthy
+
+  gov-ingester-publicservice:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-publicservice/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://publicservice:publicservice_dev_password@dept-publicservice:5432/publicservice
+      PUBLICSERVICE_TRANSPORT: mock
+      PUBLICSERVICE_MOCK_FIXTURE: /fixtures/publicservice_batch.json
+      PUBLICSERVICE_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_publicservice=info,sqlx=warn"
+    depends_on:
+      dept-publicservice:
+        condition: service_healthy
+
+  gov-gateway:
+  dept-dpmc:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: dpmc
+      POSTGRES_USER: dpmc
+      POSTGRES_PASSWORD: dpmc_dev_password
+    ports:
+      - "5461:5432"
+    volumes:
+      - dpmc-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dpmc"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  gov-dept-dpmc:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-dpmc/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://dpmc:dpmc_dev_password@dept-dpmc:5432/dpmc
+      TPT__GOV__DEPT_ID: dpmc
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8121"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7041"
+      RUST_LOG: "gov_dept_dpmc=info,tower_http=debug"
+    ports:
+      - "8121:8121"
+    depends_on:
+      dept-dpmc:
+        condition: service_healthy
+
+  gov-ingester-dpmc:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-dpmc/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://dpmc:dpmc_dev_password@dept-dpmc:5432/dpmc
+      DPMC_TRANSPORT: mock
+      DPMC_MOCK_FIXTURE: /fixtures/dpmc_batch.json
+      DPMC_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_dpmc=info,sqlx=warn"
+    depends_on:
+      dept-dpmc:
+        condition: service_healthy
+
+  gov-gateway:
+  dept-treasury:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: treasury
+      POSTGRES_USER: treasury
+      POSTGRES_PASSWORD: treasury_dev_password
+    ports:
+      - "5460:5432"
+    volumes:
+      - treasury-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U treasury"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  gov-dept-treasury:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-treasury/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://treasury:treasury_dev_password@dept-treasury:5432/treasury
+      TPT__GOV__DEPT_ID: treasury
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8120"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7040"
+      RUST_LOG: "gov_dept_treasury=info,tower_http=debug"
+    ports:
+      - "8120:8120"
+    depends_on:
+      dept-treasury:
+        condition: service_healthy
+
+  gov-ingester-treasury:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-treasury/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://treasury:treasury_dev_password@dept-treasury:5432/treasury
+      TREASURY_TRANSPORT: mock
+      TREASURY_MOCK_FIXTURE: /fixtures/treasury_batch.json
+      TREASURY_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_treasury=info,sqlx=warn"
+    depends_on:
+      dept-treasury:
+        condition: service_healthy
+
+  gov-gateway:
     build:
       context: ..
       dockerfile: services/gov-gateway/Dockerfile
@@ -660,6 +1976,34 @@ services:
       TPT__GOV__DEPT_MPI_URL: "http://gov-dept-mpi:8106"
       TPT__GOV__DEPT_DOC_URL: "http://gov-dept-doc:8107"
       TPT__GOV__DEPT_TPK_URL: "http://gov-dept-tpk:8108"
+      TPT__GOV__DEPT_NZSIS_URL: "http://gov-dept-nzsis:8147"
+      TPT__GOV__DEPT_GCSB_URL: "http://gov-dept-gcsb:8146"
+      TPT__GOV__DEPT_NZDF_URL: "http://gov-dept-nzdf:8145"
+      TPT__GOV__DEPT_DEFENCE_URL: "http://gov-dept-defence:8144"
+      TPT__GOV__DEPT_MFAT_URL: "http://gov-dept-mfat:8143"
+      TPT__GOV__DEPT_MCH_URL: "http://gov-dept-mch:8142"
+      TPT__GOV__DEPT_TEC_URL: "http://gov-dept-tec:8141"
+      TPT__GOV__DEPT_ERO_URL: "http://gov-dept-ero:8140"
+      TPT__GOV__DEPT_MOE_URL: "http://gov-dept-moe:8139"
+      TPT__GOV__DEPT_FENZ_URL: "http://gov-dept-fenz:8138"
+      TPT__GOV__DEPT_MARITIME_URL: "http://gov-dept-maritime:8137"
+      TPT__GOV__DEPT_CAA_URL: "http://gov-dept-caa:8136"
+      TPT__GOV__DEPT_MOT_URL: "http://gov-dept-mot:8135"
+      TPT__GOV__DEPT_EQC_URL: "http://gov-dept-eqc:8134"
+      TPT__GOV__DEPT_MFE_URL: "http://gov-dept-mfe:8133"
+      TPT__GOV__DEPT_RETIREMENT_URL: "http://gov-dept-retirement:8132"
+      TPT__GOV__DEPT_WORKSAFE_URL: "http://gov-dept-worksafe:8131"
+      TPT__GOV__DEPT_REGULATION_URL: "http://gov-dept-regulation:8130"
+      TPT__GOV__DEPT_TEARAWHITI_URL: "http://gov-dept-tearawhiti:8129"
+      TPT__GOV__DEPT_ETHNIC_URL: "http://gov-dept-ethnic:8128"
+      TPT__GOV__DEPT_PACIFIC_URL: "http://gov-dept-pacific:8127"
+      TPT__GOV__DEPT_WOMEN_URL: "http://gov-dept-women:8126"
+      TPT__GOV__DEPT_ORANGA_URL: "http://gov-dept-oranga:8125"
+      TPT__GOV__DEPT_SFO_URL: "http://gov-dept-sfo:8124"
+      TPT__GOV__DEPT_CROWNLAW_URL: "http://gov-dept-crownlaw:8123"
+      TPT__GOV__DEPT_PUBLICSERVICE_URL: "http://gov-dept-publicservice:8122"
+      TPT__GOV__DEPT_DPMC_URL: "http://gov-dept-dpmc:8121"
+      TPT__GOV__DEPT_TREASURY_URL: "http://gov-dept-treasury:8120"
       RUST_LOG: "gov_gateway=info,tower_http=debug"
     ports:
       - "8080:8080"
@@ -1023,6 +2367,34 @@ volumes:
   customs-data:
   mpi-data:
   doc-data:
+  tpk-data:  nzsis-data:
+  tpk-data:  gcsb-data:
+  tpk-data:  nzdf-data:
+  tpk-data:  defence-data:
+  tpk-data:  mfat-data:
+  tpk-data:  mch-data:
+  tpk-data:  tec-data:
+  tpk-data:  ero-data:
+  tpk-data:  moe-data:
+  tpk-data:  fenz-data:
+  tpk-data:  maritime-data:
+  tpk-data:  caa-data:
+  tpk-data:  mot-data:
+  tpk-data:  eqc-data:
+  tpk-data:  mfe-data:
+  tpk-data:  retirement-data:
+  tpk-data:  worksafe-data:
+  tpk-data:  regulation-data:
+  tpk-data:  tearawhiti-data:
+  tpk-data:  ethnic-data:
+  tpk-data:  pacific-data:
+  tpk-data:  women-data:
+  tpk-data:  oranga-data:
+  tpk-data:  sfo-data:
+  tpk-data:  crownlaw-data:
+  tpk-data:  publicservice-data:
+  tpk-data:  dpmc-data:
+  tpk-data:  treasury-data:
   tpk-data:
   identity-data:
   audit-data:

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { submitCustomsAction } from "../actions";
+import { submitCustomsAction } from "../../actions";
 
 export default function DeclarationForm() {
   const [countryFrom, setCountryFrom] = useState("");

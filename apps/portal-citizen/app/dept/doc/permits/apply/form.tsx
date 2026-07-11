@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { submitDocAction } from "../actions";
+import { submitDocAction } from "../../actions";
 
 export default function ApplyPermitForm() {
   const [activity, setActivity] = useState("");

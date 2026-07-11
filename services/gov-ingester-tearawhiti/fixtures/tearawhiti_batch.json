@@ -1,0 +1,33 @@
+{
+  "batchId": "BATCH-TEARAWHITI-001",
+  "generatedAt": "2026-06-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "tearawhiti_id": "TAW-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "treaty_settlements": [
+        {
+          "iwi": "Ngāti Toa",
+          "status": "settled",
+          "settledDate": "2024-07-01"
+        }
+      ],
+      "engagements": [
+        {
+          "topic": "Crown engagement hui",
+          "engagementDate": "2026-04-15",
+          "outcome": "Recommendation agreed"
+        }
+      ]
+    },
+    {
+      "tearawhiti_id": "TAW-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "treaty_settlements": [],
+      "engagements": []
+    }
+  ]
+}

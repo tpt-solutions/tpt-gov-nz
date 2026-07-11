@@ -1,0 +1,43 @@
+[package]
+name = "gov-dept-regulation"
+description = "Ministry for Regulation native service for tpt-gov-nz"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "gov-dept-regulation"
+path = "src/main.rs"
+
+[dependencies]
+gov-federation-core = { path = "../../crates/gov-federation-core" }
+gov-federation-node = { path = "../../crates/gov-federation-node" }
+gov-identity-core = { path = "../../crates/gov-identity-core" }
+tokio = { workspace = true }
+axum = { workspace = true }
+tower-http = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+sqlx = { workspace = true, features = ["macros", "migrate"] }
+uuid = { workspace = true }
+chrono = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+dotenvy = { workspace = true }
+ed25519-dalek = { workspace = true }
+reqwest = { version = "0.12", optional = true }
+
+[features]
+opa = ["dep:reqwest"]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(feature, values("opa"))'] }
+
+[dev-dependencies]
+tokio = { workspace = true }
+tower = { workspace = true }
+http = "1"
+hyper = { workspace = true }
+uuid = { workspace = true }

@@ -1,0 +1,36 @@
+//! Unit tests for the Government Communications Security Bureau ingester transform layer (no DB required).
+
+use std::path::PathBuf;
+
+use crate::{raw::RawGcsbBatch, transform::transform_citizen};
+
+fn fixture_path() -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("fixtures/gcsb_batch.json")
+}
+
+#[tokio::test]
+async fn fixture_parses_and_transforms() {
+    let bytes = tokio::fs::read(fixture_path()).await.unwrap();
+    let batch: RawGcsbBatch = serde_json::from_slice(&bytes).unwrap();
+    assert_eq!(batch.citizens.len(), 2);
+
+    let first = &batch.citizens[0];
+    assert_eq!(first.gcsb_id, "GCSB-100001");
+    let t = transform_citizen(&batch.citizens[0]).unwrap();
+    assert_eq!(t.mandates.len(), 1);
+    assert_eq!(t.mandates[0].reference, "GCSB-M-2026-001");
+
+    let t = transform_citizen(&batch.citizens[0]).unwrap();
+    assert_eq!(t.engagements.len(), 1);
+    assert_eq!(t.engagements[0].partner, "CERT NZ");
+}
+
+#[test]
+fn missing_did_is_rejected() {
+    let raw: RawGcsbBatch = serde_json::from_value(serde_json::json!({
+        "batchId": "B", "generatedAt": "x", "source": "mock",
+        "citizens": [{ "gcsb_id": "GCSB-100001", "did": "", "mandates": [], "engagements": [] }]
+    }))
+    .unwrap();
+    assert!(transform_citizen(&raw.citizens[0]).is_err());
+}

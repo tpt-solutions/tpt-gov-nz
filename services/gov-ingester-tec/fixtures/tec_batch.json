@@ -1,0 +1,33 @@
+{
+  "batchId": "BATCH-TEC-001",
+  "generatedAt": "2026-06-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "tec_id": "TEC-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "funding": [
+        {
+          "provider": "Whitireia",
+          "amount": 2200000,
+          "year": 2026
+        }
+      ],
+      "courses": [
+        {
+          "courseName": "New Zealand Certificate in IT",
+          "provider": "Whitireia",
+          "status": "approved"
+        }
+      ]
+    },
+    {
+      "tec_id": "TEC-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "funding": [],
+      "courses": []
+    }
+  ]
+}

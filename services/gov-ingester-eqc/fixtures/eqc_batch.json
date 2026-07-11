@@ -1,0 +1,32 @@
+{
+  "batchId": "BATCH-EQC-001",
+  "generatedAt": "2026-06-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "eqc_id": "EQC-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "claims": [
+        {
+          "reference": "EQC-2026-007",
+          "property": "12 Totara Street, Porirua",
+          "status": "assessed",
+          "lodgedDate": "2026-03-02"
+        }
+      ],
+      "cover": {
+        "property": "12 Totara Street, Porirua",
+        "sumInsured": 350000,
+        "validTo": "2027-01-01"
+      }
+    },
+    {
+      "eqc_id": "EQC-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "claims": [],
+      "cover": null
+    }
+  ]
+}

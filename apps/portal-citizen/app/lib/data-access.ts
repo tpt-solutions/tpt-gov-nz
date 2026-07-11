@@ -23,6 +23,34 @@ export type DeptBundle =
   | import("@tpt/gov-schema").MPIDataBundle
   | import("@tpt/gov-schema").DOCDataBundle
   | import("@tpt/gov-schema").TPKDataBundle;
+  | import("@tpt/gov-schema").NzsisDataBundle;
+  | import("@tpt/gov-schema").GcsbDataBundle;
+  | import("@tpt/gov-schema").NzdfDataBundle;
+  | import("@tpt/gov-schema").DefenceDataBundle;
+  | import("@tpt/gov-schema").MfatDataBundle;
+  | import("@tpt/gov-schema").MchDataBundle;
+  | import("@tpt/gov-schema").TecDataBundle;
+  | import("@tpt/gov-schema").EroDataBundle;
+  | import("@tpt/gov-schema").MoeDataBundle;
+  | import("@tpt/gov-schema").FenzDataBundle;
+  | import("@tpt/gov-schema").MaritimeDataBundle;
+  | import("@tpt/gov-schema").CaaDataBundle;
+  | import("@tpt/gov-schema").MotDataBundle;
+  | import("@tpt/gov-schema").EqcDataBundle;
+  | import("@tpt/gov-schema").MfeDataBundle;
+  | import("@tpt/gov-schema").RetirementDataBundle;
+  | import("@tpt/gov-schema").WorksafeDataBundle;
+  | import("@tpt/gov-schema").RegulationDataBundle;
+  | import("@tpt/gov-schema").TearawhitiDataBundle;
+  | import("@tpt/gov-schema").EthnicDataBundle;
+  | import("@tpt/gov-schema").PacificDataBundle;
+  | import("@tpt/gov-schema").WomenDataBundle;
+  | import("@tpt/gov-schema").OrangaDataBundle;
+  | import("@tpt/gov-schema").SfoDataBundle;
+  | import("@tpt/gov-schema").CrownlawDataBundle;
+  | import("@tpt/gov-schema").PublicserviceDataBundle;
+  | import("@tpt/gov-schema").DpmcDataBundle;
+  | import("@tpt/gov-schema").TreasuryDataBundle;
 
 /**
  * Single data-access path used by every department module. In demo mode it

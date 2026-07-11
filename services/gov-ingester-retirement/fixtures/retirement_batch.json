@@ -1,0 +1,31 @@
+{
+  "batchId": "BATCH-RETIREMENT-001",
+  "generatedAt": "2026-06-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "retirement_id": "RET-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "retirement_plan": {
+        "hasPlan": true,
+        "retirementAge": 65,
+        "lastReview": "2025-12-01"
+      },
+      "guidance": [
+        {
+          "topic": "KiwiSaver contribution rate",
+          "summary": "Consider increasing to 6%.",
+          "published": "2026-02-20"
+        }
+      ]
+    },
+    {
+      "retirement_id": "RET-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "retirement_plan": null,
+      "guidance": []
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "batchId": "BATCH-MCH-001",
+  "generatedAt": "2026-06-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "mch_id": "MCH-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "heritage_sites": [
+        {
+          "name": "Old St Paul's",
+          "status": "Category 1 historic place",
+          "region": "Wellington"
+        }
+      ],
+      "grants": [
+        {
+          "grantName": "Cultural Innovation Fund",
+          "amount": 15000,
+          "status": "approved"
+        }
+      ]
+    },
+    {
+      "mch_id": "MCH-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "heritage_sites": [],
+      "grants": []
+    }
+  ]
+}

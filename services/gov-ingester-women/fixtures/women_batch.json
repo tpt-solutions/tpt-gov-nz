@@ -1,0 +1,33 @@
+{
+  "batchId": "BATCH-WOMEN-001",
+  "generatedAt": "2026-06-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "women_id": "WOM-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "programmes": [
+        {
+          "programmeName": "Women in Governance",
+          "status": "enrolled",
+          "year": 2026
+        }
+      ],
+      "insights": [
+        {
+          "topic": "Pay equity",
+          "summary": "Progress on gender pay gap reporting.",
+          "published": "2026-03-08"
+        }
+      ]
+    },
+    {
+      "women_id": "WOM-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "programmes": [],
+      "insights": []
+    }
+  ]
+}

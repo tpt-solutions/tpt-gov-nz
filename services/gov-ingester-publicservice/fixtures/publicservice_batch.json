@@ -1,0 +1,33 @@
+{
+  "batchId": "BATCH-PUBLICSERVICE-001",
+  "generatedAt": "2026-06-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "psc_id": "PSC-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "workforce": [
+        {
+          "reportYear": 2025,
+          "agency": "Department of Internal Affairs",
+          "headcount": 4200
+        }
+      ],
+      "agency_ratings": [
+        {
+          "agency": "Department of Internal Affairs",
+          "rating": "Good",
+          "ratingYear": 2025
+        }
+      ]
+    },
+    {
+      "psc_id": "PSC-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "workforce": [],
+      "agency_ratings": []
+    }
+  ]
+}

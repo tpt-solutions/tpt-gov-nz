@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { submitCorrectionsAction } from "../actions";
+import { submitCorrectionsAction } from "../../actions";
 
 export default function RequestSummaryForm() {
   const [purpose, setPurpose] = useState("");

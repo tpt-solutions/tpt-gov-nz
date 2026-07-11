@@ -1,0 +1,31 @@
+{
+  "batchId": "BATCH-MOE-001",
+  "generatedAt": "2026-06-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "moe_id": "MOE-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "enrolment": {
+        "school": "Porirua College",
+        "yearLevel": 9,
+        "status": "enrolled"
+      },
+      "student_support": [
+        {
+          "service": "Learning support",
+          "status": "active",
+          "nextReview": "2026-08-01"
+        }
+      ]
+    },
+    {
+      "moe_id": "MOE-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "enrolment": null,
+      "student_support": []
+    }
+  ]
+}

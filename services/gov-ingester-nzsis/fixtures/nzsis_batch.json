@@ -1,0 +1,35 @@
+{
+  "batchId": "BATCH-NZSIS-001",
+  "generatedAt": "2026-06-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "nzsis_id": "NZSIS-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "mandates": [
+        {
+          "reference": "NZSIS-M-2026-002",
+          "agency": "GCSB",
+          "status": "active",
+          "issuedDate": "2026-01-08"
+        }
+      ],
+      "threats": [
+        {
+          "reference": "NZSIS-T-2026-014",
+          "category": "Foreign interference",
+          "status": "monitored",
+          "assessedDate": "2026-02-11"
+        }
+      ]
+    },
+    {
+      "nzsis_id": "NZSIS-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "mandates": [],
+      "threats": []
+    }
+  ]
+}

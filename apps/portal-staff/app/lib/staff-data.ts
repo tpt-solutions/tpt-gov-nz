@@ -10,7 +10,7 @@ import type {
   MSDDataBundle,
   MBIEDataBundle,
   LINZDataBundle,
-  STATSNZDataBundle,
+  StatsNZDataBundle,
   CORRECTIONSDataBundle,
   CUSTOMSDataBundle,
   MPIDataBundle,
@@ -29,7 +29,7 @@ export type StaffBundle =
   | MSDDataBundle
   | MBIEDataBundle
   | LINZDataBundle
-  | STATSNZDataBundle
+  | StatsNZDataBundle
   | CORRECTIONSDataBundle
   | CUSTOMSDataBundle
   | MPIDataBundle

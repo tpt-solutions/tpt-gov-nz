@@ -1,0 +1,33 @@
+{
+  "batchId": "BATCH-MOT-001",
+  "generatedAt": "2026-06-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "mot_id": "MOT-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "strategies": [
+        {
+          "title": "Te Tangi a Te Manu",
+          "year": 2026,
+          "status": "active"
+        }
+      ],
+      "programmes": [
+        {
+          "name": "Road maintenance boost",
+          "budget": 800000000,
+          "status": "funded"
+        }
+      ]
+    },
+    {
+      "mot_id": "MOT-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "strategies": [],
+      "programmes": []
+    }
+  ]
+}

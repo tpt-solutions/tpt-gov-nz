@@ -1,0 +1,33 @@
+{
+  "batchId": "BATCH-MFE-001",
+  "generatedAt": "2026-06-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "mfe_id": "MFE-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "emissions": [
+        {
+          "reportYear": 2025,
+          "sector": "Transport",
+          "tonnesCO2e": 3200.5
+        }
+      ],
+      "reports": [
+        {
+          "title": "Aotearoa New Zealand's Environment 2026",
+          "published": "2026-05-01",
+          "status": "published"
+        }
+      ]
+    },
+    {
+      "mfe_id": "MFE-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "emissions": [],
+      "reports": []
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { submitDocAction } from "../actions";
+import { submitDocAction } from "../../actions";
 
 export const metadata = { title: "Apply for a Conservation Permit — My Gov NZ" };
 

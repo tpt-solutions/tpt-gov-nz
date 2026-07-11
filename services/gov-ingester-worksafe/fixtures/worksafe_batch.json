@@ -1,0 +1,35 @@
+{
+  "batchId": "BATCH-WORKSAFE-001",
+  "generatedAt": "2026-06-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "worksafe_id": "WS-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "inspections": [
+        {
+          "reference": "WS-I-2026-003",
+          "site": "Tane Construction Ltd",
+          "inspectionDate": "2026-02-10",
+          "outcome": "Compliance order issued"
+        }
+      ],
+      "investigations": [
+        {
+          "reference": "WS-INV-2026-011",
+          "matter": "Fatality inquiry",
+          "status": "ongoing",
+          "openedDate": "2026-01-15"
+        }
+      ]
+    },
+    {
+      "worksafe_id": "WS-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "inspections": [],
+      "investigations": []
+    }
+  ]
+}

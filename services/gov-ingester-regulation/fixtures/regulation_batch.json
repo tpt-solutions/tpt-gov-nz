@@ -1,0 +1,33 @@
+{
+  "batchId": "BATCH-REGULATION-001",
+  "generatedAt": "2026-06-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "regulation_id": "REG-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "regulatory_reviews": [
+        {
+          "topic": "Building consenting",
+          "agency": "MBIE",
+          "status": "in-progress",
+          "reviewYear": 2026
+        }
+      ],
+      "proposals": [
+        {
+          "title": "Reduce duplicate reporting",
+          "status": "consultation"
+        }
+      ]
+    },
+    {
+      "regulation_id": "REG-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "regulatory_reviews": [],
+      "proposals": []
+    }
+  ]
+}

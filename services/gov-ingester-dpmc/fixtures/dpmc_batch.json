@@ -1,0 +1,33 @@
+{
+  "batchId": "BATCH-DPMC-001",
+  "generatedAt": "2026-06-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "dpmc_id": "DPMC-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "honours": [
+        {
+          "awardYear": 2025,
+          "award": "Queen's Service Medal",
+          "status": "nominated"
+        }
+      ],
+      "engagements": [
+        {
+          "eventName": "Citizens' Honours Reception",
+          "eventDate": "2026-05-12",
+          "location": "Wellington"
+        }
+      ]
+    },
+    {
+      "dpmc_id": "DPMC-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "honours": [],
+      "engagements": []
+    }
+  ]
+}

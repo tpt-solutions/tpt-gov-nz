@@ -1,0 +1,32 @@
+{
+  "batchId": "BATCH-MFAT-001",
+  "generatedAt": "2026-06-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "mfat_id": "MFAT-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "overseas_missions": [
+        {
+          "country": "Australia",
+          "status": "active"
+        }
+      ],
+      "travel_advisories": [
+        {
+          "country": "Indonesia",
+          "level": "Exercise increased caution",
+          "updated": "2026-03-10"
+        }
+      ]
+    },
+    {
+      "mfat_id": "MFAT-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "overseas_missions": [],
+      "travel_advisories": []
+    }
+  ]
+}
