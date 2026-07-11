@@ -1,0 +1,55 @@
+{
+  "batchId": "MSD-2026-07-B001",
+  "generatedAt": "2026-07-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "clientNumber": "MSD-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "studylink": {
+        "hasStudentLoan": true,
+        "loanBalance": 28450.75,
+        "repaymentPlan": "standard",
+        "hasAllowance": true,
+        "allowanceType": "living-allowance",
+        "nextPaymentDate": "2026-07-15",
+        "weeklyAmount": 221.48
+      },
+      "caseHistory": [
+        {
+          "eventId": "MSD-EVT-001",
+          "eventDate": "2026-05-02",
+          "serviceLine": "Work and Income",
+          "summary": "Applied for Jobseeker Support"
+        },
+        {
+          "eventId": "MSD-EVT-002",
+          "eventDate": "2026-06-10",
+          "serviceLine": "StudyLink",
+          "summary": "Student loan approved for the 2026 academic year"
+        }
+      ]
+    },
+    {
+      "clientNumber": "MSD-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "studylink": {
+        "hasStudentLoan": false,
+        "hasAllowance": true,
+        "allowanceType": "childcare-allowance",
+        "nextPaymentDate": "2026-07-20",
+        "weeklyAmount": 188.00
+      },
+      "caseHistory": [
+        {
+          "eventId": "MSD-EVT-100",
+          "eventDate": "2026-04-18",
+          "serviceLine": "Work and Income",
+          "summary": "Resolved benefit overpayment"
+        }
+      ]
+    }
+  ]
+}

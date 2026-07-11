@@ -1,0 +1,44 @@
+{
+  "batchId": "MBIE-2026-07-B001",
+  "generatedAt": "2026-07-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "personId": "MBIE-P-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "businessRegistrations": [
+        {
+          "nzbn": "9429000000001",
+          "entityName": "Tane Consulting Ltd",
+          "entityType": "company",
+          "status": "registered",
+          "registeredDate": "2024-03-01"
+        }
+      ],
+      "directorships": [
+        {
+          "nzbn": "9429000000001",
+          "entityName": "Tane Consulting Ltd",
+          "role": "Director",
+          "appointedDate": "2024-03-01"
+        }
+      ]
+    },
+    {
+      "personId": "MBIE-P-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "businessRegistrations": [
+        {
+          "nzbn": "9429000000002",
+          "entityName": "Kare Trading",
+          "entityType": "sole-trader",
+          "status": "registered",
+          "registeredDate": "2023-07-15"
+        }
+      ],
+      "directorships": []
+    }
+  ]
+}

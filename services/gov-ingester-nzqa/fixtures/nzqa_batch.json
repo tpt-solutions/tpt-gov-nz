@@ -1,0 +1,41 @@
+{
+  "batchId": "NZQA-2026-07-B001",
+  "generatedAt": "2026-07-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "nsn": "NSN-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "qualifications": [
+        {
+          "qualificationId": "NZQA-Q1",
+          "title": "Bachelor of Science",
+          "level": 7,
+          "awardedDate": "2024-12-10",
+          "provider": "University of Auckland"
+        }
+      ],
+      "transcript": {
+        "recordSummary": "Full Record of Achievement on file.",
+        "totalCredits": 360,
+        "creditSummary": "Level 7: 360 credits"
+      }
+    },
+    {
+      "nsn": "NSN-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "qualifications": [
+        {
+          "qualificationId": "NZQA-Q2",
+          "title": "National Certificate in Computing",
+          "level": 4,
+          "awardedDate": "2023-06-01",
+          "provider": "Te Pukenga"
+        }
+      ],
+      "transcript": null
+    }
+  ]
+}

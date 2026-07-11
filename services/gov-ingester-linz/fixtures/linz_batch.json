@@ -1,0 +1,47 @@
+{
+  "batchId": "LINZ-2026-07-B001",
+  "generatedAt": "2026-07-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "customerId": "LINZ-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "titles": [
+        {
+          "titleNumber": "LNZ-T-1",
+          "propertyAddress": "45 Kahu Road, Wellington",
+          "landAreaSqm": 612.5,
+          "estateType": "Freehold"
+        }
+      ],
+      "ownership": [
+        {
+          "titleNumber": "LNZ-T-1",
+          "ownershipShare": "1/1",
+          "registeredOwners": ["Alex Tane"]
+        }
+      ]
+    },
+    {
+      "customerId": "LINZ-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "titles": [
+        {
+          "titleNumber": "LNZ-T-2",
+          "propertyAddress": "8 Waiata Place, Hamilton",
+          "landAreaSqm": 845.0,
+          "estateType": "Freehold"
+        }
+      ],
+      "ownership": [
+        {
+          "titleNumber": "LNZ-T-2",
+          "ownershipShare": "1/2",
+          "registeredOwners": ["Bree Kare", "Sam Kare"]
+        }
+      ]
+    }
+  ]
+}
