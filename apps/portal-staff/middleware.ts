@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { STAFF_CONFIG } from "./app/lib/config";
 
-const PUBLIC_PATHS = ["/login"];
+const PUBLIC_PATHS = ["/login", "/realme"];
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;

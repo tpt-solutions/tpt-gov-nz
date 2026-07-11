@@ -616,7 +616,12 @@ Each: dept service → ingester → portal pages → staff view → federation �
 - [x] Cross-dept case view, case notes, referral flow — `/citizens/[did]` aggregates consented dept bundles, case notes + referrals persisted locally; department detail pages consent-gated
 
 ### Production Hardening
-- [x] RealMe SAML2 integration (scaffold) — `apps/portal-staff/app/lib/realme.ts`, `/login/realme` + callback route; signed Redirect-binding AuthnRequest and best-effort POST-binding verification. Live IdP cert + credentials still required for production (see `auth-actions.ts`)
+- [x] RealMe SAML2 integration (production-grade) — `apps/portal-staff/app/lib/realme.ts`:
+  - Signed Redirect-binding `AuthnRequest` (RSA-SHA256 query-string signature), `InResponseTo` correlation via signed state cookie
+  - SP metadata route `/realme/metadata` + Single Logout stub `/login/realme/slo`
+  - Conformant POST-binding response verification via `xml-crypto` (Exclusive C14N, enveloped-signature transform, digest + signature, **pinned IdP cert**, anti-signature-wrapping `validateElementAgainstReferences`)
+  - Response validation: status, conditions (NotBefore/NotOnOrAfter + clock skew), audience restriction, `InResponseTo`, issuer; replay protection on `Assertion` ID
+  - `scripts/gen-realme-sp-certs.sh` for dev SP key/cert; env wiring in `.env.example`. Live IdP cert + entityID still required for production (see `auth-actions.ts`). Unit tests in `app/lib/realme.test.ts` (12 cases)
 - [x] mTLS between all internal services — `crates/gov-mtls` (rustls server/client configs, internal CA, `scripts/gen-mtls-certs.sh`)
 - [x] QUIC transport in `gov-federation-node` — `quic.rs`, gated behind `quic` feature
 - [x] ZK-SNARK age/residency proofs — `crates/gov-zk` (Schnorr/OR-proof range proofs over Ristretto; no trusted setup, demo-grade/unaudited)

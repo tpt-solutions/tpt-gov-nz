@@ -2579,18 +2579,16 @@ function patchAll(depts) {
     );
     patchFile(
       "apps/portal-citizen/app/lib/config.ts",
-      `];`,
-      `  {
+      `export const DEPARTMENTS: DeptMeta[] = [`,
+      `\n  {
     id: "${id}",
     name: "${d.name}",
     shortName: "${d.shortName}",
     description: "${d.description}",
     scopes: [${d.entities.map((e) => `"${e.scope}"`).join(", ")}],
     href: "/dept/${id}",
-  },
-`,
-      `id: "${id}",`,
-      "before"
+  },`,
+      `id: "${id}",`
     );
 
     // staff config
@@ -2608,18 +2606,16 @@ function patchAll(depts) {
     );
     patchFile(
       "apps/portal-staff/app/lib/config.ts",
-      `];`,
-      `  {
+      `export const STAFF_DEPARTMENTS: StaffDeptMeta[] = [`,
+      `\n  {
     id: "${id}",
     name: "${d.name}",
     shortName: "${d.shortName}",
     description: "${d.description}",
     scopes: [${d.entities.map((e) => `"${e.scope}"`).join(", ")}],
     href: "/dept/${id}",
-  },
-`,
-      `id: "${id}",`,
-      "before"
+  },`,
+      `id: "${id}",`
     );
 
     // mock-data
@@ -2630,7 +2626,7 @@ const ${id}NewParent: ${P}DataBundle = ${id}Standard;
 `;
     patchFile(
       "apps/portal-citizen/app/lib/mock-data.ts",
-      `} from "@tpt/gov-schema";`,
+      `  TPKDataBundle,`,
       `\n  ${P}DataBundle,`,
       `${P}DataBundle,`
     );

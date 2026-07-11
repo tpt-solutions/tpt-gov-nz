@@ -25,9 +25,11 @@ export async function loginStaffDemo() {
 }
 
 /**
- * Real sign-in: a shared passphrase gate standing in for a RealMe SAML2 lookup
- * (tracked under "Production Hardening"). When `STAFF_PASSWORD` is unset, real
- * sign-in is disabled and the user is directed to demo mode.
+ * Real sign-in: a shared passphrase gate used when RealMe SAML2 SSO is not
+ * enabled (`NEXT_PUBLIC_REALME_ENABLED=false`). When `STAFF_PASSWORD` is unset,
+ * real sign-in is disabled and the user is directed to demo mode. Real sign-in
+ * via RealMe is handled by the `/login/realme` + callback routes (see
+ * `realme.ts`).
  *
  * `formData` is a server-action FormData with `staffId` and `password`.
  */
