@@ -12,6 +12,7 @@ path = "src/main.rs"
 [dependencies]
 gov-federation-core = { path = "../../crates/gov-federation-core" }
 gov-identity-core = { path = "../../crates/gov-identity-core" }
+gov-mtls = { path = "../../crates/gov-mtls" }
 tokio = { workspace = true }
 axum = { workspace = true }
 tower = { workspace = true }

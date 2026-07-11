@@ -5,6 +5,8 @@ members = [
     "crates/gov-federation-core",
     "crates/gov-federation-node",
     "crates/gov-identity-core",
+    "crates/gov-mtls",
+    "crates/gov-zk",
     "services/gov-gateway",
     "services/gov-identity-server",
     "services/gov-dept-node",
@@ -20,6 +22,12 @@ members = [
     "services/gov-ingester-acc",
     "services/gov-dept-nzta",
     "services/gov-ingester-nzta",
+    "services/gov-dept-moj",
+    "services/gov-ingester-moj",
+    "services/gov-dept-police",
+    "services/gov-ingester-police",
+    "services/gov-dept-hud",
+    "services/gov-ingester-hud",
 ]
 
 [workspace.package]
@@ -48,6 +56,7 @@ ed25519-dalek = { version = "2", features = ["rand_core"] }
 rand = "0.8"
 sha2 = "0.10"
 base64 = "0.22"
+curve25519-dalek = { version = "4", features = ["rand_core"] }
 
 # Serialisation
 serde = { version = "1", features = ["derive"] }

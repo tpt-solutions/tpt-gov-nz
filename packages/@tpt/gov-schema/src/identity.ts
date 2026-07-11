@@ -24,6 +24,14 @@ export const ScopeSchema = z.enum([
   "moe:qualifications",
   "msd:work-history",
   "linz:property",
+  "moj:fines",
+  "moj:disputes",
+  "moj:court-records",
+  "police:infringements",
+  "police:reports",
+  "hud:applications",
+  "hud:tenancy",
+  "hud:maintenance",
 ]);
 
 export type Scope = z.infer<typeof ScopeSchema>;

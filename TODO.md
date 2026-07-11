@@ -368,9 +368,9 @@ Each: dept service → ingester → portal pages → staff view → federation �
 
 ### Staff Portal (`apps/portal-staff`) — TypeScript
 - [x] Next.js 15 scaffold (+ IRD staff views: overview, tax-summary, GST, KiwiSaver, WFF)
-- [ ] Staff authentication
-- [ ] Citizen search (consent-gated)
-- [ ] Cross-dept case view, case notes, referral flow
+- [x] Staff authentication (login page + staff session JWT, demo + shared-passphrase real mode, route-protecting middleware)
+- [x] Citizen search (consent-gated) — `/citizens` search + per-department consent check against identity server grants
+- [x] Cross-dept case view, case notes, referral flow — `/citizens/[did]` aggregates consented dept bundles, case notes + referrals persisted locally; department detail pages consent-gated
 
 ### Production Hardening
 - [ ] RealMe SAML2 integration

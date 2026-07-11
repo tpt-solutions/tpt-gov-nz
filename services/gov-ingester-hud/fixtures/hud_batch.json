@@ -1,0 +1,56 @@
+{
+  "batchId": "HUD-2026-07-B001",
+  "generatedAt": "2026-07-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "clientNumber": "HUD-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "applications": [
+        {
+          "applicationNumber": "HUD-A5001",
+          "applicationType": "public-housing",
+          "status": "waitlisted",
+          "priorityBand": "B",
+          "bedroomsNeeded": 2,
+          "submittedDate": "2026-01-15"
+        }
+      ],
+      "tenancies": [
+        {
+          "tenancyId": "HUD-TEN-1",
+          "propertyAddress": "12 Totara Street, Porirua",
+          "weeklyRent": 180,
+          "incomeRelatedRent": true,
+          "startDate": "2025-11-01",
+          "status": "active"
+        }
+      ],
+      "maintenanceRequests": [
+        {
+          "requestNumber": "HUD-M3001",
+          "category": "plumbing",
+          "status": "scheduled",
+          "description": "Leaking kitchen tap",
+          "requestedDate": "2026-06-20"
+        }
+      ]
+    },
+    {
+      "clientNumber": "HUD-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "applications": [
+        {
+          "applicationNumber": "HUD-A6002",
+          "applicationType": "home-ownership",
+          "status": "approved",
+          "submittedDate": "2025-09-01"
+        }
+      ],
+      "tenancies": [],
+      "maintenanceRequests": []
+    }
+  ]
+}

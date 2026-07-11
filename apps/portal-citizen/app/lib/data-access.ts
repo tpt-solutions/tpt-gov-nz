@@ -9,7 +9,10 @@ export type DeptBundle =
   | import("@tpt/gov-schema").MOHDataBundle
   | import("@tpt/gov-schema").DIADataBundle
   | import("@tpt/gov-schema").NZTADataBundle
-  | import("@tpt/gov-schema").ACCDataBundle;
+  | import("@tpt/gov-schema").ACCDataBundle
+  | import("@tpt/gov-schema").MOJDataBundle
+  | import("@tpt/gov-schema").PoliceDataBundle
+  | import("@tpt/gov-schema").HUDDataBundle;
 
 /**
  * Single data-access path used by every department module. In demo mode it

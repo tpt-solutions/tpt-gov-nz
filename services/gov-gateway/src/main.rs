@@ -28,11 +28,20 @@ async fn main() -> anyhow::Result<()> {
 
     // Build dept service registry from env vars.
     // Pattern: TPT__GOV__DEPT_IRD_URL=http://localhost:8090
+    let mtls = gov_mtls::TlsPaths::from_env().map(|paths| {
+        let cfg = gov_mtls::client_config(&paths).expect("invalid mTLS client config");
+        Arc::new(gov_mtls::MtlsClient::new(Arc::new(cfg)))
+    });
+    if mtls.is_some() {
+        info!("mTLS enabled for upstream department calls");
+    }
+
     let app_state = AppState {
         registry: routes::DeptRegistry::from_env(),
         rate_limiter: rate_limit::RateLimiter::from_env(),
         breakers: circuit_breaker::CircuitBreakerRegistry::from_env(),
         jwt: Arc::new(auth::JwtConfig::from_env()),
+        mtls,
     };
 
     // Protected API surface. Middleware executes outermost-first:

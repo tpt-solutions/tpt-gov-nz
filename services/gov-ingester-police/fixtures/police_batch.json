@@ -1,0 +1,50 @@
+{
+  "batchId": "POL-2026-07-B001",
+  "generatedAt": "2026-07-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "clientNumber": "POL-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "infringements": [
+        {
+          "ticketNumber": "POL-T5001",
+          "offenseType": "speeding",
+          "status": "unpaid",
+          "amount": 120,
+          "issueDate": "2026-06-01",
+          "location": "State Highway 1, Wellington",
+          "demeritPoints": 20,
+          "description": "Exceeding speed limit by 15km/h"
+        }
+      ],
+      "reports": [
+        {
+          "reportNumber": "POL-R2001",
+          "reportType": "theft",
+          "status": "under-investigation",
+          "filedDate": "2026-05-20",
+          "description": "Bicycle stolen from outside address"
+        }
+      ]
+    },
+    {
+      "clientNumber": "POL-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "infringements": [
+        {
+          "ticketNumber": "POL-T6002",
+          "offenseType": "parking",
+          "status": "paid",
+          "amount": 60,
+          "issueDate": "2026-03-10",
+          "location": "Lambton Quay",
+          "description": "Parked in a loading zone"
+        }
+      ],
+      "reports": []
+    }
+  ]
+}

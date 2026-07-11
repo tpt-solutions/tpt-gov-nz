@@ -29,3 +29,10 @@ Thumbs.db
 # Docker volumes
 docker/volumes/
 /.pgtest
+
+# Local staff portal data store (case notes, referrals)
+apps/portal-staff/.data/
+
+# Generated mTLS certificates (run scripts/gen-mtls-certs.sh)
+scripts/mtls-certs/
+

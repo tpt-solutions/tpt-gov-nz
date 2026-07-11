@@ -18,6 +18,10 @@ pub struct AppState {
     pub rate_limiter: RateLimiter,
     pub breakers: CircuitBreakerRegistry,
     pub jwt: Arc<JwtConfig>,
+    /// Optional mutual-TLS client used to reach internal department services.
+    /// Built from `TPT__GOV__MTLS_*` env when present; `None` disables mTLS and
+    /// uses plaintext HTTP (demo / untrusted networks only).
+    pub mtls: Option<Arc<gov_mtls::MtlsClient>>,
 }
 
 impl FromRef<AppState> for DeptRegistry {
@@ -25,3 +29,4 @@ impl FromRef<AppState> for DeptRegistry {
         state.registry.clone()
     }
 }
+

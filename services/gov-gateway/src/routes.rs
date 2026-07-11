@@ -5,8 +5,11 @@ use axum::{
     http::Request,
     Json,
 };
+use http_body_util::Full;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+
+use crate::state::AppState;
 
 /// Registry mapping department IDs to their backend service URLs.
 #[derive(Clone)]
@@ -93,13 +96,14 @@ pub async fn citizen_resolve(
 // --- Dept proxy ---
 
 pub async fn proxy_dept(
-    State(registry): State<DeptRegistry>,
+    State(app_state): State<AppState>,
     Path((dept_id, path)): Path<(String, String)>,
     method: Method,
     uri: Uri,
     body: axum::body::Bytes,
 ) -> Result<axum::response::Response, StatusCode> {
-    let base_url = registry
+    let base_url = app_state
+        .registry
         .get_url(&dept_id)
         .ok_or(StatusCode::NOT_FOUND)?;
 
@@ -107,7 +111,7 @@ pub async fn proxy_dept(
     let target_uri: Uri = target.parse().map_err(|_| StatusCode::BAD_GATEWAY)?;
 
     let mut req_builder = Request::builder()
-        .method(method)
+        .method(method.clone())
         .uri(target_uri)
         .header("x-forwarded-for", "gateway")
         .header("x-dept-id", &dept_id);
@@ -115,6 +119,38 @@ pub async fn proxy_dept(
     // Forward original query string if present
     if let Some(query) = uri.query() {
         req_builder = req_builder.uri(format!("{target}?{query}"));
+    }
+
+    // Mutual TLS: when configured, present our client certificate and verify the
+    // department service against the internal CA. Department URLs must use the
+    // `https` scheme in that mode.
+    if let Some(mtls) = app_state.mtls.as_ref() {
+        let mut https_target = target.replace("http://", "https://");
+        if let Some(query) = uri.query() {
+            https_target = format!("{https_target}?{query}");
+        }
+        let req = Request::builder()
+            .method(method.clone())
+            .uri(https_target)
+            .header("x-forwarded-for", "gateway")
+            .header("x-dept-id", &dept_id)
+            .body(Full::new(body))
+            .map_err(|_| StatusCode::BAD_GATEWAY)?;
+        let resp = mtls
+            .request(req)
+            .await
+            .map_err(|e| {
+                tracing::error!(error = %e, dept = %dept_id, "mTLS proxy request failed");
+                StatusCode::BAD_GATEWAY
+            })?;
+        let (parts, incoming) = resp.into_parts();
+        let body_bytes = axum::body::Bytes::from(
+            http_body_util::BodyExt::collect(incoming)
+                .await
+                .map_err(|_| StatusCode::BAD_GATEWAY)?
+                .to_bytes(),
+        );
+        return Ok(axum::response::Response::from_parts(parts, axum::body::Body::from(body_bytes)));
     }
 
     let req = req_builder

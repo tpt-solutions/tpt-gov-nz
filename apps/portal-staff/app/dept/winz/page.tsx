@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { fetchWinzDataForCitizen } from "./actions";
+import { staffConsentForDept } from "../../lib/consent";
 
 export const metadata = { title: "Work and Income — Case File — My Gov NZ" };
 
@@ -18,6 +19,20 @@ export default async function WinzStaffOverviewPage({
         <h1>Work and Income (MSD) — Case File</h1>
         <p>No citizen selected. Enter a DID to view their Work and Income records.</p>
         <Link href="/">← Back to case worker home</Link>
+      </main>
+    );
+  }
+
+  const consent = await staffConsentForDept(did, "winz");
+  if (!consent.granted) {
+    return (
+      <main style={{ padding: "1rem" }}>
+        <Link href="/citizens">← Back to citizen search</Link>
+        <h1>Work and Income (MSD) — Case File</h1>
+        <p>
+          <strong>Consent required.</strong> The citizen has not granted case-worker access to
+          Work and Income records.
+        </p>
       </main>
     );
   }

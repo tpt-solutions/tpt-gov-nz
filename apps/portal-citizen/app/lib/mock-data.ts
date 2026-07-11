@@ -5,6 +5,9 @@ import type {
   DIADataBundle,
   NZTADataBundle,
   ACCDataBundle,
+  MOJDataBundle,
+  PoliceDataBundle,
+  HUDDataBundle,
 } from "@tpt/gov-schema";
 
 export type ScenarioId = "standard" | "beneficiary" | "new-parent";
@@ -46,6 +49,9 @@ export interface DemoData {
   dia: DIADataBundle;
   nzta: NZTADataBundle;
   acc: ACCDataBundle;
+  moj: MOJDataBundle;
+  police: PoliceDataBundle;
+  hud: HUDDataBundle;
 }
 
 const irdStandard: IRDDataBundle = {
@@ -602,6 +608,130 @@ const accNewParent: ACCDataBundle = {
   rehabilitation: [],
 };
 
+const mojStandard: MOJDataBundle = {
+  clientNumber: "MOJ-100001",
+  fines: [],
+  disputes: [],
+  courtRecords: [],
+};
+
+const mojBeneficiary: MOJDataBundle = {
+  clientNumber: "MOJ-100001",
+  fines: [
+    {
+      fineNumber: "MOJ-F5001",
+      fineType: "traffic",
+      status: "unpaid",
+      amount: 150,
+      offenseDate: "2026-05-01",
+      dueDate: "2026-06-15",
+      description: "Speeding 15km/h over limit",
+    },
+  ],
+  disputes: [
+    {
+      disputeNumber: "MOJ-D2001",
+      claimType: "tenancy",
+      status: "filed",
+      amountClaimed: 1200,
+      hearingDate: "2026-08-20",
+      description: "Bond dispute with former landlord",
+    },
+  ],
+  courtRecords: [],
+};
+
+const mojNewParent: MOJDataBundle = {
+  clientNumber: "MOJ-100001",
+  fines: [],
+  disputes: [],
+  courtRecords: [],
+};
+
+const policeStandard: PoliceDataBundle = {
+  clientNumber: "POL-100001",
+  infringements: [],
+  reports: [],
+};
+
+const policeBeneficiary: PoliceDataBundle = {
+  clientNumber: "POL-100001",
+  infringements: [
+    {
+      ticketNumber: "POL-T5001",
+      offenseType: "speeding",
+      status: "unpaid",
+      amount: 120,
+      issueDate: "2026-06-01",
+      location: "State Highway 1, Wellington",
+      demeritPoints: 20,
+      description: "Exceeding speed limit by 15km/h",
+    },
+  ],
+  reports: [
+    {
+      reportNumber: "POL-R2001",
+      reportType: "theft",
+      status: "under-investigation",
+      filedDate: "2026-05-20",
+      description: "Bicycle stolen from outside address",
+    },
+  ],
+};
+
+const policeNewParent: PoliceDataBundle = {
+  clientNumber: "POL-100001",
+  infringements: [],
+  reports: [],
+};
+
+const hudStandard: HUDDataBundle = {
+  clientNumber: "HUD-100001",
+  applications: [],
+  tenancies: [],
+  maintenanceRequests: [],
+};
+
+const hudBeneficiary: HUDDataBundle = {
+  clientNumber: "HUD-100001",
+  applications: [
+    {
+      applicationNumber: "HUD-A5001",
+      applicationType: "public-housing",
+      status: "waitlisted",
+      priorityBand: "B",
+      bedroomsNeeded: 2,
+      submittedDate: "2026-01-15",
+    },
+  ],
+  tenancies: [
+    {
+      tenancyId: "HUD-TEN-1",
+      propertyAddress: "12 Totara Street, Porirua",
+      weeklyRent: 180,
+      incomeRelatedRent: true,
+      startDate: "2025-11-01",
+      status: "active",
+    },
+  ],
+  maintenanceRequests: [
+    {
+      requestNumber: "HUD-M3001",
+      category: "plumbing",
+      status: "scheduled",
+      description: "Leaking kitchen tap",
+      requestedDate: "2026-06-20",
+    },
+  ],
+};
+
+const hudNewParent: HUDDataBundle = {
+  clientNumber: "HUD-100001",
+  applications: [],
+  tenancies: [],
+  maintenanceRequests: [],
+};
+
 export function getDemoData(scenario: ScenarioId): DemoData {
   switch (scenario) {
     case "beneficiary":
@@ -612,6 +742,9 @@ export function getDemoData(scenario: ScenarioId): DemoData {
         dia: diaBeneficiary,
         nzta: nztaBeneficiary,
         acc: accBeneficiary,
+        moj: mojBeneficiary,
+        police: policeBeneficiary,
+        hud: hudBeneficiary,
       };
     case "new-parent":
       return {
@@ -621,6 +754,9 @@ export function getDemoData(scenario: ScenarioId): DemoData {
         dia: diaNewParent,
         nzta: nztaNewParent,
         acc: accNewParent,
+        moj: mojNewParent,
+        police: policeNewParent,
+        hud: hudNewParent,
       };
     case "standard":
     default:
@@ -631,6 +767,9 @@ export function getDemoData(scenario: ScenarioId): DemoData {
         dia: diaStandard,
         nzta: nztaStandard,
         acc: accStandard,
+        moj: mojStandard,
+        police: policeStandard,
+        hud: hudStandard,
       };
   }
 }

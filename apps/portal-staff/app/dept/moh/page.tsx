@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { fetchMohDataForCitizen } from "./actions";
+import { staffConsentForDept } from "../../lib/consent";
 
 export const metadata = { title: "Health — Case File — My Gov NZ" };
 
@@ -18,6 +19,20 @@ export default async function MohStaffOverviewPage({
         <h1>Health (Ministry of Health) — Case File</h1>
         <p>No citizen selected. Enter a DID to view their health records.</p>
         <Link href="/">← Back to case worker home</Link>
+      </main>
+    );
+  }
+
+  const consent = await staffConsentForDept(did, "moh");
+  if (!consent.granted) {
+    return (
+      <main style={{ padding: "1rem" }}>
+        <Link href="/citizens">← Back to citizen search</Link>
+        <h1>Health (Ministry of Health) — Case File</h1>
+        <p>
+          <strong>Consent required.</strong> The citizen has not granted case-worker access to
+          health records.
+        </p>
       </main>
     );
   }

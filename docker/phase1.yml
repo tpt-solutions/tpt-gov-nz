@@ -219,6 +219,102 @@ services:
       dept-acc:
         condition: service_healthy
 
+  # --- MOJ (Ministry of Justice) ---
+
+  gov-dept-moj:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-moj/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://moj:moj_dev_password@dept-moj:5432/moj
+      TPT__GOV__DEPT_ID: moj
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8096"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7007"
+      RUST_LOG: "gov_dept_moj=info,tower_http=debug"
+    ports:
+      - "8096:8096"
+    depends_on:
+      dept-moj:
+        condition: service_healthy
+
+  gov-ingester-moj:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-moj/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://moj:moj_dev_password@dept-moj:5432/moj
+      MOJ_TRANSPORT: mock
+      MOJ_MOCK_FIXTURE: /fixtures/moj_batch.json
+      MOJ_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_moj=info,sqlx=warn"
+    depends_on:
+      dept-moj:
+        condition: service_healthy
+
+  # --- Police (New Zealand Police) ---
+
+  gov-dept-police:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-police/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://police:police_dev_password@dept-police:5432/police
+      TPT__GOV__DEPT_ID: police
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8097"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7008"
+      RUST_LOG: "gov_dept_police=info,tower_http=debug"
+    ports:
+      - "8097:8097"
+    depends_on:
+      dept-police:
+        condition: service_healthy
+
+  gov-ingester-police:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-police/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://police:police_dev_password@dept-police:5432/police
+      POLICE_TRANSPORT: mock
+      POLICE_MOCK_FIXTURE: /fixtures/police_batch.json
+      POLICE_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_police=info,sqlx=warn"
+    depends_on:
+      dept-police:
+        condition: service_healthy
+
+  # --- HUD (Ministry of Housing and Urban Development / Kainga Ora) ---
+
+  gov-dept-hud:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-hud/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://hud:hud_dev_password@dept-hud:5432/hud
+      TPT__GOV__DEPT_ID: hud
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8098"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7009"
+      RUST_LOG: "gov_dept_hud=info,tower_http=debug"
+    ports:
+      - "8098:8098"
+    depends_on:
+      dept-hud:
+        condition: service_healthy
+
+  gov-ingester-hud:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-hud/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://hud:hud_dev_password@dept-hud:5432/hud
+      HUD_TRANSPORT: mock
+      HUD_MOCK_FIXTURE: /fixtures/hud_batch.json
+      HUD_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_hud=info,sqlx=warn"
+    depends_on:
+      dept-hud:
+        condition: service_healthy
+
   gov-gateway:
     build:
       context: ..
@@ -231,6 +327,9 @@ services:
       TPT__GOV__DEPT_DIA_URL: "http://gov-dept-dia:8093"
       TPT__GOV__DEPT_NZTA_URL: "http://gov-dept-nzta:8094"
       TPT__GOV__DEPT_ACC_URL: "http://gov-dept-acc:8095"
+      TPT__GOV__DEPT_MOJ_URL: "http://gov-dept-moj:8096"
+      TPT__GOV__DEPT_POLICE_URL: "http://gov-dept-police:8097"
+      TPT__GOV__DEPT_HUD_URL: "http://gov-dept-hud:8098"
       RUST_LOG: "gov_gateway=info,tower_http=debug"
     ports:
       - "8080:8080"
@@ -336,6 +435,54 @@ services:
       timeout: 5s
       retries: 10
 
+  dept-moj:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: moj
+      POSTGRES_USER: moj
+      POSTGRES_PASSWORD: moj_dev_password
+    ports:
+      - "5407:5432"
+    volumes:
+      - moj-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U moj"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  dept-police:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: police
+      POSTGRES_USER: police
+      POSTGRES_PASSWORD: police_dev_password
+    ports:
+      - "5408:5432"
+    volumes:
+      - police-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U police"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  dept-hud:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: hud
+      POSTGRES_USER: hud
+      POSTGRES_PASSWORD: hud_dev_password
+    ports:
+      - "5409:5432"
+    volumes:
+      - hud-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hud"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   # --- Identity database ---
 
   identity-db:
@@ -374,5 +521,8 @@ volumes:
   dia-data:
   nzta-data:
   acc-data:
+  moj-data:
+  police-data:
+  hud-data:
   identity-data:
   audit-data:

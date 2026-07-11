@@ -1,0 +1,60 @@
+{
+  "batchId": "MOJ-2026-07-B001",
+  "generatedAt": "2026-07-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "clientNumber": "MOJ-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "fines": [
+        {
+          "fineNumber": "MOJ-F5001",
+          "fineType": "traffic",
+          "status": "unpaid",
+          "amount": 150,
+          "offenseDate": "2026-05-01",
+          "dueDate": "2026-06-15",
+          "description": "Speeding 15km/h over limit"
+        }
+      ],
+      "disputes": [
+        {
+          "disputeNumber": "MOJ-D2001",
+          "claimType": "tenancy",
+          "status": "filed",
+          "amountClaimed": 1200,
+          "hearingDate": "2026-08-20",
+          "description": "Bond dispute with former landlord"
+        }
+      ],
+      "courtRecords": [
+        {
+          "caseNumber": "MOJ-C3001",
+          "caseType": "traffic",
+          "status": "open",
+          "nextHearingDate": "2026-09-10",
+          "description": "Careless driving charge"
+        }
+      ]
+    },
+    {
+      "clientNumber": "MOJ-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "fines": [
+        {
+          "fineNumber": "MOJ-F6002",
+          "fineType": "reserve",
+          "status": "paid",
+          "amount": 80,
+          "offenseDate": "2026-01-05",
+          "dueDate": "2026-02-01",
+          "description": "Reserve parking infringement"
+        }
+      ],
+      "disputes": [],
+      "courtRecords": []
+    }
+  ]
+}

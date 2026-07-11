@@ -11,6 +11,9 @@ export const PORTAL_CONFIG = {
     dia: process.env.DIA_SERVICE_URL ?? "http://localhost:8093",
     nzta: process.env.NZTA_SERVICE_URL ?? "http://localhost:8094",
     acc: process.env.ACC_SERVICE_URL ?? "http://localhost:8095",
+    moj: process.env.MOJ_SERVICE_URL ?? "http://localhost:8096",
+    police: process.env.POLICE_SERVICE_URL ?? "http://localhost:8097",
+    hud: process.env.HUD_SERVICE_URL ?? "http://localhost:8098",
   },
 
   sessionCookieName: "tpt_session",
@@ -26,7 +29,7 @@ export const PORTAL_CONFIG = {
 
 export const DEMO_DID = "did:gov:nz:demo-alex-tane";
 
-export type DeptId = "ird" | "winz" | "moh" | "dia" | "nzta" | "acc";
+export type DeptId = "ird" | "winz" | "moh" | "dia" | "nzta" | "acc" | "moj" | "police" | "hud";
 
 export interface DeptMeta {
   id: DeptId;
@@ -85,5 +88,29 @@ export const DEPARTMENTS: DeptMeta[] = [
     description: "Injury claims, entitlements and rehabilitation.",
     scopes: ["acc:claims", "acc:entitlements", "acc:rehabilitation"],
     href: "/dept/acc",
+  },
+  {
+    id: "moj",
+    name: "Ministry of Justice",
+    shortName: "MOJ",
+    description: "Fines, Disputes Tribunal claims, court records and name changes.",
+    scopes: ["moj:fines", "moj:disputes", "moj:court-records"],
+    href: "/dept/moj",
+  },
+  {
+    id: "police",
+    name: "New Zealand Police",
+    shortName: "Police",
+    description: "Infringements and reports.",
+    scopes: ["police:infringements", "police:reports"],
+    href: "/dept/police",
+  },
+  {
+    id: "hud",
+    name: "Ministry of Housing and Urban Development / Kāinga Ora",
+    shortName: "Housing",
+    description: "Housing applications, tenancy and maintenance requests.",
+    scopes: ["hud:applications", "hud:tenancy", "hud:maintenance"],
+    href: "/dept/hud",
   },
 ];

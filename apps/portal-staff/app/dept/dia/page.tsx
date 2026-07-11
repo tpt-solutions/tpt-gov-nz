@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { fetchDiaDataForCitizen } from "./actions";
+import { staffConsentForDept } from "../../lib/consent";
 
 export const metadata = { title: "Internal Affairs — Case File — My Gov NZ" };
 
@@ -18,6 +19,20 @@ export default async function DiaStaffOverviewPage({
         <h1>Internal Affairs (DIA) — Case File</h1>
         <p>No citizen selected. Enter a DID to view their DIA records.</p>
         <Link href="/">← Back to case worker home</Link>
+      </main>
+    );
+  }
+
+  const consent = await staffConsentForDept(did, "dia");
+  if (!consent.granted) {
+    return (
+      <main style={{ padding: "1rem" }}>
+        <Link href="/citizens">← Back to citizen search</Link>
+        <h1>Internal Affairs (DIA) — Case File</h1>
+        <p>
+          <strong>Consent required.</strong> The citizen has not granted case-worker access to
+          Internal Affairs records.
+        </p>
       </main>
     );
   }
