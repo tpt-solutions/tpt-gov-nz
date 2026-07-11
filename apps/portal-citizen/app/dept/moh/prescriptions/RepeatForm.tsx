@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { submitMohAction } from "../actions";
 
-export default function RepeatPrescriptionForm({ prescriptionId, medication }: {
-  prescriptionId: string;
+export default function RepeatPrescriptionForm({ medication }: {
   medication: string;
 }) {
   const [submitting, setSubmitting] = useState(false);
@@ -14,7 +13,7 @@ export default function RepeatPrescriptionForm({ prescriptionId, medication }: {
     e.preventDefault();
     setSubmitting(true);
     setResult(null);
-    const res = await submitMohAction("request-repeat-prescription", { prescriptionId });
+    const res = await submitMohAction("request-repeat-prescription", { medication });
     setResult(res);
     setSubmitting(false);
   }

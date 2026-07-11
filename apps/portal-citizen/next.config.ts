@@ -1,8 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  experimental: {
-    typedRoutes: true,
+  webpack: (config) => {
+    // Workspace packages (@tpt/*) are consumed as TypeScript source and import
+    // their siblings with `.js` extensions. Teach webpack to resolve those to
+    // the corresponding `.ts`/`.tsx` files.
+    config.resolve.extensionAlias = {
+      ...config.resolve.extensionAlias,
+      ".js": [".ts", ".tsx", ".js"],
+    };
+    return config;
   },
   async headers() {
     return [

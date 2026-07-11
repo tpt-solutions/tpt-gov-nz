@@ -1,0 +1,42 @@
+# One-command self-hosted demo for tpt-gov-nz (citizen portal).
+#
+# Runs the citizen portal entirely in demo mode: no government backends,
+# no database, and no AI keys required. All data is fictional (citizen
+# "Alex Tane") and served from in-portal fixtures.
+#
+#   docker compose -f docker/demo.yml up
+#   open http://localhost:3000
+#
+# To enable the optional AI assistant, set TPT__GOV__AI_PROVIDER / key below.
+
+name: tpt-gov-nz-demo
+
+services:
+  portal-citizen:
+    image: node:20-alpine
+    working_dir: /app
+    command: >
+      sh -c "corepack enable &&
+             pnpm install --frozen-lockfile &&
+             pnpm --filter @tpt/portal-citizen build &&
+             pnpm --filter @tpt/portal-citizen start"
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      NEXT_PUBLIC_DEMO_MODE: "true"
+      TPT__GOV__AI_LEVEL: "advisory"
+      # Advisory mode surfaces AI suggestions. Without a provider/key the
+      # assistant is gracefully disabled — the portal works fully without it.
+      # TPT__GOV__AI_PROVIDER: openrouter
+      # TPT__GOV__AI_API_KEY: sk-or-...
+      # TPT__GOV__AI_MODEL: anthropic/claude-sonnet-4-6
+      # Local, air-gapped alternative:
+      # TPT__GOV__AI_PROVIDER: ollama
+      # TPT__GOV__AI_BASE_URL: http://host.docker.internal:11434
+      TPT__GOV__SESSION_SECRET: "demo-insecure-session-secret"
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/apps/portal-citizen/.next

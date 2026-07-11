@@ -15,8 +15,10 @@
     "incremental": true,
     "plugins": [{ "name": "next" }],
     "paths": {
+      "@/*": ["./*"],
       "@tpt/gov-schema": ["../../packages/@tpt/gov-schema/src/index.ts"],
       "@tpt/gov-ai-client": ["../../packages/@tpt/gov-ai-client/src/index.ts"],
+      "@tpt/gov-i18n": ["../../packages/@tpt/gov-i18n/src/index.ts"],
       "@tpt/adapter-ird": ["../../packages/adapters/@tpt/adapter-ird/src/index.ts"]
     }
   },

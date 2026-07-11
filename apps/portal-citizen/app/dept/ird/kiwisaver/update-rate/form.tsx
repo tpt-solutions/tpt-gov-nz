@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { submitIrdAction, recommendKiwiSaverRateAction, type KiwiSaverRecommendation } from "../../actions";
+import { submitIrdAction, recommendKiwiSaverRateAction } from "../../actions";
+import type { KiwiSaverRecommendation } from "../../helpers";
 
 const RATE_OPTIONS = [3, 4, 6, 8, 10] as const;
 

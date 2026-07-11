@@ -38,12 +38,12 @@ portal-citizen/app/dept/<id>/   calls gov-dept-<id> directly
 - [x] `departments/dia.ts` — `DIADataBundle`
 - [x] Unit tests for all schema files
 
-### ~~Adapter packages~~ — Removed
-> Dropped in favour of portal calling dept services directly. Ingesters handle legacy integration.
-- ~~`packages/adapters/@tpt/adapter-ird`~~
-- ~~`packages/adapters/@tpt/adapter-winz`~~
-- ~~`packages/adapters/@tpt/adapter-moh`~~
-- ~~`packages/adapters/@tpt/adapter-dia`~~
+### Adapter packages — being phased out
+> New departments call dept services directly and build AI context inline; the `DeptAdapter` pattern is no longer used for WINZ/MOH/DIA.
+- 🔄 `packages/adapters/@tpt/adapter-ird` — still imported by `portal-citizen/app/dept/ird/actions.ts` for `produceAiContext`
+- [x] `packages/adapters/@tpt/adapter-winz` — deleted
+- [x] `packages/adapters/@tpt/adapter-moh` — deleted
+- [x] `packages/adapters/@tpt/adapter-dia` — deleted
 
 ### AI Client (`packages/@tpt/gov-ai-client`) — TypeScript
 - [x] Provider-agnostic client (`GovAiClient`)
@@ -107,7 +107,7 @@ portal-citizen/app/dept/<id>/   calls gov-dept-<id> directly
 
 ---
 
-## IRD — Full Native Module 🔄
+## IRD — Full Native Module ✅
 
 ### Stage 1 — Dept Service (`services/gov-dept-ird`) — Rust ✅
 - [x] `Cargo.toml`, `Dockerfile`
@@ -132,7 +132,7 @@ portal-citizen/app/dept/<id>/   calls gov-dept-<id> directly
 - [x] Idempotent upserts (safe to re-run)
 - [x] Ingestion audit log (what was pulled, when, row counts)
 
-### Stage 3 — Portal UI (`apps/portal-citizen/app/dept/ird/`) — TypeScript ✅🔄
+### Stage 3 — Portal UI (`apps/portal-citizen/app/dept/ird/`) — TypeScript ✅
 - [x] `actions.ts` — `fetchIrdData`, `submitIrdAction` (server actions calling `gov-dept-ird`)
 - [x] `page.tsx` — IRD overview (income, refund, WFF summary, KiwiSaver summary)
 - [x] `tax-summary/page.tsx` — all tax years, income breakdown
@@ -245,33 +245,33 @@ portal-citizen/app/dept/<id>/   calls gov-dept-<id> directly
 
 - [x] `apps/portal-citizen` — Next.js 15 scaffold + security headers
 - [x] Home page (`/`) + Dashboard skeleton (`/dashboard`)
-- [ ] Global layout — header, footer, skip-to-content
-- [ ] Language toggle (English default / te reo Māori opt-in)
-- [ ] Error boundary + 404 + 500 pages
-- [ ] PWA manifest + service worker
-- [ ] `/login` — Sign in page
-- [ ] Browser VC wallet (WebCrypto Ed25519, `localStorage`)
-- [ ] DID generation on first login → register with `gov-identity-server`
-- [ ] Session management (JWT in httpOnly cookie)
-- [ ] `/logout`
-- [ ] Dashboard — dept module cards, grant/revoke consent flow
-- [ ] Audit trail page (`/audit`)
-- [ ] AI chat widget (hidden when `level=none`)
+- [x] Global layout — header, footer, skip-to-content
+- [x] Language toggle (English default / te reo Māori opt-in)
+- [x] Error boundary + 404 + 500 pages
+- [x] PWA manifest + service worker
+- [x] `/login` — Sign in page
+- [x] Browser VC wallet (WebCrypto Ed25519, `localStorage`)
+- [x] DID generation on first login → register with `gov-identity-server`
+- [x] Session management (JWT in httpOnly cookie)
+- [x] `/logout`
+- [x] Dashboard — dept module cards, grant/revoke consent flow
+- [x] Audit trail page (`/audit`)
+- [x] AI chat widget (hidden when `level=none`)
 
 ---
 
 ## Phase 1 — Demo Version 🎯
 
-- [ ] Demo mode flag: `NEXT_PUBLIC_DEMO_MODE=true`
-- [ ] Mock data layer — JSON fixtures replacing live service calls
-- [ ] Fictional citizen "Alex Tane" seeded across all 4 depts
-- [ ] 3 selectable scenarios (standard, beneficiary, new parent)
-- [ ] "Reset demo" button
-- [ ] Demo banner (persistent)
-- [ ] Guided tour — 5-step walkthrough
-- [ ] AI pre-enabled in `advisory` mode
-- [ ] `docker/demo.yml` — one-command self-hosted demo
-- [ ] `README-DEMO.md` — "clone and run in 2 commands"
+- [x] Demo mode flag: `NEXT_PUBLIC_DEMO_MODE=true`
+- [x] Mock data layer — JSON fixtures replacing live service calls
+- [x] Fictional citizen "Alex Tane" seeded across all 4 depts
+- [x] 3 selectable scenarios (standard, beneficiary, new parent)
+- [x] "Reset demo" button
+- [x] Demo banner (persistent)
+- [x] Guided tour — 5-step walkthrough
+- [x] AI pre-enabled in `advisory` mode
+- [x] `docker/demo.yml` — one-command self-hosted demo
+- [x] `README-DEMO.md` — "clone and run in 2 commands"
 
 ---
 
@@ -299,7 +299,7 @@ Each: dept service → ingester → portal pages → staff view → federation �
 - [ ] ZK-SNARK age/residency proofs
 - [ ] Schema registry
 - [ ] External security audit + load test (k6)
-- [ ] te reo Māori opt-in toggle
+- [x] te reo Māori opt-in toggle
 
 ---
 
@@ -366,9 +366,9 @@ Each: dept service → ingester → portal pages → staff view → federation �
 
 ## Ongoing / Cross-cutting
 
-- [ ] `packages/@tpt/gov-ui` — shared design system (TypeScript / React)
-- [ ] `packages/@tpt/gov-i18n` — i18n strings (en-NZ + te reo Māori opt-in)
-- [ ] CI pipeline (GitHub Actions) — lint, typecheck, `turbo test`, `cargo test --workspace`
-- [ ] `LICENSE` — Apache 2.0
-- [ ] `README.md` — overview, quick start, architecture diagram
-- [ ] `CONTRIBUTING.md` — how to add a new department (Stages 1–6)
+- [x] `packages/@tpt/gov-ui` — shared design system (TypeScript / React)
+- [x] `packages/@tpt/gov-i18n` — i18n strings (en-NZ + te reo Māori opt-in)
+- [x] CI pipeline (`.github/workflows/ci.yml`) — TS (lint/typecheck/test) + Rust (fmt, clippy, build, unit tests) jobs. Rust integration tests (needing a DB) excluded from CI — run locally via `cargo test --workspace`
+- [x] `LICENSE` — Apache 2.0
+- [x] `README.md` — overview, quick start, architecture diagram
+- [x] `CONTRIBUTING.md` — how to add a new department (Stages 1–6)

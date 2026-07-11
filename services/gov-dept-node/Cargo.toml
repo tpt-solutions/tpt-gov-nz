@@ -20,7 +20,18 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 sqlx = { workspace = true }
 uuid = { workspace = true }
+chrono = { workspace = true }
+ed25519-dalek = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 anyhow = { workspace = true }
 dotenvy = { workspace = true }
+reqwest = { version = "0.12", optional = true }
+
+[features]
+# Enables the OPA sidecar client in `src/opa.rs`. Off by default; the local
+# `src/consent.rs` evaluation is used as the fallback.
+opa = ["dep:reqwest"]
+
+[dev-dependencies]
+tokio = { workspace = true }

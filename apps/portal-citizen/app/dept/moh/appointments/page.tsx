@@ -30,7 +30,7 @@ export default async function MohAppointmentsPage() {
           <li key={i}>
             <strong>{a.type}</strong> with {a.provider}
             <br />
-            {new Date(a.date).toLocaleString("en-NZ")} — {a.status}
+            {new Date(a.date).toLocaleString("en-NZ")}
           </li>
         ))}
       </ul>

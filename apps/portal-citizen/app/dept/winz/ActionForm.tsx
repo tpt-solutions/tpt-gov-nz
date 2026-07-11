@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { submitWinzAction } from "../actions";
+import { submitWinzAction } from "./actions";
 
 export default function ActionForm({
   actionType,

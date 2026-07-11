@@ -14,10 +14,8 @@
   "dependencies": {
     "@tpt/gov-schema": "workspace:*",
     "@tpt/gov-ai-client": "workspace:*",
-    "@tpt/adapter-ird": "workspace:*",
-    "@tpt/adapter-winz": "workspace:*",
-    "@tpt/adapter-moh": "workspace:*",
-    "@tpt/adapter-dia": "workspace:*",
+    "@tpt/gov-i18n": "workspace:*",
+    "@tpt/gov-ui": "workspace:*",
     "next": "^15.3.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

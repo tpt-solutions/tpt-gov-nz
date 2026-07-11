@@ -34,11 +34,9 @@ export default async function MohPrescriptionsPage() {
             <dd>{p.dose}</dd>
             <dt>Repeats remaining</dt>
             <dd>{p.repeatsRemaining}</dd>
-            <dt>Issued</dt>
-            <dd>{p.issuedAt}</dd>
           </dl>
           {p.repeatsRemaining > 0 ? (
-            <RepeatPrescriptionForm prescriptionId={p.prescriptionId} medication={p.medication} />
+            <RepeatPrescriptionForm medication={p.medication} />
           ) : (
             <p>No repeats remaining — contact your GP for a new prescription.</p>
           )}

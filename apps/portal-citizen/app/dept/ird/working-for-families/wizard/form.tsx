@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { checkWffEligibility, type WffEligibilityResult } from "../../actions";
+import { checkWffEligibility } from "../../actions";
+import type { WffEligibilityResult } from "../../helpers";
 
 export default function BabyLifeEventForm() {
   const [children, setChildren] = useState(1);
