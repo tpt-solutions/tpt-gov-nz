@@ -9,6 +9,8 @@ export const PORTAL_CONFIG = {
     winz: process.env.WINZ_SERVICE_URL ?? "http://localhost:8091",
     moh: process.env.MOH_SERVICE_URL ?? "http://localhost:8092",
     dia: process.env.DIA_SERVICE_URL ?? "http://localhost:8093",
+    nzta: process.env.NZTA_SERVICE_URL ?? "http://localhost:8094",
+    acc: process.env.ACC_SERVICE_URL ?? "http://localhost:8095",
   },
 
   sessionCookieName: "tpt_session",
@@ -24,7 +26,7 @@ export const PORTAL_CONFIG = {
 
 export const DEMO_DID = "did:gov:nz:demo-alex-tane";
 
-export type DeptId = "ird" | "winz" | "moh" | "dia";
+export type DeptId = "ird" | "winz" | "moh" | "dia" | "nzta" | "acc";
 
 export interface DeptMeta {
   id: DeptId;
@@ -67,5 +69,21 @@ export const DEPARTMENTS: DeptMeta[] = [
     description: "Passports, citizenship and official documents.",
     scopes: ["dia:passport", "dia:birth-certificate"],
     href: "/dept/dia",
+  },
+  {
+    id: "nzta",
+    name: "Waka Kotahi NZ Transport Agency",
+    shortName: "NZTA",
+    description: "Driver licence, vehicles and road user charges.",
+    scopes: ["nzta:driver-licence", "nzta:vehicles", "nzta:ruc"],
+    href: "/dept/nzta",
+  },
+  {
+    id: "acc",
+    name: "Accident Compensation Corporation",
+    shortName: "ACC",
+    description: "Injury claims, entitlements and rehabilitation.",
+    scopes: ["acc:claims", "acc:entitlements", "acc:rehabilitation"],
+    href: "/dept/acc",
   },
 ];

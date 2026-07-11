@@ -34,7 +34,11 @@ impl FederationNodeConfig {
             .transpose()?
             .unwrap_or_default();
 
-        Ok(Self { dept_id, listen_addr, peers })
+        Ok(Self {
+            dept_id,
+            listen_addr,
+            peers,
+        })
     }
 
     /// Parse a peer list from a compact env string.
@@ -66,10 +70,9 @@ mod tests {
 
     #[test]
     fn parse_peers_multiple_entries() {
-        let peers = FederationNodeConfig::parse_peers(
-            "ird@127.0.0.1:7001#keyA, winz@127.0.0.1:7002#keyB",
-        )
-        .unwrap();
+        let peers =
+            FederationNodeConfig::parse_peers("ird@127.0.0.1:7001#keyA, winz@127.0.0.1:7002#keyB")
+                .unwrap();
         assert_eq!(peers.len(), 2);
         assert_eq!(peers[0].dept_id, "ird");
         assert_eq!(peers[0].addr.port(), 7001);

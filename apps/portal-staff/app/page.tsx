@@ -21,6 +21,10 @@ export default function StaffHomePage() {
 
       <nav>
         <Link href="/dept/ird">Inland Revenue (IRD)</Link>
+        {" · "}
+        <Link href="/dept/nzta">Waka Kotahi NZTA</Link>
+        {" · "}
+        <Link href="/dept/acc">ACC</Link>
       </nav>
     </main>
   );

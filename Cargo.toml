@@ -16,6 +16,10 @@ members = [
     "services/gov-ingester-moh",
     "services/gov-dept-dia",
     "services/gov-ingester-dia",
+    "services/gov-dept-acc",
+    "services/gov-ingester-acc",
+    "services/gov-dept-nzta",
+    "services/gov-ingester-nzta",
 ]
 
 [workspace.package]

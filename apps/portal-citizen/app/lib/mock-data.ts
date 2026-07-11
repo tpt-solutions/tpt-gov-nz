@@ -3,6 +3,8 @@ import type {
   WINZDataBundle,
   MOHDataBundle,
   DIADataBundle,
+  NZTADataBundle,
+  ACCDataBundle,
 } from "@tpt/gov-schema";
 
 export type ScenarioId = "standard" | "beneficiary" | "new-parent";
@@ -42,6 +44,8 @@ export interface DemoData {
   winz: WINZDataBundle;
   moh: MOHDataBundle;
   dia: DIADataBundle;
+  nzta: NZTADataBundle;
+  acc: ACCDataBundle;
 }
 
 const irdStandard: IRDDataBundle = {
@@ -292,6 +296,7 @@ const mohStandard: MOHDataBundle = {
       medication: "Rivaroxaban",
       dose: "20mg",
       repeatsRemaining: 2,
+      issuedAt: "2025-05-15",
     },
   ],
   upcomingAppointments: [
@@ -299,6 +304,7 @@ const mohStandard: MOHDataBundle = {
       provider: "Dr L. Chen",
       date: "2025-07-22T10:30:00+12:00",
       type: "General check-up",
+      status: "booked",
     },
   ],
   vaccinations: [
@@ -322,11 +328,13 @@ const mohBeneficiary: MOHDataBundle = {
       medication: "Salbutamol inhaler",
       dose: "100mcg",
       repeatsRemaining: 4,
+      issuedAt: "2025-04-02",
     },
     {
       medication: "Fluticasone",
       dose: "50mcg",
       repeatsRemaining: 1,
+      issuedAt: "2025-03-10",
     },
   ],
   upcomingAppointments: [
@@ -334,6 +342,7 @@ const mohBeneficiary: MOHDataBundle = {
       provider: "Dr P. Singh",
       date: "2025-07-15T14:00:00+12:00",
       type: "Asthma review",
+      status: "booked",
     },
   ],
   vaccinations: [
@@ -362,6 +371,7 @@ const mohNewParent: MOHDataBundle = {
       medication: "Iron supplement",
       dose: "325mg",
       repeatsRemaining: 3,
+      issuedAt: "2025-06-01",
     },
   ],
   upcomingAppointments: [
@@ -369,6 +379,7 @@ const mohNewParent: MOHDataBundle = {
       provider: "Plunket nurse",
       date: "2025-07-08T11:00:00+12:00",
       type: "Wellchild tamariki check",
+      status: "booked",
     },
   ],
   vaccinations: [
@@ -436,6 +447,161 @@ const diaNewParent: DIADataBundle = {
   },
 };
 
+const nztaStandard: NZTADataBundle = {
+  driverLicenceNumber: "NZ1234567",
+  driverLicence: {
+    licenceNumber: "NZ1234567",
+    fullName: "Alex Tane",
+    licenceClass: "1 (car)",
+    expiryDate: "2028-09-30",
+    conditions: undefined,
+  },
+  vehicles: [
+    {
+      registration: "ABC123",
+      make: "Toyota",
+      model: "Corolla",
+      year: 2021,
+      fuelType: "Petrol",
+      registrationExpiry: "2026-12-01",
+    },
+  ],
+  ruc: [
+    {
+      vehicleRego: "ABC123",
+      licenceType: "Heavy vehicle RUC",
+      expiryDate: "2027-06-30",
+      unitsRemaining: 1500,
+    },
+  ],
+};
+
+const nztaBeneficiary: NZTADataBundle = {
+  driverLicenceNumber: "NZ7654321",
+  driverLicence: {
+    licenceNumber: "NZ7654321",
+    fullName: "Alex Tane",
+    licenceClass: "6 (motorcycle)",
+    expiryDate: "2027-12-31",
+    conditions: undefined,
+  },
+  vehicles: [
+    {
+      registration: "XYZ789",
+      make: "Honda",
+      model: "CBR",
+      year: 2020,
+      fuelType: "Petrol",
+      registrationExpiry: "2027-01-01",
+    },
+  ],
+  ruc: [],
+};
+
+const nztaNewParent: NZTADataBundle = {
+  driverLicenceNumber: "NZ1234567",
+  driverLicence: {
+    licenceNumber: "NZ1234567",
+    fullName: "Alex Tane",
+    licenceClass: "1 (car)",
+    expiryDate: "2028-09-30",
+    conditions: undefined,
+  },
+  vehicles: [
+    {
+      registration: "ABC123",
+      make: "Toyota",
+      model: "Corolla",
+      year: 2021,
+      fuelType: "Petrol",
+      registrationExpiry: "2026-12-01",
+    },
+    {
+      registration: "DEF456",
+      make: "Mitsubishi",
+      model: "Outlander",
+      year: 2024,
+      fuelType: "Plug-in Hybrid",
+      registrationExpiry: "2027-03-15",
+    },
+  ],
+  ruc: [
+    {
+      vehicleRego: "DEF456",
+      licenceType: "Light vehicle RUC",
+      expiryDate: "2027-03-15",
+      unitsRemaining: 4000,
+    },
+  ],
+};
+
+const accStandard: ACCDataBundle = {
+  clientNumber: "ACC-100001",
+  claims: [
+    {
+      claimNumber: "ACC-5001",
+      claimType: "work",
+      status: "open",
+      injuryDate: "2025-02-10",
+      description: "Lower back strain",
+      weeklyCompensation: 420,
+    },
+  ],
+  entitlements: {
+    hasEntitlement: true,
+    type: "Weekly compensation",
+    weeklyAmount: 420,
+    remainingWeeks: 18,
+  },
+  rehabilitation: [
+    {
+      planId: "PLAN-1",
+      description: "Physio + return-to-work",
+      status: "active",
+      provider: "Metro Rehab",
+      nextReview: "2026-01-15",
+    },
+  ],
+};
+
+const accBeneficiary: ACCDataBundle = {
+  clientNumber: "ACC-100001",
+  claims: [
+    {
+      claimNumber: "ACC-5001",
+      claimType: "work",
+      status: "open",
+      injuryDate: "2025-02-10",
+      description: "Lower back strain",
+      weeklyCompensation: 420,
+    },
+  ],
+  entitlements: {
+    hasEntitlement: true,
+    type: "Weekly compensation",
+    weeklyAmount: 420,
+    remainingWeeks: 6,
+  },
+  rehabilitation: [
+    {
+      planId: "PLAN-1",
+      description: "Physio + return-to-work",
+      status: "active",
+      provider: "Metro Rehab",
+      nextReview: "2025-09-30",
+    },
+  ],
+};
+
+const accNewParent: ACCDataBundle = {
+  clientNumber: "ACC-100001",
+  claims: [],
+  entitlements: {
+    hasEntitlement: false,
+  },
+  rehabilitation: [],
+};
+
 export function getDemoData(scenario: ScenarioId): DemoData {
   switch (scenario) {
     case "beneficiary":
@@ -444,6 +610,8 @@ export function getDemoData(scenario: ScenarioId): DemoData {
         winz: winzBeneficiary,
         moh: mohBeneficiary,
         dia: diaBeneficiary,
+        nzta: nztaBeneficiary,
+        acc: accBeneficiary,
       };
     case "new-parent":
       return {
@@ -451,6 +619,8 @@ export function getDemoData(scenario: ScenarioId): DemoData {
         winz: winzNewParent,
         moh: mohNewParent,
         dia: diaNewParent,
+        nzta: nztaNewParent,
+        acc: accNewParent,
       };
     case "standard":
     default:
@@ -459,6 +629,8 @@ export function getDemoData(scenario: ScenarioId): DemoData {
         winz: winzStandard,
         moh: mohStandard,
         dia: diaStandard,
+        nzta: nztaStandard,
+        acc: accStandard,
       };
   }
 }

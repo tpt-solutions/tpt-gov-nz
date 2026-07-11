@@ -1,5 +1,9 @@
 use std::collections::HashMap;
+#[cfg(feature = "quic")]
+use std::net::SocketAddr;
 use std::sync::Arc;
+#[cfg(feature = "quic")]
+use std::sync::OnceLock;
 
 use crate::config::{FederationNodeConfig, PeerConfig};
 use crate::transport::{self, EnvelopeHandler, HttpMockTransport, InboundState};
@@ -15,6 +19,8 @@ pub struct FederationNode {
     peers: Arc<HashMap<String, PeerConfig>>,
     handler: EnvelopeHandler,
     transport: HttpMockTransport,
+    #[cfg(feature = "quic")]
+    quic_server_cert: OnceLock<Vec<u8>>,
 }
 
 impl FederationNode {
@@ -42,6 +48,8 @@ impl FederationNode {
             peers,
             handler: default_handler(),
             transport: HttpMockTransport::new(),
+            #[cfg(feature = "quic")]
+            quic_server_cert: OnceLock::new(),
         }
     }
 
@@ -102,6 +110,61 @@ impl FederationNode {
         envelope.sign(&self.keypair.signing_key);
 
         self.transport.send(peer, envelope).await
+    }
+
+    /// Start a QUIC server (Phase 2 transport) on `TPT__GOV__FEDERATION_QUIC_LISTEN`
+    /// (default `0.0.0.0:7001`). The HTTP mock transport ([`Self::start`]) can run
+    /// alongside it; both dispatch to the same handler and verify envelope
+    /// signatures against the registered peer keys.
+    #[cfg(feature = "quic")]
+    pub async fn start_quic(&self) -> anyhow::Result<()> {
+        let listen: SocketAddr = std::env::var("TPT__GOV__FEDERATION_QUIC_LISTEN")
+            .unwrap_or_else(|_| "0.0.0.0:7001".into())
+            .parse()?;
+
+        let (endpoint, cert_der) = crate::quic::server_endpoint(listen)?;
+        let _ = self.quic_server_cert.set(cert_der);
+        let state = crate::transport::InboundState {
+            keypair: self.keypair.clone(),
+            peers: self.peers.clone(),
+            handler: self.handler.clone(),
+        };
+
+        tokio::spawn(async move {
+            if let Err(e) = crate::quic::serve_quic(endpoint, state).await {
+                tracing::error!(error = %e, "QUIC federation server stopped");
+            }
+        });
+        Ok(())
+    }
+
+    /// Sign and send an envelope to a peer over QUIC, awaiting its signed
+    /// response. `quic_addr` is the peer's QUIC listener address; its Ed25519
+    /// public key is looked up from the node's peer table for response
+    /// verification.
+    #[cfg(feature = "quic")]
+    pub async fn send_quic(
+        &self,
+        quic_addr: SocketAddr,
+        mut envelope: FederationEnvelope,
+    ) -> anyhow::Result<FederationEnvelope> {
+        let peer = self
+            .peers
+            .get(&envelope.to_dept_id)
+            .ok_or_else(|| FederationError::UnknownDepartment(envelope.to_dept_id.clone()))?;
+
+        envelope.from_dept_id = self.config.dept_id.clone();
+        envelope.to_dept_id = peer.dept_id.clone();
+        envelope.sign(&self.keypair.signing_key);
+
+        let cert_der = self
+            .quic_server_cert
+            .get()
+            .ok_or_else(|| anyhow::anyhow!("QUIC server not started on this node"))?;
+        let transport = crate::quic::QuicTransport::new(cert_der)?;
+        Ok(transport
+            .send(quic_addr, &peer.public_key_b64, envelope)
+            .await?)
     }
 }
 

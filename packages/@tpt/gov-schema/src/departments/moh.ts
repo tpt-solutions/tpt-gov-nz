@@ -12,6 +12,7 @@ export const MOHDataBundleSchema = z.object({
       medication: z.string(),
       dose: z.string(),
       repeatsRemaining: z.number(),
+      issuedAt: z.string().optional(),
     })
   ).optional(),
   upcomingAppointments: z.array(
@@ -19,6 +20,7 @@ export const MOHDataBundleSchema = z.object({
       provider: z.string(),
       date: z.string(),
       type: z.string(),
+      status: z.string().optional(),
     })
   ).optional(),
   vaccinations: z.array(

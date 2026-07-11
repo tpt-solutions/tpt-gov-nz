@@ -117,9 +117,9 @@ describe("WINZDataBundleSchema", () => {
     const result = WINZDataBundleSchema.parse({
       clientId: "winz-001",
       activeBenefits: [
-        { type: "jobseeker", weeklyAmount: 350, startDate: "2024-01-01" },
+        { type: "jobseeker", weeklyAmount: "350", startDate: "2024-01-01", status: "active" },
       ],
-      totalWeeklyPayment: 350,
+      totalWeeklyPayment: "350",
     });
     expect(result.activeBenefits).toHaveLength(1);
   });
@@ -128,7 +128,7 @@ describe("WINZDataBundleSchema", () => {
     const result = WINZDataBundleSchema.parse({
       clientId: "winz-002",
       activeBenefits: [],
-      totalWeeklyPayment: 0,
+      totalWeeklyPayment: "0",
       caseManagerName: "Jane Smith",
       nextAppointment: "2024-07-15T10:00:00Z",
     });
@@ -139,8 +139,8 @@ describe("WINZDataBundleSchema", () => {
     expect(() =>
       WINZDataBundleSchema.parse({
         clientId: "x",
-        activeBenefits: [{ type: "invalid", weeklyAmount: 100, startDate: "2024-01-01" }],
-        totalWeeklyPayment: 100,
+        activeBenefits: [{ type: "invalid", weeklyAmount: "100", startDate: "2024-01-01", status: "active" }],
+        totalWeeklyPayment: "100",
       })
     ).toThrow();
   });
@@ -166,9 +166,10 @@ describe("MOHDataBundleSchema", () => {
 });
 
 describe("DIADataBundleSchema", () => {
-  it("accepts empty bundle (all optional)", () => {
-    const result = DIADataBundleSchema.parse({});
-    expect(result.passportNumber).toBeUndefined();
+  it("accepts bundle with only the required field", () => {
+    const result = DIADataBundleSchema.parse({ passportNumber: "PA000000" });
+    expect(result.passportNumber).toBe("PA000000");
+    expect(result.passport).toBeUndefined();
   });
 
   it("accepts bundle with passport data", () => {

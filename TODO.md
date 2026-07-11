@@ -38,12 +38,12 @@ portal-citizen/app/dept/<id>/   calls gov-dept-<id> directly
 - [x] `departments/dia.ts` — `DIADataBundle`
 - [x] Unit tests for all schema files
 
-### Adapter packages — being phased out
-> New departments call dept services directly and build AI context inline; the `DeptAdapter` pattern is no longer used for WINZ/MOH/DIA.
-- 🔄 `packages/adapters/@tpt/adapter-ird` — still imported by `portal-citizen/app/dept/ird/actions.ts` for `produceAiContext`
-- [x] `packages/adapters/@tpt/adapter-winz` — deleted
-- [x] `packages/adapters/@tpt/adapter-moh` — deleted
-- [x] `packages/adapters/@tpt/adapter-dia` — deleted
+### ~~Adapter packages~~ — Removed
+> Departments call dept services directly and build AI context inline (`app/dept/<id>/<id>-ai.ts` / `ai-context.ts`); the `DeptAdapter` pattern is no longer used.
+- ~~`packages/adapters/@tpt/adapter-ird`~~
+- ~~`packages/adapters/@tpt/adapter-winz`~~
+- ~~`packages/adapters/@tpt/adapter-moh`~~
+- ~~`packages/adapters/@tpt/adapter-dia`~~
 
 ### AI Client (`packages/@tpt/gov-ai-client`) — TypeScript
 - [x] Provider-agnostic client (`GovAiClient`)
@@ -74,7 +74,7 @@ portal-citizen/app/dept/<id>/   calls gov-dept-<id> directly
 ### Rust — Federation Node (`crates/gov-federation-node`)
 - [x] `FederationNodeConfig` + `FederationNode` stub
 - [x] HTTP mock transport for Phase 1 local dev
-- [ ] QUIC transport (Phase 2)
+- [x] QUIC transport (Phase 2) — `quic.rs`, gated behind `quic` feature, pinned self-signed cert + Ed25519 envelope auth
 
 ### Rust — API Gateway (`services/gov-gateway`)
 - [x] Axum skeleton + `/health` + `/v1/citizen/resolve` stub
@@ -95,8 +95,8 @@ portal-citizen/app/dept/<id>/   calls gov-dept-<id> directly
 
 ### Rust — Dept Node Template (`services/gov-dept-node`)
 - [x] Axum skeleton + route stubs
-- [ ] OPA sidecar integration (consent verification)
-- [ ] Audit log write on every data access
+- [x] OPA sidecar integration (consent verification, with local fallback in `consent.rs`)
+- [x] Audit log write on every data access (`audit.rs`, table ensured on startup)
 
 ### Docker / Infrastructure
 - [x] `docker/phase1.yml` — 4 dept Postgres nodes + identity DB + audit DB
@@ -279,12 +279,92 @@ portal-citizen/app/dept/<id>/   calls gov-dept-<id> directly
 
 Each: dept service → ingester → portal pages → staff view → federation → AI.
 
-- [ ] **NZTA** — driver licence, vehicles, RUC
-- [ ] **ACC** — claims, entitlements, rehabilitation
+- [x] **NZTA** — driver licence, vehicles, RUC
+- [x] **ACC** — claims, entitlements, rehabilitation
 - [ ] **MoE / NZQA** — qualifications, transcripts
 - [ ] **MSD** — student loans/allowances (StudyLink), broader case history beyond Work and Income (see "WINZ — Full Native Module" above)
 - [ ] **MBIE** — business registrations, company director lookup
 - [ ] **LINZ** — property titles, land ownership
+
+## NZTA — Full Native Module ✅
+
+### Stage 1 — Dept Service (`services/gov-dept-nzta`) — Rust ✅
+- [x] `Cargo.toml`, `Dockerfile`, `src/` (main, error, db, routes, actions, consent, opa)
+- [x] Migrations: citizens, driver_licences, vehicles, ruc_records, actions_log, ingestion_runs, ingester idempotency
+- [x] Dev seed: test citizens "Alex Tane" + "Bree Kāre"
+- [x] Unit + integration tests (resolve, fetch_data, actions, consent)
+- [x] Registered in root `Cargo.toml` workspace members
+- [x] `gov-dept-nzta` + `gov-ingester-nzta` containers in `docker/phase1.yml`, DB healthcheck
+
+### Stage 2 — Ingester (`services/gov-ingester-nzta`) — Rust ✅
+- [x] Mock transport (JSON fixtures)
+- [x] NZTA legacy system transport stub
+- [x] Transform + idempotent upsert
+- [x] Scheduler (configurable interval)
+
+### Stage 3 — Portal UI (`apps/portal-citizen/app/dept/nzta/`) — TypeScript ✅
+- [x] `actions.ts`
+- [x] Overview page — driver licence, vehicles, RUC
+- [x] Renew vehicle registration page (action form)
+- [x] Request licence replacement page (action form)
+
+### Stage 4 — Staff View (`apps/portal-staff/app/dept/nzta/`) — TypeScript ✅
+- [x] Read-only case worker view (same data, no action buttons)
+
+### Stage 5 — Federation ✅
+- [x] OPA policy file (`policies/nzta.rego`)
+- [x] Consent verification wired into `/citizen/data` (`consent.rs` + `opa.rs` fallback)
+- [x] Cross-dept data request test (IRD requests NZTA licence, with + without grant)
+
+### Stage 6 — AI ✅
+- [x] AI context: licence/RUC expiry + vehicle navigation (`nzta-ai.ts`)
+- [x] Entitlement prompt: "Is my licence about to expire?" (`ai-prompt.tsx`)
+
+### Cross-cutting wiring ✅
+- [x] `NZTADataBundle` schema (`packages/@tpt/gov-schema`)
+- [x] Portal `DeptId` / `DEPARTMENTS` / `services` registry + demo mock data (3 scenarios)
+- [x] `.env.example` NZTA service + gateway + ingester env vars
+
+## ACC — Full Native Module ✅
+
+### Stage 1 — Dept Service (`services/gov-dept-acc`) — Rust ✅
+- [x] `Cargo.toml`, `Dockerfile`, `src/` (main, error, db, routes, actions, consent, opa)
+- [x] Migrations: citizens, acc_claims, acc_entitlements, acc_rehabilitation, actions_log, ingestion_runs, ingester idempotency
+- [x] Dev seed: test citizens "Alex Tane" + "Bree Kare" with open claim, entitlement, rehab plan
+- [x] Unit + integration tests (resolve, fetch_data, actions, consent)
+- [x] Registered in root `Cargo.toml` workspace members
+- [x] `gov-dept-acc` + `gov-ingester-acc` containers in `docker/phase1.yml`, DB healthcheck
+
+### Stage 2 — Ingester (`services/gov-ingester-acc`) — Rust ✅
+- [x] Mock transport (JSON fixtures)
+- [x] ACC legacy system transport stub
+- [x] Transform + idempotent upsert
+- [x] Scheduler (configurable interval)
+
+### Stage 3 — Portal UI (`apps/portal-citizen/app/dept/acc/`) — TypeScript ✅
+- [x] `actions.ts`
+- [x] Overview page — claims, entitlements, rehabilitation
+- [x] Claims page + lodge-claim form
+- [x] Entitlements page
+- [x] Rehabilitation page
+- [x] `loading.tsx`
+
+### Stage 4 — Staff View (`apps/portal-staff/app/dept/acc/`) — TypeScript ✅
+- [x] Read-only case worker view (overview + claims/entitlements/rehabilitation subpages)
+
+### Stage 5 — Federation ✅
+- [x] OPA policy file (`policies/acc.rego`)
+- [x] Consent verification wired into `/citizen/data` (`consent.rs` + `opa.rs` fallback)
+- [x] Cross-dept data request test (IRD requests ACC claim, with + without grant)
+
+### Stage 6 — AI ✅
+- [x] AI context: claims/entitlements/rehabilitation (`acc-ai.ts`)
+- [x] Entitlement prompt: "What is the status of my ACC claim?" (`ai-prompt.tsx`)
+
+### Cross-cutting wiring ✅
+- [x] `ACCDataBundle` schema (`packages/@tpt/gov-schema`)
+- [x] Portal `DeptId` / `DEPARTMENTS` / `services` registry + demo mock data (3 scenarios)
+- [x] `.env.example` ACC service + gateway + ingester env vars
 
 ### Staff Portal (`apps/portal-staff`) — TypeScript
 - [x] Next.js 15 scaffold (+ IRD staff views: overview, tax-summary, GST, KiwiSaver, WFF)

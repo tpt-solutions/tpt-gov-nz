@@ -21,3 +21,10 @@ uuid = { workspace = true }
 tracing = { workspace = true }
 anyhow = { workspace = true }
 thiserror = { workspace = true }
+rcgen = { version = "0.13", optional = true }
+
+[features]
+# Enables the QUIC transport. Off by default; the HTTP mock transport is used
+# in Phase 1 local development. When enabled, nodes exchange `FederationEnvelope`
+# messages over QUIC (UDP) instead of the HTTP mock transport.
+quic = ["dep:rcgen"]

@@ -16,7 +16,7 @@ use std::future::Future;
 use std::pin::Pin;
 use std::sync::Arc;
 
-use axum::{extract::State, http::StatusCode, routing::post, Json, Router};
+use axum::{Json, Router, extract::State, http::StatusCode, routing::post};
 use ed25519_dalek::VerifyingKey;
 use gov_federation_core::{FederationEnvelope, FederationError, NodeKeypair};
 use tracing::{debug, warn};
@@ -34,7 +34,8 @@ pub const ENVELOPE_PATH: &str = "/federation/v1/envelope";
 pub type EnvelopeHandler = Arc<
     dyn Fn(
             FederationEnvelope,
-        ) -> Pin<Box<dyn Future<Output = Result<FederationEnvelope, FederationError>> + Send>>
+        )
+            -> Pin<Box<dyn Future<Output = Result<FederationEnvelope, FederationError>> + Send>>
         + Send
         + Sync,
 >;

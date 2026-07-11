@@ -141,6 +141,84 @@ services:
       dept-dia:
         condition: service_healthy
 
+  # --- NZTA (Waka Kotahi) ---
+
+  gov-dept-nzta:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-nzta/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://nzta:nzta_dev_password@dept-nzta:5432/nzta
+      TPT__GOV__DEPT_ID: nzta
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8094"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7005"
+      RUST_LOG: "gov_dept_nzta=info,tower_http=debug"
+    ports:
+      - "8094:8094"
+    depends_on:
+      dept-nzta:
+        condition: service_healthy
+
+  gov-ingester-nzta:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-nzta/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://nzta:nzta_dev_password@dept-nzta:5432/nzta
+      NZTA_TRANSPORT: mock
+      NZTA_MOCK_FIXTURE: /fixtures/nzta_batch.json
+      NZTA_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_nzta=info,sqlx=warn"
+    depends_on:
+      dept-nzta:
+        condition: service_healthy
+
+  gov-ingester-nzta:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-nzta/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://nzta:nzta_dev_password@dept-nzta:5432/nzta
+      NZTA_TRANSPORT: mock
+      NZTA_MOCK_FIXTURE: /fixtures/nzta_batch.json
+      NZTA_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_nzta=info,sqlx=warn"
+    depends_on:
+      dept-nzta:
+        condition: service_healthy
+
+  # --- ACC (Accident Compensation Corporation) ---
+
+  gov-dept-acc:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-acc/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://acc:acc_dev_password@dept-acc:5432/acc
+      TPT__GOV__DEPT_ID: acc
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8095"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7006"
+      RUST_LOG: "gov_dept_acc=info,tower_http=debug"
+    ports:
+      - "8095:8095"
+    depends_on:
+      dept-acc:
+        condition: service_healthy
+
+  gov-ingester-acc:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-acc/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://acc:acc_dev_password@dept-acc:5432/acc
+      ACC_TRANSPORT: mock
+      ACC_MOCK_FIXTURE: /fixtures/acc_batch.json
+      ACC_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_acc=info,sqlx=warn"
+    depends_on:
+      dept-acc:
+        condition: service_healthy
+
   gov-gateway:
     build:
       context: ..
@@ -151,6 +229,8 @@ services:
       TPT__GOV__DEPT_WINZ_URL: "http://gov-dept-winz:8091"
       TPT__GOV__DEPT_MOH_URL: "http://gov-dept-moh:8092"
       TPT__GOV__DEPT_DIA_URL: "http://gov-dept-dia:8093"
+      TPT__GOV__DEPT_NZTA_URL: "http://gov-dept-nzta:8094"
+      TPT__GOV__DEPT_ACC_URL: "http://gov-dept-acc:8095"
       RUST_LOG: "gov_gateway=info,tower_http=debug"
     ports:
       - "8080:8080"
@@ -224,6 +304,38 @@ services:
       timeout: 5s
       retries: 10
 
+  dept-nzta:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: nzta
+      POSTGRES_USER: nzta
+      POSTGRES_PASSWORD: nzta_dev_password
+    ports:
+      - "5405:5432"
+    volumes:
+      - nzta-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nzta"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  dept-acc:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: acc
+      POSTGRES_USER: acc
+      POSTGRES_PASSWORD: acc_dev_password
+    ports:
+      - "5406:5432"
+    volumes:
+      - acc-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U acc"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   # --- Identity database ---
 
   identity-db:
@@ -260,5 +372,7 @@ volumes:
   winz-data:
   moh-data:
   dia-data:
+  nzta-data:
+  acc-data:
   identity-data:
   audit-data:

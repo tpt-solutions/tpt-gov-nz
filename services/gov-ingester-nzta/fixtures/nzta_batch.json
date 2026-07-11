@@ -1,0 +1,56 @@
+{
+  "batchId": "NZTA-2026-07-B001",
+  "generatedAt": "2026-07-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "driverLicenceNumber": "NZ1234567",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "driverLicence": {
+        "fullName": "Alex Tane",
+        "licenceClass": "1 (car)",
+        "expiryDate": "2028-09-30"
+      },
+      "vehicles": [
+        {
+          "registration": "ABC123",
+          "make": "Toyota",
+          "model": "Corolla",
+          "year": 2021,
+          "fuelType": "Petrol",
+          "registrationExpiry": "2026-12-01"
+        }
+      ],
+      "ruc": [
+        {
+          "vehicleRego": "ABC123",
+          "licenceType": "Heavy vehicle RUC",
+          "expiryDate": "2027-06-30",
+          "unitsRemaining": 1500
+        }
+      ]
+    },
+    {
+      "driverLicenceNumber": "NZ7654321",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kāre",
+      "driverLicence": {
+        "fullName": "Bree Kāre",
+        "licenceClass": "6 (motorcycle)",
+        "expiryDate": "2027-12-31"
+      },
+      "vehicles": [
+        {
+          "registration": "XYZ789",
+          "make": "Honda",
+          "model": "CBR",
+          "year": 2020,
+          "fuelType": "Petrol",
+          "registrationExpiry": "2027-01-01"
+        }
+      ],
+      "ruc": []
+    }
+  ]
+}

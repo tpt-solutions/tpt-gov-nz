@@ -1,0 +1,29 @@
+use axum::{routing::get, Router};
+use sqlx::PgPool;
+use tower_http::trace::TraceLayer;
+
+mod actions;
+mod consent;
+mod db;
+mod error;
+mod opa;
+mod routes;
+
+pub use error::NztaError;
+
+/// Build the NZTA department service router with the given connection pool as state.
+pub fn build_app(pool: PgPool) -> Router {
+    Router::new()
+        .route("/health", get(routes::health))
+        .route("/citizen/resolve", axum::routing::post(routes::resolve_citizen))
+        .route("/citizen/data", axum::routing::post(routes::fetch_data))
+        .route("/citizen/action", axum::routing::post(routes::submit_action))
+        .route("/citizen/{did}/driver-licences", get(routes::list_driver_licences))
+        .route("/citizen/{did}/vehicles", get(routes::list_vehicles))
+        .route("/citizen/{did}/ruc", get(routes::list_ruc))
+        .with_state(pool)
+        .layer(TraceLayer::new_for_http())
+}
+
+#[cfg(test)]
+mod tests;

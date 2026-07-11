@@ -1,0 +1,55 @@
+{
+  "batchId": "ACC-2026-07-B001",
+  "generatedAt": "2026-07-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "clientNumber": "ACC-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "claims": [
+        {
+          "claimNumber": "ACC-5001",
+          "claimType": "work",
+          "status": "open",
+          "injuryDate": "2025-02-10",
+          "description": "Lower back strain",
+          "weeklyCompensation": 420
+        }
+      ],
+      "entitlements": {
+        "hasEntitlement": true,
+        "type": "Weekly compensation",
+        "weeklyAmount": 420,
+        "remainingWeeks": 18
+      },
+      "rehabilitation": [
+        {
+          "planId": "PLAN-1",
+          "description": "Physio + return-to-work",
+          "status": "active",
+          "provider": "Metro Rehab",
+          "nextReview": "2026-01-15"
+        }
+      ]
+    },
+    {
+      "clientNumber": "ACC-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "claims": [
+        {
+          "claimNumber": "ACC-6002",
+          "claimType": "non-work",
+          "status": "closed",
+          "injuryDate": "2024-08-01",
+          "description": "Previous sprain (resolved)"
+        }
+      ],
+      "entitlements": {
+        "hasEntitlement": false
+      },
+      "rehabilitation": []
+    }
+  ]
+}
