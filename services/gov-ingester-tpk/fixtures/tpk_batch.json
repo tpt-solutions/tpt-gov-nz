@@ -1,0 +1,40 @@
+{
+  "batchId": "TPK-2026-07-B001",
+  "generatedAt": "2026-07-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "tpkId": "TPK-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "programmes": [
+        {
+          "programmeName": "Te Hono",
+          "status": "enrolled",
+          "region": "Te Tai Tokerau"
+        }
+      ],
+      "funding": [
+        {
+          "grantId": "TPK-G1001",
+          "amount": 5000,
+          "purpose": "Marae renovations",
+          "status": "approved"
+        }
+      ]
+    },
+    {
+      "tpkId": "TPK-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "programmes": [
+        {
+          "programmeName": "Māori Language Fund",
+          "status": "enrolled",
+          "region": "Tāmaki Makaurau"
+        }
+      ],
+      "funding": []
+    }
+  ]
+}

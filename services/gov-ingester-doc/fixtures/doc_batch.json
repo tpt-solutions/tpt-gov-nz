@@ -1,0 +1,45 @@
+{
+  "batchId": "DOC-2026-07-B001",
+  "generatedAt": "2026-07-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "docId": "DOC-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "permits": [
+        {
+          "permitNumber": "DOC-P1001",
+          "activity": "Recreational hunting",
+          "location": "Whakarewarewa Forest",
+          "status": "active",
+          "expiresDate": "2027-05-01"
+        }
+      ],
+      "concessions": [
+        {
+          "concessionId": "DOC-C2001",
+          "type": "guided-tour",
+          "holder": "Alex Tane",
+          "startDate": "2026-01-01",
+          "endDate": "2026-12-31"
+        }
+      ]
+    },
+    {
+      "docId": "DOC-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "permits": [],
+      "concessions": [
+        {
+          "concessionId": "DOC-C2002",
+          "type": "filming",
+          "holder": "Bree Kare",
+          "startDate": "2026-02-01",
+          "endDate": "2026-08-31"
+        }
+      ]
+    }
+  ]
+}

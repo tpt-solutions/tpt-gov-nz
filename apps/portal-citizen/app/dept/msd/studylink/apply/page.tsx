@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { submitMsdAction } from "../actions";
+import { submitMsdAction } from "../../actions";
 
 export default function StudyLinkForm() {
   const [courseOfStudy, setCourseOfStudy] = useState("");

@@ -315,6 +315,326 @@ services:
       dept-hud:
         condition: service_healthy
 
+  # --- NZQA (Ministry of Education / NZQA) ---
+
+  gov-dept-nzqa:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-nzqa/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://nzqa:nzqa_dev_password@dept-nzqa:5432/nzqa
+      TPT__GOV__DEPT_ID: nzqa
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8099"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7010"
+      RUST_LOG: "gov_dept_nzqa=info,tower_http=debug"
+    ports:
+      - "8099:8099"
+    depends_on:
+      dept-nzqa:
+        condition: service_healthy
+
+  gov-ingester-nzqa:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-nzqa/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://nzqa:nzqa_dev_password@dept-nzqa:5432/nzqa
+      NZQA_TRANSPORT: mock
+      NZQA_MOCK_FIXTURE: /fixtures/nzqa_batch.json
+      NZQA_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_nzqa=info,sqlx=warn"
+    depends_on:
+      dept-nzqa:
+        condition: service_healthy
+
+  # --- MSD (Ministry of Social Development) ---
+
+  gov-dept-msd:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-msd/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://msd:msd_dev_password@dept-msd:5432/msd
+      TPT__GOV__DEPT_ID: msd
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8100"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7011"
+      RUST_LOG: "gov_dept_msd=info,tower_http=debug"
+    ports:
+      - "8100:8100"
+    depends_on:
+      dept-msd:
+        condition: service_healthy
+
+  gov-ingester-msd:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-msd/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://msd:msd_dev_password@dept-msd:5432/msd
+      MSD_TRANSPORT: mock
+      MSD_MOCK_FIXTURE: /fixtures/msd_batch.json
+      MSD_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_msd=info,sqlx=warn"
+    depends_on:
+      dept-msd:
+        condition: service_healthy
+
+  # --- MBIE (Ministry of Business, Innovation and Employment) ---
+
+  gov-dept-mbie:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-mbie/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://mbie:mbie_dev_password@dept-mbie:5432/mbie
+      TPT__GOV__DEPT_ID: mbie
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8101"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7012"
+      RUST_LOG: "gov_dept_mbie=info,tower_http=debug"
+    ports:
+      - "8101:8101"
+    depends_on:
+      dept-mbie:
+        condition: service_healthy
+
+  gov-ingester-mbie:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-mbie/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://mbie:mbie_dev_password@dept-mbie:5432/mbie
+      MBIE_TRANSPORT: mock
+      MBIE_MOCK_FIXTURE: /fixtures/mbie_batch.json
+      MBIE_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_mbie=info,sqlx=warn"
+    depends_on:
+      dept-mbie:
+        condition: service_healthy
+
+  # --- LINZ (Toitū Te Whenua Land Information New Zealand) ---
+
+  gov-dept-linz:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-linz/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://linz:linz_dev_password@dept-linz:5432/linz
+      TPT__GOV__DEPT_ID: linz
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8102"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7013"
+      RUST_LOG: "gov_dept_linz=info,tower_http=debug"
+    ports:
+      - "8102:8102"
+    depends_on:
+      dept-linz:
+        condition: service_healthy
+
+  gov-ingester-linz:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-linz/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://linz:linz_dev_password@dept-linz:5432/linz
+      LINZ_TRANSPORT: mock
+      LINZ_MOCK_FIXTURE: /fixtures/linz_batch.json
+      LINZ_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_linz=info,sqlx=warn"
+    depends_on:
+      dept-linz:
+        condition: service_healthy
+
+  # --- Stats NZ ---
+
+  gov-dept-statsnz:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-statsnz/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://statsnz:statsnz_dev_password@dept-statsnz:5432/statsnz
+      TPT__GOV__DEPT_ID: statsnz
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8103"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7014"
+      RUST_LOG: "gov_dept_statsnz=info,tower_http=debug"
+    ports:
+      - "8103:8103"
+    depends_on:
+      dept-statsnz:
+        condition: service_healthy
+
+  gov-ingester-statsnz:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-statsnz/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://statsnz:statsnz_dev_password@dept-statsnz:5432/statsnz
+      STATSNZ_TRANSPORT: mock
+      STATSNZ_MOCK_FIXTURE: /fixtures/statsnz_batch.json
+      STATSNZ_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_statsnz=info,sqlx=warn"
+    depends_on:
+      dept-statsnz:
+        condition: service_healthy
+
+  # --- Corrections ---
+
+  gov-dept-corrections:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-corrections/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://corrections:corrections_dev_password@dept-corrections:5432/corrections
+      TPT__GOV__DEPT_ID: corrections
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8104"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7015"
+      RUST_LOG: "gov_dept_corrections=info,tower_http=debug"
+    ports:
+      - "8104:8104"
+    depends_on:
+      dept-corrections:
+        condition: service_healthy
+
+  gov-ingester-corrections:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-corrections/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://corrections:corrections_dev_password@dept-corrections:5432/corrections
+      CORRECTIONS_TRANSPORT: mock
+      CORRECTIONS_MOCK_FIXTURE: /fixtures/corrections_batch.json
+      CORRECTIONS_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_corrections=info,sqlx=warn"
+    depends_on:
+      dept-corrections:
+        condition: service_healthy
+
+  # --- Customs ---
+
+  gov-dept-customs:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-customs/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://customs:customs_dev_password@dept-customs:5432/customs
+      TPT__GOV__DEPT_ID: customs
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8105"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7016"
+      RUST_LOG: "gov_dept_customs=info,tower_http=debug"
+    ports:
+      - "8105:8105"
+    depends_on:
+      dept-customs:
+        condition: service_healthy
+
+  gov-ingester-customs:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-customs/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://customs:customs_dev_password@dept-customs:5432/customs
+      CUSTOMS_TRANSPORT: mock
+      CUSTOMS_MOCK_FIXTURE: /fixtures/customs_batch.json
+      CUSTOMS_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_customs=info,sqlx=warn"
+    depends_on:
+      dept-customs:
+        condition: service_healthy
+
+  # --- MPI ---
+
+  gov-dept-mpi:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-mpi/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://mpi:mpi_dev_password@dept-mpi:5432/mpi
+      TPT__GOV__DEPT_ID: mpi
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8106"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7017"
+      RUST_LOG: "gov_dept_mpi=info,tower_http=debug"
+    ports:
+      - "8106:8106"
+    depends_on:
+      dept-mpi:
+        condition: service_healthy
+
+  gov-ingester-mpi:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-mpi/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://mpi:mpi_dev_password@dept-mpi:5432/mpi
+      MPI_TRANSPORT: mock
+      MPI_MOCK_FIXTURE: /fixtures/mpi_batch.json
+      MPI_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_mpi=info,sqlx=warn"
+    depends_on:
+      dept-mpi:
+        condition: service_healthy
+
+  # --- DOC ---
+
+  gov-dept-doc:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-doc/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://doc:doc_dev_password@dept-doc:5432/doc
+      TPT__GOV__DEPT_ID: doc
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8107"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7018"
+      RUST_LOG: "gov_dept_doc=info,tower_http=debug"
+    ports:
+      - "8107:8107"
+    depends_on:
+      dept-doc:
+        condition: service_healthy
+
+  gov-ingester-doc:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-doc/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://doc:doc_dev_password@dept-doc:5432/doc
+      DOC_TRANSPORT: mock
+      DOC_MOCK_FIXTURE: /fixtures/doc_batch.json
+      DOC_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_doc=info,sqlx=warn"
+    depends_on:
+      dept-doc:
+        condition: service_healthy
+
+  # --- TPK ---
+
+  gov-dept-tpk:
+    build:
+      context: ..
+      dockerfile: services/gov-dept-tpk/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://tpk:tpk_dev_password@dept-tpk:5432/tpk
+      TPT__GOV__DEPT_ID: tpk
+      TPT__GOV__HTTP_LISTEN: "0.0.0.0:8108"
+      TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7019"
+      RUST_LOG: "gov_dept_tpk=info,tower_http=debug"
+    ports:
+      - "8108:8108"
+    depends_on:
+      dept-tpk:
+        condition: service_healthy
+
+  gov-ingester-tpk:
+    build:
+      context: ..
+      dockerfile: services/gov-ingester-tpk/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://tpk:tpk_dev_password@dept-tpk:5432/tpk
+      TPK_TRANSPORT: mock
+      TPK_MOCK_FIXTURE: /fixtures/tpk_batch.json
+      TPK_RUN_ONCE: "true"
+      RUST_LOG: "gov_ingester_tpk=info,sqlx=warn"
+    depends_on:
+      dept-tpk:
+        condition: service_healthy
+
   gov-gateway:
     build:
       context: ..
@@ -330,6 +650,16 @@ services:
       TPT__GOV__DEPT_MOJ_URL: "http://gov-dept-moj:8096"
       TPT__GOV__DEPT_POLICE_URL: "http://gov-dept-police:8097"
       TPT__GOV__DEPT_HUD_URL: "http://gov-dept-hud:8098"
+      TPT__GOV__DEPT_NZQA_URL: "http://gov-dept-nzqa:8099"
+      TPT__GOV__DEPT_MSD_URL: "http://gov-dept-msd:8100"
+      TPT__GOV__DEPT_MBIE_URL: "http://gov-dept-mbie:8101"
+      TPT__GOV__DEPT_LINZ_URL: "http://gov-dept-linz:8102"
+      TPT__GOV__DEPT_STATSNZ_URL: "http://gov-dept-statsnz:8103"
+      TPT__GOV__DEPT_CORRECTIONS_URL: "http://gov-dept-corrections:8104"
+      TPT__GOV__DEPT_CUSTOMS_URL: "http://gov-dept-customs:8105"
+      TPT__GOV__DEPT_MPI_URL: "http://gov-dept-mpi:8106"
+      TPT__GOV__DEPT_DOC_URL: "http://gov-dept-doc:8107"
+      TPT__GOV__DEPT_TPK_URL: "http://gov-dept-tpk:8108"
       RUST_LOG: "gov_gateway=info,tower_http=debug"
     ports:
       - "8080:8080"
@@ -483,6 +813,166 @@ services:
       timeout: 5s
       retries: 10
 
+  dept-nzqa:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: nzqa
+      POSTGRES_USER: nzqa
+      POSTGRES_PASSWORD: nzqa_dev_password
+    ports:
+      - "5411:5432"
+    volumes:
+      - nzqa-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nzqa"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  dept-msd:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: msd
+      POSTGRES_USER: msd
+      POSTGRES_PASSWORD: msd_dev_password
+    ports:
+      - "5412:5432"
+    volumes:
+      - msd-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U msd"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  dept-mbie:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: mbie
+      POSTGRES_USER: mbie
+      POSTGRES_PASSWORD: mbie_dev_password
+    ports:
+      - "5413:5432"
+    volumes:
+      - mbie-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mbie"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  dept-linz:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: linz
+      POSTGRES_USER: linz
+      POSTGRES_PASSWORD: linz_dev_password
+    ports:
+      - "5414:5432"
+    volumes:
+      - linz-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U linz"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  dept-statsnz:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: statsnz
+      POSTGRES_USER: statsnz
+      POSTGRES_PASSWORD: statsnz_dev_password
+    ports:
+      - "5415:5432"
+    volumes:
+      - statsnz-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U statsnz"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  dept-corrections:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: corrections
+      POSTGRES_USER: corrections
+      POSTGRES_PASSWORD: corrections_dev_password
+    ports:
+      - "5416:5432"
+    volumes:
+      - corrections-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U corrections"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  dept-customs:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: customs
+      POSTGRES_USER: customs
+      POSTGRES_PASSWORD: customs_dev_password
+    ports:
+      - "5417:5432"
+    volumes:
+      - customs-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U customs"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  dept-mpi:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: mpi
+      POSTGRES_USER: mpi
+      POSTGRES_PASSWORD: mpi_dev_password
+    ports:
+      - "5418:5432"
+    volumes:
+      - mpi-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mpi"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  dept-doc:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: doc
+      POSTGRES_USER: doc
+      POSTGRES_PASSWORD: doc_dev_password
+    ports:
+      - "5419:5432"
+    volumes:
+      - doc-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U doc"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  dept-tpk:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: tpk
+      POSTGRES_USER: tpk
+      POSTGRES_PASSWORD: tpk_dev_password
+    ports:
+      - "5420:5432"
+    volumes:
+      - tpk-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tpk"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   # --- Identity database ---
 
   identity-db:
@@ -524,5 +1014,15 @@ volumes:
   moj-data:
   police-data:
   hud-data:
+  nzqa-data:
+  msd-data:
+  mbie-data:
+  linz-data:
+  statsnz-data:
+  corrections-data:
+  customs-data:
+  mpi-data:
+  doc-data:
+  tpk-data:
   identity-data:
   audit-data:

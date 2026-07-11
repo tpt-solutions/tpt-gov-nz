@@ -6,6 +6,16 @@ import type {
   DIADataBundle,
   NZTADataBundle,
   ACCDataBundle,
+  NZQADataBundle,
+  MSDDataBundle,
+  MBIEDataBundle,
+  LINZDataBundle,
+  STATSNZDataBundle,
+  CORRECTIONSDataBundle,
+  CUSTOMSDataBundle,
+  MPIDataBundle,
+  DOCDataBundle,
+  TPKDataBundle,
 } from "@tpt/gov-schema";
 
 export type StaffBundle =
@@ -14,7 +24,17 @@ export type StaffBundle =
   | MOHDataBundle
   | DIADataBundle
   | NZTADataBundle
-  | ACCDataBundle;
+  | ACCDataBundle
+  | NZQADataBundle
+  | MSDDataBundle
+  | MBIEDataBundle
+  | LINZDataBundle
+  | STATSNZDataBundle
+  | CORRECTIONSDataBundle
+  | CUSTOMSDataBundle
+  | MPIDataBundle
+  | DOCDataBundle
+  | TPKDataBundle;
 
 export interface DeptCaseResult {
   dept: StaffDeptId;

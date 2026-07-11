@@ -1,0 +1,43 @@
+{
+  "batchId": "MPI-2026-07-B001",
+  "generatedAt": "2026-07-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "mpiId": "MPI-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "registrations": [
+        {
+          "nzbn": "9429046000000",
+          "businessName": "Tane Orchards Ltd",
+          "type": "food-business",
+          "status": "registered",
+          "registeredDate": "2024-03-12"
+        }
+      ],
+      "certifications": [
+        {
+          "certNumber": "MPI-CERT-2026-001",
+          "category": "export-certificate",
+          "issuedDate": "2026-01-10",
+          "expiresDate": "2027-01-09"
+        }
+      ]
+    },
+    {
+      "mpiId": "MPI-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "registrations": [],
+      "certifications": [
+        {
+          "certNumber": "MPI-CERT-2026-002",
+          "category": "export-certificate",
+          "issuedDate": "2025-11-05",
+          "expiresDate": "2026-11-04"
+        }
+      ]
+    }
+  ]
+}

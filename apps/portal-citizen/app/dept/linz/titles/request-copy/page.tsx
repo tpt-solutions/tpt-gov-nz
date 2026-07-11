@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { submitLinzAction } from "../actions";
+import { submitLinzAction } from "../../actions";
 
 export default function RequestTitleCopyForm() {
   const [titleNumber, setTitleNumber] = useState("");

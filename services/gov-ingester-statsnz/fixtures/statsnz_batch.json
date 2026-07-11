@@ -1,0 +1,36 @@
+{
+  "batchId": "STATSNZ-2026-07-B001",
+  "generatedAt": "2026-07-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "statsId": "STATS-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "census": [
+        {
+          "censusYear": 2023,
+          "dwellingType": "house",
+          "householdSize": 4,
+          "region": "Auckland"
+        }
+      ],
+      "profile": {
+        "dataSummary": "2023 Census response recorded.",
+        "recordCount": 1,
+        "lastUpdated": "2026-06-01"
+      }
+    },
+    {
+      "statsId": "STATS-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "census": [],
+      "profile": {
+        "dataSummary": "No census response on file.",
+        "recordCount": 0,
+        "lastUpdated": "2026-06-01"
+      }
+    }
+  ]
+}

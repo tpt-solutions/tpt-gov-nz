@@ -1,0 +1,39 @@
+{
+  "batchId": "CUSTOMS-2026-07-B001",
+  "generatedAt": "2026-07-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "travellerId": "CUST-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "travel": {
+        "passportNumber": "P1234567",
+        "lastArrival": "2026-06-30",
+        "arrivalPort": "Auckland",
+        "frequentTraveller": true
+      },
+      "declarations": [
+        {
+          "declarationId": "CUST-DCL-1",
+          "date": "2026-06-30",
+          "countryFrom": "Australia",
+          "goodsDeclared": "Personal effects",
+          "status": "submitted"
+        }
+      ]
+    },
+    {
+      "travellerId": "CUST-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "travel": {
+        "passportNumber": "P7654321",
+        "lastArrival": "2026-05-12",
+        "arrivalPort": "Wellington",
+        "frequentTraveller": true
+      },
+      "declarations": []
+    }
+  ]
+}

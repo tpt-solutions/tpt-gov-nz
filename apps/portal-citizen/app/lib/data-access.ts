@@ -12,7 +12,17 @@ export type DeptBundle =
   | import("@tpt/gov-schema").ACCDataBundle
   | import("@tpt/gov-schema").MOJDataBundle
   | import("@tpt/gov-schema").PoliceDataBundle
-  | import("@tpt/gov-schema").HUDDataBundle;
+  | import("@tpt/gov-schema").HUDDataBundle
+  | import("@tpt/gov-schema").NZQADataBundle
+  | import("@tpt/gov-schema").MSDDataBundle
+  | import("@tpt/gov-schema").MBIEDataBundle
+  | import("@tpt/gov-schema").LINZDataBundle
+  | import("@tpt/gov-schema").STATSNZDataBundle
+  | import("@tpt/gov-schema").CORRECTIONSDataBundle
+  | import("@tpt/gov-schema").CUSTOMSDataBundle
+  | import("@tpt/gov-schema").MPIDataBundle
+  | import("@tpt/gov-schema").DOCDataBundle
+  | import("@tpt/gov-schema").TPKDataBundle;
 
 /**
  * Single data-access path used by every department module. In demo mode it

@@ -1,0 +1,39 @@
+{
+  "batchId": "CORRECTIONS-2026-07-B001",
+  "generatedAt": "2026-07-01T00:00:00Z",
+  "source": "mock",
+  "citizens": [
+    {
+      "correctionsId": "COR-100001",
+      "did": "did:gov:nz:test-citizen-001",
+      "name": "Alex Tane",
+      "probation": {
+        "status": "active",
+        "officerName": "Officer R. Reedy",
+        "nextReportDate": "2026-08-15",
+        "location": "Auckland Probation Hub"
+      },
+      "case": [
+        {
+          "caseNumber": "COR-C0001",
+          "sentenceType": "supervision",
+          "startDate": "2025-03-01",
+          "endDate": "2027-03-01",
+          "summary": "Supervision sentence following guilty plea to careless use of a vehicle."
+        }
+      ]
+    },
+    {
+      "correctionsId": "COR-100002",
+      "did": "did:gov:nz:test-citizen-002",
+      "name": "Bree Kare",
+      "probation": {
+        "status": "active",
+        "officerName": "Officer M. Wiki",
+        "nextReportDate": "2026-09-02",
+        "location": "Wellington Probation Hub"
+      },
+      "case": []
+    }
+  ]
+}

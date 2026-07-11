@@ -8,6 +8,16 @@ import type {
   MOJDataBundle,
   PoliceDataBundle,
   HUDDataBundle,
+  NZQADataBundle,
+  MSDDataBundle,
+  MBIEDataBundle,
+  LINZDataBundle,
+  STATSNZDataBundle,
+  CORRECTIONSDataBundle,
+  CUSTOMSDataBundle,
+  MPIDataBundle,
+  DOCDataBundle,
+  TPKDataBundle,
 } from "@tpt/gov-schema";
 
 export type ScenarioId = "standard" | "beneficiary" | "new-parent";
@@ -52,6 +62,16 @@ export interface DemoData {
   moj: MOJDataBundle;
   police: PoliceDataBundle;
   hud: HUDDataBundle;
+  nzqa: NZQADataBundle;
+  msd: MSDDataBundle;
+  mbie: MBIEDataBundle;
+  linz: LINZDataBundle;
+  statsnz: STATSNZDataBundle;
+  corrections: CORRECTIONSDataBundle;
+  customs: CUSTOMSDataBundle;
+  mpi: MPIDataBundle;
+  doc: DOCDataBundle;
+  tpk: TPKDataBundle;
 }
 
 const irdStandard: IRDDataBundle = {
@@ -732,6 +752,147 @@ const hudNewParent: HUDDataBundle = {
   maintenanceRequests: [],
 };
 
+const nzqaStandard: NZQADataBundle = {
+  nsn: "NSN-100001",
+  qualifications: [
+    { qualificationId: "NZQA-Q1", title: "Bachelor of Science", level: 7, awardedDate: "2024-12-10", provider: "University of Auckland" },
+  ],
+  transcript: { recordSummary: "Full Record of Achievement on file.", totalCredits: 360, creditSummary: "Level 7: 360 credits" },
+};
+
+const nzqaBeneficiary: NZQADataBundle = nzqaStandard;
+
+const nzqaNewParent: NZQADataBundle = nzqaStandard;
+
+const msdStandard: MSDDataBundle = {
+  clientNumber: "MSD-100001",
+  studylink: { hasStudentLoan: false, hasAllowance: false },
+  caseHistory: [],
+};
+
+const msdBeneficiary: MSDDataBundle = {
+  clientNumber: "MSD-100001",
+  studylink: {
+    hasStudentLoan: true,
+    loanBalance: 24000,
+    repaymentPlan: "standard",
+    hasAllowance: true,
+    allowanceType: "student-allowance",
+    nextPaymentDate: "2026-07-15",
+    weeklyAmount: 272,
+  },
+  caseHistory: [
+    { eventDate: "2025-02-01", serviceLine: "StudyLink", summary: "Student allowance application approved." },
+    { eventDate: "2025-07-01", serviceLine: "StudyLink", summary: "Student loan repayment plan set to standard." },
+  ],
+};
+
+const msdNewParent: MSDDataBundle = {
+  clientNumber: "MSD-100001",
+  studylink: { hasStudentLoan: false, hasAllowance: false },
+  caseHistory: [
+    { eventDate: "2026-05-20", serviceLine: "Parental Leave", summary: "Parental leave payment established." },
+  ],
+};
+
+const mbieStandard: MBIEDataBundle = {
+  personId: "MBIE-P-100001",
+  businessRegistrations: [
+    { nzbn: "9429000000001", entityName: "Tane Digital Ltd", entityType: "company", status: "registered", registeredDate: "2022-03-04" },
+  ],
+  directorships: [
+    { nzbn: "9429000000001", entityName: "Tane Digital Ltd", role: "Director", appointedDate: "2022-03-04" },
+  ],
+};
+
+const mbieBeneficiary: MBIEDataBundle = mbieStandard;
+
+const mbieNewParent: MBIEDataBundle = mbieStandard;
+
+const linzStandard: LINZDataBundle = {
+  customerId: "LINZ-100001",
+  titles: [
+    { titleNumber: "NA12B/123", propertyAddress: "12 Totara Street, Porirua", landAreaSqm: 612, estateType: "Fee simple" },
+  ],
+  ownership: [
+    { titleNumber: "NA12B/123", ownershipShare: "1/1", registeredOwners: ["Alex Tane"] },
+  ],
+};
+
+const linzBeneficiary: LINZDataBundle = linzStandard;
+
+const linzNewParent: LINZDataBundle = {
+  customerId: "LINZ-100001",
+  titles: [
+    { titleNumber: "NA12B/123", propertyAddress: "12 Totara Street, Porirua", landAreaSqm: 612, estateType: "Fee simple" },
+    { titleNumber: "NA20C/456", propertyAddress: "4 Rata Crescent, Lower Hutt", landAreaSqm: 480, estateType: "Fee simple" },
+  ],
+  ownership: [
+    { titleNumber: "NA12B/123", ownershipShare: "1/1", registeredOwners: ["Alex Tane"] },
+    { titleNumber: "NA20C/456", ownershipShare: "1/2", registeredOwners: ["Alex Tane", "Mere Tane"] },
+  ],
+};
+
+const statsnzStandard: STATSNZDataBundle = {
+  statsId: "STATS-100001",
+  census: [{ censusYear: 2023, dwellingType: "House", householdSize: 3, region: "Wellington" }],
+  profile: { dataSummary: "2023 Census respondent. Standard data profile on file.", recordCount: 1, lastUpdated: "2023-11-01" },
+};
+const statsnzBeneficiary: STATSNZDataBundle = statsnzStandard;
+const statsnzNewParent: STATSNZDataBundle = statsnzStandard;
+
+const correctionsStandard: CORRECTIONSDataBundle = {
+  correctionsId: "COR-100001",
+  probation: { status: "not-under-supervision", officerName: "", nextReportDate: "", location: "" },
+  case: [],
+};
+const correctionsBeneficiary: CORRECTIONSDataBundle = correctionsStandard;
+const correctionsNewParent: CORRECTIONSDataBundle = correctionsStandard;
+
+const customsStandard: CUSTOMSDataBundle = {
+  travellerId: "CUST-100001",
+  travel: { passportNumber: "C1234567", lastArrival: "2026-04-12", arrivalPort: "Auckland", frequentTraveller: true },
+  declarations: [
+    { declarationId: "CUST-D1", date: "2026-04-12", countryFrom: "Australia", goodsDeclared: "Personal effects", status: "cleared" },
+  ],
+};
+const customsBeneficiary: CUSTOMSDataBundle = customsStandard;
+const customsNewParent: CUSTOMSDataBundle = customsStandard;
+
+const mpiStandard: MPIDataBundle = {
+  mpiId: "MPI-100001",
+  registrations: [
+    { nzbn: "9429000000002", businessName: "Tane Orchards", type: "orchard", status: "registered", registeredDate: "2021-09-15" },
+  ],
+  certifications: [
+    { certNumber: "MPI-C1", category: "food-safety", issuedDate: "2025-01-20", expiresDate: "2026-01-20" },
+  ],
+};
+const mpiBeneficiary: MPIDataBundle = mpiStandard;
+const mpiNewParent: MPIDataBundle = mpiStandard;
+
+const docStandard: DOCDataBundle = {
+  docId: "DOC-100001",
+  permits: [
+    { permitNumber: "DOC-P1", activity: "Recreational fishing", location: "Wellington region", status: "active", expiresDate: "2026-12-31" },
+  ],
+  concessions: [],
+};
+const docBeneficiary: DOCDataBundle = docStandard;
+const docNewParent: DOCDataBundle = docStandard;
+
+const tpkStandard: TPKDataBundle = {
+  tpkId: "TPK-100001",
+  programmes: [
+    { programmeName: "Te Arawhiti mātauranga", status: "enrolled", region: "Wellington" },
+  ],
+  funding: [
+    { grantId: "TPK-G1", amount: 5000, purpose: "Marae renovation", status: "approved" },
+  ],
+};
+const tpkBeneficiary: TPKDataBundle = tpkStandard;
+const tpkNewParent: TPKDataBundle = tpkStandard;
+
 export function getDemoData(scenario: ScenarioId): DemoData {
   switch (scenario) {
     case "beneficiary":
@@ -745,6 +906,16 @@ export function getDemoData(scenario: ScenarioId): DemoData {
         moj: mojBeneficiary,
         police: policeBeneficiary,
         hud: hudBeneficiary,
+        nzqa: nzqaBeneficiary,
+        msd: msdBeneficiary,
+        mbie: mbieBeneficiary,
+        linz: linzBeneficiary,
+        statsnz: statsnzBeneficiary,
+        corrections: correctionsBeneficiary,
+        customs: customsBeneficiary,
+        mpi: mpiBeneficiary,
+        doc: docBeneficiary,
+        tpk: tpkBeneficiary,
       };
     case "new-parent":
       return {
@@ -757,6 +928,16 @@ export function getDemoData(scenario: ScenarioId): DemoData {
         moj: mojNewParent,
         police: policeNewParent,
         hud: hudNewParent,
+        nzqa: nzqaNewParent,
+        msd: msdNewParent,
+        mbie: mbieNewParent,
+        linz: linzNewParent,
+        statsnz: statsnzNewParent,
+        corrections: correctionsNewParent,
+        customs: customsNewParent,
+        mpi: mpiNewParent,
+        doc: docNewParent,
+        tpk: tpkNewParent,
       };
     case "standard":
     default:
@@ -770,6 +951,16 @@ export function getDemoData(scenario: ScenarioId): DemoData {
         moj: mojStandard,
         police: policeStandard,
         hud: hudStandard,
+        nzqa: nzqaStandard,
+        msd: msdStandard,
+        mbie: mbieStandard,
+        linz: linzStandard,
+        statsnz: statsnzStandard,
+        corrections: correctionsStandard,
+        customs: customsStandard,
+        mpi: mpiStandard,
+        doc: docStandard,
+        tpk: tpkStandard,
       };
   }
 }

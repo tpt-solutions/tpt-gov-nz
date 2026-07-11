@@ -14,6 +14,16 @@ export const PORTAL_CONFIG = {
     moj: process.env.MOJ_SERVICE_URL ?? "http://localhost:8096",
     police: process.env.POLICE_SERVICE_URL ?? "http://localhost:8097",
     hud: process.env.HUD_SERVICE_URL ?? "http://localhost:8098",
+    nzqa: process.env.NZQA_SERVICE_URL ?? "http://localhost:8099",
+    msd: process.env.MSD_SERVICE_URL ?? "http://localhost:8100",
+    mbie: process.env.MBIE_SERVICE_URL ?? "http://localhost:8101",
+    linz: process.env.LINZ_SERVICE_URL ?? "http://localhost:8102",
+    statsnz: process.env.STATSNZ_SERVICE_URL ?? "http://localhost:8103",
+    corrections: process.env.CORRECTIONS_SERVICE_URL ?? "http://localhost:8104",
+    customs: process.env.CUSTOMS_SERVICE_URL ?? "http://localhost:8105",
+    mpi: process.env.MPI_SERVICE_URL ?? "http://localhost:8106",
+    doc: process.env.DOC_SERVICE_URL ?? "http://localhost:8107",
+    tpk: process.env.TPK_SERVICE_URL ?? "http://localhost:8108",
   },
 
   sessionCookieName: "tpt_session",
@@ -29,7 +39,7 @@ export const PORTAL_CONFIG = {
 
 export const DEMO_DID = "did:gov:nz:demo-alex-tane";
 
-export type DeptId = "ird" | "winz" | "moh" | "dia" | "nzta" | "acc" | "moj" | "police" | "hud";
+export type DeptId = "ird" | "winz" | "moh" | "dia" | "nzta" | "acc" | "moj" | "police" | "hud" | "nzqa" | "msd" | "mbie" | "linz" | "statsnz" | "corrections" | "customs" | "mpi" | "doc" | "tpk";
 
 export interface DeptMeta {
   id: DeptId;
@@ -112,5 +122,85 @@ export const DEPARTMENTS: DeptMeta[] = [
     description: "Housing applications, tenancy and maintenance requests.",
     scopes: ["hud:applications", "hud:tenancy", "hud:maintenance"],
     href: "/dept/hud",
+  },
+  {
+    id: "nzqa",
+    name: "Ministry of Education / NZQA",
+    shortName: "NZQA",
+    description: "Qualifications, transcripts and the New Zealand Record of Achievement.",
+    scopes: ["nzqa:qualifications", "nzqa:transcripts"],
+    href: "/dept/nzqa",
+  },
+  {
+    id: "msd",
+    name: "Ministry of Social Development",
+    shortName: "MSD",
+    description: "StudyLink student loans and allowances, and cross-service case history.",
+    scopes: ["msd:studylink", "msd:case-history"],
+    href: "/dept/msd",
+  },
+  {
+    id: "mbie",
+    name: "Ministry of Business, Innovation and Employment",
+    shortName: "MBIE",
+    description: "Business registrations and company director lookup.",
+    scopes: ["mbie:business", "mbie:directorships"],
+    href: "/dept/mbie",
+  },
+  {
+    id: "linz",
+    name: "Toitū Te Whenua Land Information New Zealand",
+    shortName: "LINZ",
+    description: "Property titles and land ownership records.",
+    scopes: ["linz:titles", "linz:ownership"],
+    href: "/dept/linz",
+  },
+  {
+    id: "statsnz",
+    name: "Statistics New Zealand",
+    shortName: "Stats NZ",
+    description: "Census data, official statistics and your data profile.",
+    scopes: ["statsnz:census", "statsnz:profile"],
+    href: "/dept/statsnz",
+  },
+  {
+    id: "corrections",
+    name: "Department of Corrections",
+    shortName: "Corrections",
+    description: "Probation status and case information.",
+    scopes: ["corrections:probation", "corrections:case"],
+    href: "/dept/corrections",
+  },
+  {
+    id: "customs",
+    name: "New Zealand Customs Service",
+    shortName: "Customs",
+    description: "Traveller declarations and arrival information.",
+    scopes: ["customs:travel", "customs:declarations"],
+    href: "/dept/customs",
+  },
+  {
+    id: "mpi",
+    name: "Ministry for Primary Industries",
+    shortName: "MPI",
+    description: "Food and business registrations and certifications.",
+    scopes: ["mpi:registrations", "mpi:certifications"],
+    href: "/dept/mpi",
+  },
+  {
+    id: "doc",
+    name: "Department of Conservation",
+    shortName: "DOC",
+    description: "Conservation permits and concessions.",
+    scopes: ["doc:permits", "doc:concessions"],
+    href: "/dept/doc",
+  },
+  {
+    id: "tpk",
+    name: "Te Puni Kōkiri",
+    shortName: "TPK",
+    description: "Māori development programmes and funding.",
+    scopes: ["tpk:programmes", "tpk:funding"],
+    href: "/dept/tpk",
   },
 ];

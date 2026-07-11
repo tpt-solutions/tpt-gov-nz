@@ -281,10 +281,10 @@ Each: dept service → ingester → portal pages → staff view → federation �
 
 - [x] **NZTA** — driver licence, vehicles, RUC
 - [x] **ACC** — claims, entitlements, rehabilitation
-- [ ] **MoE / NZQA** — qualifications, transcripts
-- [ ] **MSD** — student loans/allowances (StudyLink), broader case history beyond Work and Income (see "WINZ — Full Native Module" above)
-- [ ] **MBIE** — business registrations, company director lookup
-- [ ] **LINZ** — property titles, land ownership
+ - [x] **MoE / NZQA** — qualifications, transcripts
+ - [x] **MSD** — student loans/allowances (StudyLink), broader case history beyond Work and Income (see "WINZ — Full Native Module" above)
+ - [x] **MBIE** — business registrations, company director lookup
+ - [x] **LINZ** — property titles, land ownership
 
 ## NZTA — Full Native Module ✅
 

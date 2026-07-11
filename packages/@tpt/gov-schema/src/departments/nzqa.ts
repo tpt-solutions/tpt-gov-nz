@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const NzqaQualificationSchema = z.object({
+  qualificationId: z.string(),
   title: z.string(),
   level: z.number(),
   awardedDate: z.string(),
