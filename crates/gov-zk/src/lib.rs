@@ -90,7 +90,7 @@ fn prove_bit(c: RistrettoPoint, bit: u8, r: Scalar) -> BitProof {
         // simulated false branch (case 1)
         let z1 = random_scalar();
         let e1 = random_scalar();
-        let a1 = h() * z1 - base1 * e1;
+        let _a1 = h() * z1 - base1 * e1;
         (e0, z0, e1, z1)
     } else {
         let e1 = challenge(&[base1, a1], &[1]);
@@ -98,7 +98,7 @@ fn prove_bit(c: RistrettoPoint, bit: u8, r: Scalar) -> BitProof {
         // simulated false branch (case 0)
         let z0 = random_scalar();
         let e0 = random_scalar();
-        let a0 = h() * z0 - c * e0;
+        let _a0 = h() * z0 - c * e0;
         (e0, z0, e1, z1)
     };
 
@@ -165,8 +165,7 @@ fn prove_range(c: RistrettoPoint, value: u64, blinding: Scalar, min: u64, max: u
     let delta = blinding - blind_sum;
     let t = random_scalar();
     let a = h() * t;
-    let e = challenge(&[cprime, a], &[])
-        + challenge(&commitments.clone(), &[]);
+    let e = challenge(&[cprime, a], &[]) + challenge(&commitments.clone(), &[]);
     let z = t + e * delta;
 
     RangeProof {
@@ -179,7 +178,7 @@ fn prove_range(c: RistrettoPoint, value: u64, blinding: Scalar, min: u64, max: u
 }
 
 fn verify_range(c: RistrettoPoint, proof: &RangeProof) -> bool {
-    let n = proof.commitments.len();
+    let _n = proof.commitments.len();
     let cprime = c - g() * Scalar::from(proof.min);
 
     for (i, bp) in proof.bits.iter().enumerate() {
@@ -190,7 +189,7 @@ fn verify_range(c: RistrettoPoint, proof: &RangeProof) -> bool {
 
     let mut acc = cprime;
     for (i, c_i) in proof.commitments.iter().enumerate() {
-        acc = acc - c_i * Scalar::from(1u64 << i);
+        acc -= c_i * Scalar::from(1u64 << i);
     }
     let e = challenge(&[cprime, proof.sum.a], &[]) + challenge(&proof.commitments.clone(), &[]);
     let lhs = proof.sum.a;
@@ -276,7 +275,7 @@ mod tests {
     fn age_proof_rejects_tampering() {
         let mut proof = prove_age(1990, random_scalar(), 2024).unwrap();
         // Tamper: flip the age commitment's blinding relationship.
-        proof.ca = proof.ca + g();
+        proof.ca += g();
         assert!(!verify_age(&proof), "tampered age proof must fail");
     }
 
@@ -289,8 +288,11 @@ mod tests {
     #[test]
     fn residency_proof_rejects_tampering() {
         let mut proof = prove_residency(1, random_scalar());
-        proof.ca = proof.ca + g();
-        assert!(!verify_residency(&proof), "tampered residency proof must fail");
+        proof.ca += g();
+        assert!(
+            !verify_residency(&proof),
+            "tampered residency proof must fail"
+        );
     }
 
     #[test]
@@ -301,6 +303,9 @@ mod tests {
         assert!(verify_range(c, &proof), "valid in-range proof verifies");
         // A different commitment to the same value must not verify.
         let c2 = commit(50, random_scalar());
-        assert!(!verify_range(c2, &proof), "proof must bind to its commitment");
+        assert!(
+            !verify_range(c2, &proof),
+            "proof must bind to its commitment"
+        );
     }
 }
