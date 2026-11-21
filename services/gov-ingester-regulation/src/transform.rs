@@ -2,14 +2,13 @@
 
 use crate::{
     error::IngestError,
-    models::{RegulatoryReviewsEntity,ProposalsEntity,CitizenEntity, TransformedCitizen},
+    models::{CitizenEntity, ProposalsEntity, RegulatoryReviewsEntity, TransformedCitizen},
     raw::RawRegulationCitizen,
 };
 
 fn parse_date(s: &str, field: &str) -> Result<chrono::NaiveDate, IngestError> {
-    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").map_err(|e| {
-        IngestError::Transform(format!("invalid {field} date '{s}': {e}"))
-    })
+    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d")
+        .map_err(|e| IngestError::Transform(format!("invalid {field} date '{s}': {e}")))
 }
 
 pub fn transform_citizen(raw: &RawRegulationCitizen) -> Result<TransformedCitizen, IngestError> {
@@ -61,8 +60,7 @@ mod tests {
     use super::*;
 
     fn sample() -> RawRegulationCitizen {
-        serde_json::from_value(serde_json::json!([object Object]))
-            .unwrap()
+        serde_json::from_value(serde_json::json!([object Object])).unwrap()
     }
 
     #[test]
@@ -70,15 +68,21 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.regulation_id, "REG-100001");
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.regulatory_reviews.as_ref().unwrap().topic, "Building consenting");
-         assert_eq!(t.regulatory_reviews.as_ref().unwrap().agency, "MBIE");
-         assert_eq!(t.regulatory_reviews.as_ref().unwrap().status, "in-progress");
-         assert_eq!(t.regulatory_reviews.as_ref().unwrap().review_year, 2026);
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(
+            t.regulatory_reviews.as_ref().unwrap().topic,
+            "Building consenting"
+        );
+        assert_eq!(t.regulatory_reviews.as_ref().unwrap().agency, "MBIE");
+        assert_eq!(t.regulatory_reviews.as_ref().unwrap().status, "in-progress");
+        assert_eq!(t.regulatory_reviews.as_ref().unwrap().review_year, 2026);
 
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.proposals.as_ref().unwrap().title, "Reduce duplicate reporting");
-         assert_eq!(t.proposals.as_ref().unwrap().status, "consultation");
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(
+            t.proposals.as_ref().unwrap().title,
+            "Reduce duplicate reporting"
+        );
+        assert_eq!(t.proposals.as_ref().unwrap().status, "consultation");
     }
 
     #[test]

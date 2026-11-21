@@ -2,14 +2,13 @@
 
 use crate::{
     error::IngestError,
-    models::{FireSafetyEntity,IncidentsEntity,CitizenEntity, TransformedCitizen},
+    models::{CitizenEntity, FireSafetyEntity, IncidentsEntity, TransformedCitizen},
     raw::RawFenzCitizen,
 };
 
 fn parse_date(s: &str, field: &str) -> Result<chrono::NaiveDate, IngestError> {
-    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").map_err(|e| {
-        IngestError::Transform(format!("invalid {field} date '{s}': {e}"))
-    })
+    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d")
+        .map_err(|e| IngestError::Transform(format!("invalid {field} date '{s}': {e}")))
 }
 
 pub fn transform_citizen(raw: &RawFenzCitizen) -> Result<TransformedCitizen, IngestError> {
@@ -27,9 +26,9 @@ pub fn transform_citizen(raw: &RawFenzCitizen) -> Result<TransformedCitizen, Ing
 
     let fire_safety = match &raw.fire_safety {
         Some(c) => Some(FireSafetyEntity {
-                property: c.property.clone(),
-                grade: c.grade.clone(),
-                last_inspection: parse_date(&c.last_inspection, "last_inspection")?,
+            property: c.property.clone(),
+            grade: c.grade.clone(),
+            last_inspection: parse_date(&c.last_inspection, "last_inspection")?,
         }),
         None => None,
     };
@@ -59,8 +58,7 @@ mod tests {
     use super::*;
 
     fn sample() -> RawFenzCitizen {
-        serde_json::from_value(serde_json::json!([object Object]))
-            .unwrap()
+        serde_json::from_value(serde_json::json!([object Object])).unwrap()
     }
 
     #[test]
@@ -68,16 +66,28 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.fenz_id, "FENZ-100001");
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.fire_safety.as_ref().unwrap().property, "12 Totara Street, Porirua");
-         assert_eq!(t.fire_safety.as_ref().unwrap().grade, "Compliant");
-         assert_eq!(t.fire_safety.as_ref().unwrap().last_inspection.to_string(), "2025-11-12");
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(
+            t.fire_safety.as_ref().unwrap().property,
+            "12 Totara Street, Porirua"
+        );
+        assert_eq!(t.fire_safety.as_ref().unwrap().grade, "Compliant");
+        assert_eq!(
+            t.fire_safety.as_ref().unwrap().last_inspection.to_string(),
+            "2025-11-12"
+        );
 
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.incidents.as_ref().unwrap().reference, "FENZ-2026-050");
-         assert_eq!(t.incidents.as_ref().unwrap().incident_type, "Structure fire");
-         assert_eq!(t.incidents.as_ref().unwrap().incident_date.to_string(), "2026-01-30");
-         assert_eq!(t.incidents.as_ref().unwrap().status, "closed");
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(t.incidents.as_ref().unwrap().reference, "FENZ-2026-050");
+        assert_eq!(
+            t.incidents.as_ref().unwrap().incident_type,
+            "Structure fire"
+        );
+        assert_eq!(
+            t.incidents.as_ref().unwrap().incident_date.to_string(),
+            "2026-01-30"
+        );
+        assert_eq!(t.incidents.as_ref().unwrap().status, "closed");
     }
 
     #[test]

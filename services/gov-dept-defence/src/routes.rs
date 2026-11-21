@@ -1,18 +1,9 @@
-use axum::{
-    extract::State,
-    Json,
-};
+use axum::{Json, extract::State};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 
-use crate::{
-    actions,
-    consent,
-    db,
-    error::DefenceError,
-    opa,
-};
+use crate::{actions, consent, db, error::DefenceError, opa};
 
 pub async fn health() -> Json<Value> {
     Json(json!({ "status": "ok", "dept_id": "defence" }))
@@ -96,11 +87,15 @@ pub async fn fetch_data(
     };
 
     let procurements_json = procurements.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "programme": c.c,
-            "value": c.c,
-            "status": c.c,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "programme": c.c,
+                    "value": c.c,
+                    "status": c.c,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     let bases = if has_scope("defence:bases") {
@@ -110,11 +105,15 @@ pub async fn fetch_data(
     };
 
     let bases_json = bases.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "name": c.c,
-            "location": c.c,
-            "status": c.c,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "name": c.c,
+                    "location": c.c,
+                    "status": c.c,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     Ok(Json(json!({

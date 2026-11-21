@@ -2,14 +2,13 @@
 
 use crate::{
     error::IngestError,
-    models::{InvestigationsEntity,OutcomesEntity,CitizenEntity, TransformedCitizen},
+    models::{CitizenEntity, InvestigationsEntity, OutcomesEntity, TransformedCitizen},
     raw::RawSfoCitizen,
 };
 
 fn parse_date(s: &str, field: &str) -> Result<chrono::NaiveDate, IngestError> {
-    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").map_err(|e| {
-        IngestError::Transform(format!("invalid {field} date '{s}': {e}"))
-    })
+    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d")
+        .map_err(|e| IngestError::Transform(format!("invalid {field} date '{s}': {e}")))
 }
 
 pub fn transform_citizen(raw: &RawSfoCitizen) -> Result<TransformedCitizen, IngestError> {
@@ -62,8 +61,7 @@ mod tests {
     use super::*;
 
     fn sample() -> RawSfoCitizen {
-        serde_json::from_value(serde_json::json!([object Object]))
-            .unwrap()
+        serde_json::from_value(serde_json::json!([object Object])).unwrap()
     }
 
     #[test]
@@ -71,16 +69,28 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.sfo_id, "SFO-100001");
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.investigations.as_ref().unwrap().reference, "SFO-2026-014");
-         assert_eq!(t.investigations.as_ref().unwrap().matter, "Complex investment fraud");
-         assert_eq!(t.investigations.as_ref().unwrap().status, "under-investigation");
-         assert_eq!(t.investigations.as_ref().unwrap().opened_date.to_string(), "2026-01-22");
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(t.investigations.as_ref().unwrap().reference, "SFO-2026-014");
+        assert_eq!(
+            t.investigations.as_ref().unwrap().matter,
+            "Complex investment fraud"
+        );
+        assert_eq!(
+            t.investigations.as_ref().unwrap().status,
+            "under-investigation"
+        );
+        assert_eq!(
+            t.investigations.as_ref().unwrap().opened_date.to_string(),
+            "2026-01-22"
+        );
 
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.outcomes.as_ref().unwrap().reference, "SFO-2025-009");
-         assert_eq!(t.outcomes.as_ref().unwrap().result, "Prosecution commenced");
-         assert_eq!(t.outcomes.as_ref().unwrap().result_date.to_string(), "2025-11-03");
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(t.outcomes.as_ref().unwrap().reference, "SFO-2025-009");
+        assert_eq!(t.outcomes.as_ref().unwrap().result, "Prosecution commenced");
+        assert_eq!(
+            t.outcomes.as_ref().unwrap().result_date.to_string(),
+            "2025-11-03"
+        );
     }
 
     #[test]

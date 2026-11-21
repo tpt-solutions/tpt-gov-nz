@@ -1,18 +1,9 @@
-use axum::{
-    extract::State,
-    Json,
-};
+use axum::{Json, extract::State};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 
-use crate::{
-    actions,
-    consent,
-    db,
-    error::PoliceError,
-    opa,
-};
+use crate::{actions, consent, db, error::PoliceError, opa};
 
 pub async fn health() -> Json<Value> {
     Json(json!({ "status": "ok", "dept_id": "police" }))
@@ -102,26 +93,34 @@ pub async fn fetch_data(
     };
 
     let infringements_json = infringements.as_ref().map(|rows| {
-        json!(rows.iter().map(|i| json!({
-            "ticketNumber": i.ticket_number,
-            "offenseType": i.offense_type,
-            "status": i.status,
-            "amount": i.amount,
-            "issueDate": i.issue_date.to_string(),
-            "location": i.location,
-            "demeritPoints": i.demerit_points,
-            "description": i.description,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|i| json!({
+                    "ticketNumber": i.ticket_number,
+                    "offenseType": i.offense_type,
+                    "status": i.status,
+                    "amount": i.amount,
+                    "issueDate": i.issue_date.to_string(),
+                    "location": i.location,
+                    "demeritPoints": i.demerit_points,
+                    "description": i.description,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     let reports_json = reports.as_ref().map(|rows| {
-        json!(rows.iter().map(|r| json!({
-            "reportNumber": r.report_number,
-            "reportType": r.report_type,
-            "status": r.status,
-            "filedDate": r.filed_date.to_string(),
-            "description": r.description,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|r| json!({
+                    "reportNumber": r.report_number,
+                    "reportType": r.report_type,
+                    "status": r.status,
+                    "filedDate": r.filed_date.to_string(),
+                    "description": r.description,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     Ok(Json(json!({

@@ -2,14 +2,13 @@
 
 use crate::{
     error::IngestError,
-    models::{HeritageSitesEntity,GrantsEntity,CitizenEntity, TransformedCitizen},
+    models::{CitizenEntity, GrantsEntity, HeritageSitesEntity, TransformedCitizen},
     raw::RawMchCitizen,
 };
 
 fn parse_date(s: &str, field: &str) -> Result<chrono::NaiveDate, IngestError> {
-    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").map_err(|e| {
-        IngestError::Transform(format!("invalid {field} date '{s}': {e}"))
-    })
+    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d")
+        .map_err(|e| IngestError::Transform(format!("invalid {field} date '{s}': {e}")))
 }
 
 pub fn transform_citizen(raw: &RawMchCitizen) -> Result<TransformedCitizen, IngestError> {
@@ -61,8 +60,7 @@ mod tests {
     use super::*;
 
     fn sample() -> RawMchCitizen {
-        serde_json::from_value(serde_json::json!([object Object]))
-            .unwrap()
+        serde_json::from_value(serde_json::json!([object Object])).unwrap()
     }
 
     #[test]
@@ -70,15 +68,21 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.mch_id, "MCH-100001");
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.heritage_sites.as_ref().unwrap().name, "Old St Paul's");
-         assert_eq!(t.heritage_sites.as_ref().unwrap().status, "Category 1 historic place");
-         assert_eq!(t.heritage_sites.as_ref().unwrap().region, "Wellington");
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(t.heritage_sites.as_ref().unwrap().name, "Old St Paul's");
+        assert_eq!(
+            t.heritage_sites.as_ref().unwrap().status,
+            "Category 1 historic place"
+        );
+        assert_eq!(t.heritage_sites.as_ref().unwrap().region, "Wellington");
 
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.grants.as_ref().unwrap().grant_name, "Cultural Innovation Fund");
-         assert_eq!(t.grants.as_ref().unwrap().amount, 15000);
-         assert_eq!(t.grants.as_ref().unwrap().status, "approved");
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(
+            t.grants.as_ref().unwrap().grant_name,
+            "Cultural Innovation Fund"
+        );
+        assert_eq!(t.grants.as_ref().unwrap().amount, 15000);
+        assert_eq!(t.grants.as_ref().unwrap().status, "approved");
     }
 
     #[test]

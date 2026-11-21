@@ -8,13 +8,13 @@ async fn main() -> anyhow::Result<()> {
     dotenvy::dotenv().ok();
     tracing_subscriber::fmt()
         .with_env_filter(
-            std::env::var("RUST_LOG").unwrap_or_else(|_| "gov_dept_statsnz=info,tower_http=debug".into()),
+            std::env::var("RUST_LOG")
+                .unwrap_or_else(|_| "gov_dept_statsnz=info,tower_http=debug".into()),
         )
         .json()
         .init();
 
-    let database_url = std::env::var("DATABASE_URL")
-        .expect("DATABASE_URL must be set");
+    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let http_listen: SocketAddr = std::env::var("TPT__GOV__HTTP_LISTEN")
         .unwrap_or_else(|_| "0.0.0.0:8103".into())
         .parse()?;

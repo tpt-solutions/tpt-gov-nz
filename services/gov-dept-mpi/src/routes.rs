@@ -1,18 +1,9 @@
-use axum::{
-    extract::State,
-    Json,
-};
+use axum::{Json, extract::State};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 
-use crate::{
-    actions,
-    consent,
-    db,
-    error::MpiError,
-    opa,
-};
+use crate::{actions, consent, db, error::MpiError, opa};
 
 pub async fn health() -> Json<Value> {
     Json(json!({ "status": "ok", "dept_id": "mpi" }))
@@ -102,22 +93,30 @@ pub async fn fetch_data(
     };
 
     let registrations_json = registrations.as_ref().map(|rows| {
-        json!(rows.iter().map(|r| json!({
-            "nzbn": r.nzbn,
-            "businessName": r.business_name,
-            "type": r.r#type,
-            "status": r.status,
-            "registeredDate": r.registered_date.to_string(),
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|r| json!({
+                    "nzbn": r.nzbn,
+                    "businessName": r.business_name,
+                    "type": r.r#type,
+                    "status": r.status,
+                    "registeredDate": r.registered_date.to_string(),
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     let certifications_json = certifications.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "certNumber": c.cert_number,
-            "category": c.category,
-            "issuedDate": c.issued_date.to_string(),
-            "expiresDate": c.expires_date.to_string(),
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "certNumber": c.cert_number,
+                    "category": c.category,
+                    "issuedDate": c.issued_date.to_string(),
+                    "expiresDate": c.expires_date.to_string(),
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     Ok(Json(json!({

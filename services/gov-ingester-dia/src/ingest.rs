@@ -7,7 +7,7 @@ use uuid::Uuid;
 use crate::{
     db,
     error::IngestError,
-    models::{new_run_id, IngestionStatus, IngestionSummary},
+    models::{IngestionStatus, IngestionSummary, new_run_id},
     transform::transform_citizen,
     transport::IngesterTransport,
 };
@@ -38,13 +38,25 @@ pub async fn run_once(
         }
 
         if let Some(p) = &t.passport {
-            count(db::upsert_passport(pool, citizen_id, p).await?, &mut inserted, &mut updated);
+            count(
+                db::upsert_passport(pool, citizen_id, p).await?,
+                &mut inserted,
+                &mut updated,
+            );
         }
         if let Some(b) = &t.birth_cert {
-            count(db::upsert_birth_cert(pool, citizen_id, b).await?, &mut inserted, &mut updated);
+            count(
+                db::upsert_birth_cert(pool, citizen_id, b).await?,
+                &mut inserted,
+                &mut updated,
+            );
         }
         if let Some(c) = &t.citizenship {
-            count(db::upsert_citizenship(pool, citizen_id, c).await?, &mut inserted, &mut updated);
+            count(
+                db::upsert_citizenship(pool, citizen_id, c).await?,
+                &mut inserted,
+                &mut updated,
+            );
         }
     }
 

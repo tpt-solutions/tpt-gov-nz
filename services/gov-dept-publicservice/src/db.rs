@@ -34,7 +34,10 @@ pub struct AgencyRatingsRow {
     pub rating_year: i32,
 }
 
-pub async fn fetch_agency_ratings(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<AgencyRatingsRow>> {
+pub async fn fetch_agency_ratings(
+    pool: &PgPool,
+    citizen_id: Uuid,
+) -> sqlx::Result<Vec<AgencyRatingsRow>> {
     sqlx::query_as!(
         AgencyRatingsRow,
         "SELECT id, agency, rating, rating_year FROM publicservice_agency_ratings WHERE citizen_id = $1 ORDER BY created_at DESC",

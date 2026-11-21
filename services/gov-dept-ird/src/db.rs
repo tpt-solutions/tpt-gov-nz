@@ -154,10 +154,7 @@ pub async fn fetch_gst_registration(
     .await
 }
 
-pub async fn fetch_gst_periods(
-    pool: &PgPool,
-    citizen_id: Uuid,
-) -> sqlx::Result<Vec<GstPeriodRow>> {
+pub async fn fetch_gst_periods(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<GstPeriodRow>> {
     sqlx::query_as!(
         GstPeriodRow,
         r#"SELECT id, period_start, period_end, filing_due, status,
@@ -172,7 +169,10 @@ pub async fn fetch_gst_periods(
     .await
 }
 
-pub async fn fetch_kiwisaver(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Option<KiwiSaverRow>> {
+pub async fn fetch_kiwisaver(
+    pool: &PgPool,
+    citizen_id: Uuid,
+) -> sqlx::Result<Option<KiwiSaverRow>> {
     sqlx::query_as!(
         KiwiSaverRow,
         r#"SELECT membership_status, contribution_rate, employer_contribution_rate,

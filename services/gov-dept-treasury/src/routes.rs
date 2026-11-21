@@ -1,18 +1,9 @@
-use axum::{
-    extract::State,
-    Json,
-};
+use axum::{Json, extract::State};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 
-use crate::{
-    actions,
-    consent,
-    db,
-    error::TreasuryError,
-    opa,
-};
+use crate::{actions, consent, db, error::TreasuryError, opa};
 
 pub async fn health() -> Json<Value> {
     Json(json!({ "status": "ok", "dept_id": "treasury" }))
@@ -96,12 +87,16 @@ pub async fn fetch_data(
     };
 
     let budget_json = budget.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "fiscalYear": c.c,
-            "portfolio": c.c,
-            "appropriation": c.c,
-            "amount": c.c,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "fiscalYear": c.c,
+                    "portfolio": c.c,
+                    "appropriation": c.c,
+                    "amount": c.c,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     let economic_outlook = if has_scope("treasury:economic-outlook") {

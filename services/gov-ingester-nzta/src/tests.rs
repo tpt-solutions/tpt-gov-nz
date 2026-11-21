@@ -16,15 +16,21 @@ use crate::{
 
 #[sqlx::test(migrations = "../gov-dept-nzta/migrations")]
 async fn upsert_citizen_is_idempotent(pool: sqlx::PgPool) {
-    let (_, first) = db::upsert_citizen(&pool, "did:gov:nz:t", "NZ9999").await.unwrap();
+    let (_, first) = db::upsert_citizen(&pool, "did:gov:nz:t", "NZ9999")
+        .await
+        .unwrap();
     assert!(first);
-    let (_, second) = db::upsert_citizen(&pool, "did:gov:nz:t", "NZ9999").await.unwrap();
+    let (_, second) = db::upsert_citizen(&pool, "did:gov:nz:t", "NZ9999")
+        .await
+        .unwrap();
     assert!(!second);
 }
 
 #[sqlx::test(migrations = "../gov-dept-nzta/migrations")]
 async fn upsert_driver_licence_is_idempotent(pool: sqlx::PgPool) {
-    let (cid, _) = db::upsert_citizen(&pool, "did:gov:nz:p", "NZ8888").await.unwrap();
+    let (cid, _) = db::upsert_citizen(&pool, "did:gov:nz:p", "NZ8888")
+        .await
+        .unwrap();
     let e = crate::models::DriverLicenceEntity {
         licence_number: "NZ8888".into(),
         full_name: "Test Driver".into(),

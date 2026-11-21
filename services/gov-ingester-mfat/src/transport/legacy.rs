@@ -2,11 +2,7 @@ use std::path::PathBuf;
 
 use async_trait::async_trait;
 
-use crate::{
-    error::IngestError,
-    raw::RawMfatBatch,
-    transport::IngesterTransport,
-};
+use crate::{error::IngestError, raw::RawMfatBatch, transport::IngesterTransport};
 
 /// Connection details for the real Ministry of Foreign Affairs and Trade legacy system integration.
 #[derive(Debug, Clone)]

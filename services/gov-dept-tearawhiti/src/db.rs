@@ -16,7 +16,10 @@ pub struct TreatySettlementsRow {
     pub settled_date: chrono::NaiveDate,
 }
 
-pub async fn fetch_treaty_settlements(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<TreatySettlementsRow>> {
+pub async fn fetch_treaty_settlements(
+    pool: &PgPool,
+    citizen_id: Uuid,
+) -> sqlx::Result<Vec<TreatySettlementsRow>> {
     sqlx::query_as!(
         TreatySettlementsRow,
         "SELECT id, iwi, status, settled_date FROM tearawhiti_treaty_settlements WHERE citizen_id = $1 ORDER BY created_at DESC",
@@ -34,7 +37,10 @@ pub struct EngagementsRow {
     pub outcome: String,
 }
 
-pub async fn fetch_engagements(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<EngagementsRow>> {
+pub async fn fetch_engagements(
+    pool: &PgPool,
+    citizen_id: Uuid,
+) -> sqlx::Result<Vec<EngagementsRow>> {
     sqlx::query_as!(
         EngagementsRow,
         "SELECT id, topic, engagement_date, outcome FROM tearawhiti_engagements WHERE citizen_id = $1 ORDER BY created_at DESC",

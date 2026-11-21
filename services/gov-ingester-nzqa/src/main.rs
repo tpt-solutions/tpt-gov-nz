@@ -4,10 +4,10 @@ use tracing::{error, info};
 use tracing_subscriber::EnvFilter;
 
 use gov_ingester_nzqa::{
+    IngestError,
     config::{Config, TransportKind},
     ingest,
-    transport::{legacy::LegacyTransport, mock::MockTransport, IngesterTransport},
-    IngestError,
+    transport::{IngesterTransport, legacy::LegacyTransport, mock::MockTransport},
 };
 use sqlx::PgPool;
 

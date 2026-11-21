@@ -2,14 +2,13 @@
 
 use crate::{
     error::IngestError,
-    models::{RetirementPlanEntity,GuidanceEntity,CitizenEntity, TransformedCitizen},
+    models::{CitizenEntity, GuidanceEntity, RetirementPlanEntity, TransformedCitizen},
     raw::RawRetirementCitizen,
 };
 
 fn parse_date(s: &str, field: &str) -> Result<chrono::NaiveDate, IngestError> {
-    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").map_err(|e| {
-        IngestError::Transform(format!("invalid {field} date '{s}': {e}"))
-    })
+    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d")
+        .map_err(|e| IngestError::Transform(format!("invalid {field} date '{s}': {e}")))
 }
 
 pub fn transform_citizen(raw: &RawRetirementCitizen) -> Result<TransformedCitizen, IngestError> {
@@ -27,9 +26,9 @@ pub fn transform_citizen(raw: &RawRetirementCitizen) -> Result<TransformedCitize
 
     let retirement_plan = match &raw.retirement_plan {
         Some(c) => Some(RetirementPlanEntity {
-                has_plan: c.has_plan.clone(),
-                retirement_age: c.retirement_age.clone(),
-                last_review: parse_date(&c.last_review, "last_review")?,
+            has_plan: c.has_plan.clone(),
+            retirement_age: c.retirement_age.clone(),
+            last_review: parse_date(&c.last_review, "last_review")?,
         }),
         None => None,
     };
@@ -58,8 +57,7 @@ mod tests {
     use super::*;
 
     fn sample() -> RawRetirementCitizen {
-        serde_json::from_value(serde_json::json!([object Object]))
-            .unwrap()
+        serde_json::from_value(serde_json::json!([object Object])).unwrap()
     }
 
     #[test]
@@ -67,15 +65,27 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.retirement_id, "RET-100001");
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.retirement_plan.as_ref().unwrap().has_plan, true);
-         assert_eq!(t.retirement_plan.as_ref().unwrap().retirement_age, 65);
-         assert_eq!(t.retirement_plan.as_ref().unwrap().last_review.to_string(), "2025-12-01");
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(t.retirement_plan.as_ref().unwrap().has_plan, true);
+        assert_eq!(t.retirement_plan.as_ref().unwrap().retirement_age, 65);
+        assert_eq!(
+            t.retirement_plan.as_ref().unwrap().last_review.to_string(),
+            "2025-12-01"
+        );
 
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.guidance.as_ref().unwrap().topic, "KiwiSaver contribution rate");
-         assert_eq!(t.guidance.as_ref().unwrap().summary, "Consider increasing to 6%.");
-         assert_eq!(t.guidance.as_ref().unwrap().published.to_string(), "2026-02-20");
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(
+            t.guidance.as_ref().unwrap().topic,
+            "KiwiSaver contribution rate"
+        );
+        assert_eq!(
+            t.guidance.as_ref().unwrap().summary,
+            "Consider increasing to 6%."
+        );
+        assert_eq!(
+            t.guidance.as_ref().unwrap().published.to_string(),
+            "2026-02-20"
+        );
     }
 
     #[test]

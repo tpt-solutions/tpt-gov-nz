@@ -116,7 +116,9 @@ mod tests {
             from_dept_id: "winz".into(),
             to_dept_id: "ird".into(),
             timestamp_ms: 1_700_000_000_000,
-            consent_grant_ids: vec![Uuid::parse_str("00000000-0000-0000-0000-000000000099").unwrap()],
+            consent_grant_ids: vec![
+                Uuid::parse_str("00000000-0000-0000-0000-000000000099").unwrap(),
+            ],
             payload_encrypted: "encrypted-payload".into(),
             signature: String::new(),
         }

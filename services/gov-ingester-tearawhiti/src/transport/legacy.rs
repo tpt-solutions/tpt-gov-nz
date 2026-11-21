@@ -2,11 +2,7 @@ use std::path::PathBuf;
 
 use async_trait::async_trait;
 
-use crate::{
-    error::IngestError,
-    raw::RawTearawhitiBatch,
-    transport::IngesterTransport,
-};
+use crate::{error::IngestError, raw::RawTearawhitiBatch, transport::IngesterTransport};
 
 /// Connection details for the real Te Arawhiti legacy system integration.
 #[derive(Debug, Clone)]

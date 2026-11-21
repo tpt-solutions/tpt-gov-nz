@@ -2,14 +2,13 @@
 
 use crate::{
     error::IngestError,
-    models::{ProcurementsEntity,BasesEntity,CitizenEntity, TransformedCitizen},
+    models::{BasesEntity, CitizenEntity, ProcurementsEntity, TransformedCitizen},
     raw::RawDefenceCitizen,
 };
 
 fn parse_date(s: &str, field: &str) -> Result<chrono::NaiveDate, IngestError> {
-    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").map_err(|e| {
-        IngestError::Transform(format!("invalid {field} date '{s}': {e}"))
-    })
+    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d")
+        .map_err(|e| IngestError::Transform(format!("invalid {field} date '{s}': {e}")))
 }
 
 pub fn transform_citizen(raw: &RawDefenceCitizen) -> Result<TransformedCitizen, IngestError> {
@@ -61,8 +60,7 @@ mod tests {
     use super::*;
 
     fn sample() -> RawDefenceCitizen {
-        serde_json::from_value(serde_json::json!([object Object]))
-            .unwrap()
+        serde_json::from_value(serde_json::json!([object Object])).unwrap()
     }
 
     #[test]
@@ -70,15 +68,18 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.defence_id, "DEF-100001");
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.procurements.as_ref().unwrap().programme, "Frigate sustainment");
-         assert_eq!(t.procurements.as_ref().unwrap().value, 450000000);
-         assert_eq!(t.procurements.as_ref().unwrap().status, "ongoing");
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(
+            t.procurements.as_ref().unwrap().programme,
+            "Frigate sustainment"
+        );
+        assert_eq!(t.procurements.as_ref().unwrap().value, 450000000);
+        assert_eq!(t.procurements.as_ref().unwrap().status, "ongoing");
 
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.bases.as_ref().unwrap().name, "Trentham Military Camp");
-         assert_eq!(t.bases.as_ref().unwrap().location, "Upper Hutt");
-         assert_eq!(t.bases.as_ref().unwrap().status, "operational");
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(t.bases.as_ref().unwrap().name, "Trentham Military Camp");
+        assert_eq!(t.bases.as_ref().unwrap().location, "Upper Hutt");
+        assert_eq!(t.bases.as_ref().unwrap().status, "operational");
     }
 
     #[test]

@@ -2,14 +2,13 @@
 
 use crate::{
     error::IngestError,
-    models::{TreatySettlementsEntity,EngagementsEntity,CitizenEntity, TransformedCitizen},
+    models::{CitizenEntity, EngagementsEntity, TransformedCitizen, TreatySettlementsEntity},
     raw::RawTearawhitiCitizen,
 };
 
 fn parse_date(s: &str, field: &str) -> Result<chrono::NaiveDate, IngestError> {
-    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").map_err(|e| {
-        IngestError::Transform(format!("invalid {field} date '{s}': {e}"))
-    })
+    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d")
+        .map_err(|e| IngestError::Transform(format!("invalid {field} date '{s}': {e}")))
 }
 
 pub fn transform_citizen(raw: &RawTearawhitiCitizen) -> Result<TransformedCitizen, IngestError> {
@@ -61,8 +60,7 @@ mod tests {
     use super::*;
 
     fn sample() -> RawTearawhitiCitizen {
-        serde_json::from_value(serde_json::json!([object Object]))
-            .unwrap()
+        serde_json::from_value(serde_json::json!([object Object])).unwrap()
     }
 
     #[test]
@@ -70,15 +68,31 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.tearawhiti_id, "TAW-100001");
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.treaty_settlements.as_ref().unwrap().iwi, "Ngāti Toa");
-         assert_eq!(t.treaty_settlements.as_ref().unwrap().status, "settled");
-         assert_eq!(t.treaty_settlements.as_ref().unwrap().settled_date.to_string(), "2024-07-01");
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(t.treaty_settlements.as_ref().unwrap().iwi, "Ngāti Toa");
+        assert_eq!(t.treaty_settlements.as_ref().unwrap().status, "settled");
+        assert_eq!(
+            t.treaty_settlements
+                .as_ref()
+                .unwrap()
+                .settled_date
+                .to_string(),
+            "2024-07-01"
+        );
 
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.engagements.as_ref().unwrap().topic, "Crown engagement hui");
-         assert_eq!(t.engagements.as_ref().unwrap().engagement_date.to_string(), "2026-04-15");
-         assert_eq!(t.engagements.as_ref().unwrap().outcome, "Recommendation agreed");
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(
+            t.engagements.as_ref().unwrap().topic,
+            "Crown engagement hui"
+        );
+        assert_eq!(
+            t.engagements.as_ref().unwrap().engagement_date.to_string(),
+            "2026-04-15"
+        );
+        assert_eq!(
+            t.engagements.as_ref().unwrap().outcome,
+            "Recommendation agreed"
+        );
     }
 
     #[test]

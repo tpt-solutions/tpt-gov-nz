@@ -16,15 +16,21 @@ use crate::{
 
 #[sqlx::test(migrations = "../gov-dept-dia/migrations")]
 async fn upsert_citizen_is_idempotent(pool: sqlx::PgPool) {
-    let (_, first) = db::upsert_citizen(&pool, "did:gov:nz:t", "PP1111").await.unwrap();
+    let (_, first) = db::upsert_citizen(&pool, "did:gov:nz:t", "PP1111")
+        .await
+        .unwrap();
     assert!(first);
-    let (_, second) = db::upsert_citizen(&pool, "did:gov:nz:t", "PP1111").await.unwrap();
+    let (_, second) = db::upsert_citizen(&pool, "did:gov:nz:t", "PP1111")
+        .await
+        .unwrap();
     assert!(!second);
 }
 
 #[sqlx::test(migrations = "../gov-dept-dia/migrations")]
 async fn upsert_passport_is_idempotent(pool: sqlx::PgPool) {
-    let (cid, _) = db::upsert_citizen(&pool, "did:gov:nz:p", "PP2222").await.unwrap();
+    let (cid, _) = db::upsert_citizen(&pool, "did:gov:nz:p", "PP2222")
+        .await
+        .unwrap();
     let e = crate::models::PassportEntity {
         passport_number: "PP2222".into(),
         expiry_date: chrono::NaiveDate::from_ymd_opt(2028, 1, 1).unwrap(),

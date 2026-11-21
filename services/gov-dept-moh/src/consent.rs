@@ -19,7 +19,10 @@ pub struct ConsentInput<'a> {
 
 /// Mirrors `policies/moh.rego` `allow`: every requested scope must be covered.
 pub fn evaluate_allow(input: &ConsentInput) -> bool {
-    input.requested_scopes.iter().all(|scope| scope_covered(input, scope))
+    input
+        .requested_scopes
+        .iter()
+        .all(|scope| scope_covered(input, scope))
 }
 
 /// Mirrors `policies/moh.rego` `scope_covered`.
@@ -81,7 +84,12 @@ mod tests {
         CredentialIssuer::generate()
     }
 
-    fn grant(issuer: &CredentialIssuer, requesting: &str, scopes: Vec<String>, ttl: i64) -> DataGrantCredential {
+    fn grant(
+        issuer: &CredentialIssuer,
+        requesting: &str,
+        scopes: Vec<String>,
+        ttl: i64,
+    ) -> DataGrantCredential {
         issuer.issue_data_grant(
             gov_identity_core::GovDid::parse("did:gov:nz:test-citizen-001").unwrap(),
             requesting,

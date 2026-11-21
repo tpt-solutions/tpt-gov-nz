@@ -4,10 +4,10 @@ use tracing::{error, info};
 use tracing_subscriber::EnvFilter;
 
 use gov_ingester_ird::{
+    IngestError,
     config::{Config, TransportKind},
     ingest,
-    transport::{mock::MockTransport, sftp::SftpTransport, IngesterTransport},
-    IngestError,
+    transport::{IngesterTransport, mock::MockTransport, sftp::SftpTransport},
 };
 use sqlx::PgPool;
 

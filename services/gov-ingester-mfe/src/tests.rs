@@ -22,7 +22,10 @@ async fn fixture_parses_and_transforms() {
 
     let t = transform_citizen(&batch.citizens[0]).unwrap();
     assert_eq!(t.reports.len(), 1);
-    assert_eq!(t.reports[0].title, "Aotearoa New Zealand's Environment 2026");
+    assert_eq!(
+        t.reports[0].title,
+        "Aotearoa New Zealand's Environment 2026"
+    );
 }
 
 #[test]

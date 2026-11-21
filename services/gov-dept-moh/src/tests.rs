@@ -6,12 +6,12 @@
 //! DATABASE_URL=postgresql://moh:moh_dev_password@localhost:5432/moh cargo test -p gov-dept-moh
 //! ```
 
+use crate::{MohError, build_app};
 use axum::{
-    body::{to_bytes, Body},
+    body::{Body, to_bytes},
     http::{Request, StatusCode},
 };
-use crate::{build_app, MohError};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 use tower::ServiceExt;
 
@@ -27,7 +27,9 @@ async fn resolve_found(pool: PgPool) {
 
 #[sqlx::test]
 async fn resolve_not_found(pool: PgPool) {
-    let row = crate::db::resolve_by_did(&pool, "did:gov:nz:missing").await.unwrap();
+    let row = crate::db::resolve_by_did(&pool, "did:gov:nz:missing")
+        .await
+        .unwrap();
     assert!(row.is_none());
 }
 
@@ -94,14 +96,19 @@ async fn fetch_data_vaccinations_scope(pool: PgPool) {
     let data = fetch_data(&pool, &["moh:vaccinations"]).await;
     let vs = data["vaccinations"].as_array().unwrap();
     assert_eq!(vs.len(), 2);
-    assert!(vs.iter().any(|v| v["vaccine"] == "COVID-19" && v["dueForBooster"] == true));
+    assert!(
+        vs.iter()
+            .any(|v| v["vaccine"] == "COVID-19" && v["dueForBooster"] == true)
+    );
 }
 
 // ── actions ──────────────────────────────────────────────────────────────────────
 
 #[sqlx::test]
 async fn action_request_repeat_prescription_valid(pool: PgPool) {
-    let before = crate::db::fetch_prescriptions(&pool, citizen_id(&pool).await).await.unwrap();
+    let before = crate::db::fetch_prescriptions(&pool, citizen_id(&pool).await)
+        .await
+        .unwrap();
     let pid = before[0].id.to_string();
     let remaining_before = before[0].repeats_remaining;
 
@@ -148,7 +155,9 @@ async fn action_book_appointment_valid(pool: PgPool) {
     .unwrap();
     assert_eq!(resp.0["success"], true);
 
-    let as_ = crate::db::fetch_appointments(&pool, citizen_id(&pool).await).await.unwrap();
+    let as_ = crate::db::fetch_appointments(&pool, citizen_id(&pool).await)
+        .await
+        .unwrap();
     assert_eq!(as_.len(), 2);
 }
 
@@ -175,7 +184,12 @@ async fn http_round_trip(pool: PgPool) {
 
     let resp = app
         .clone()
-        .oneshot(Request::builder().uri("/health").body(Body::empty()).unwrap())
+        .oneshot(
+            Request::builder()
+                .uri("/health")
+                .body(Body::empty())
+                .unwrap(),
+        )
         .await
         .unwrap();
     assert_eq!(resp.status(), StatusCode::OK);
@@ -196,7 +210,9 @@ async fn http_round_trip(pool: PgPool) {
         .method("POST")
         .uri("/citizen/data")
         .header("content-type", "application/json")
-        .body(Body::from(json!({ "did": TEST_DID, "scopes": ["moh:gp", "moh:vaccinations"] }).to_string()))
+        .body(Body::from(
+            json!({ "did": TEST_DID, "scopes": ["moh:gp", "moh:vaccinations"] }).to_string(),
+        ))
         .unwrap();
     let resp = app.clone().oneshot(data).await.unwrap();
     assert_eq!(resp.status(), StatusCode::OK);

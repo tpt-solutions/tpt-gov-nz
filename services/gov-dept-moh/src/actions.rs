@@ -1,5 +1,5 @@
 use axum::Json;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 use uuid::Uuid;
 
@@ -14,9 +14,13 @@ pub async fn execute(
     ai_level: Option<&str>,
 ) -> Result<Json<Value>, MohError> {
     let result = match action_type {
-        "request-repeat-prescription" => request_repeat_prescription(pool, citizen_id, parameters).await,
+        "request-repeat-prescription" => {
+            request_repeat_prescription(pool, citizen_id, parameters).await
+        }
         "book-appointment" => book_appointment(pool, citizen_id, parameters).await,
-        _ => Err(MohError::InvalidAction(format!("Unknown action: {action_type}"))),
+        _ => Err(MohError::InvalidAction(format!(
+            "Unknown action: {action_type}"
+        ))),
     };
 
     let (success, message) = match &result {

@@ -1,18 +1,9 @@
-use axum::{
-    extract::State,
-    Json,
-};
+use axum::{Json, extract::State};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 
-use crate::{
-    actions,
-    consent,
-    db,
-    error::TecError,
-    opa,
-};
+use crate::{actions, consent, db, error::TecError, opa};
 
 pub async fn health() -> Json<Value> {
     Json(json!({ "status": "ok", "dept_id": "tec" }))
@@ -96,11 +87,15 @@ pub async fn fetch_data(
     };
 
     let funding_json = funding.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "provider": c.c,
-            "amount": c.c,
-            "year": c.c,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "provider": c.c,
+                    "amount": c.c,
+                    "year": c.c,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     let courses = if has_scope("tec:courses") {
@@ -110,11 +105,15 @@ pub async fn fetch_data(
     };
 
     let courses_json = courses.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "courseName": c.c,
-            "provider": c.c,
-            "status": c.c,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "courseName": c.c,
+                    "provider": c.c,
+                    "status": c.c,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     Ok(Json(json!({

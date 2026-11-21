@@ -2,14 +2,13 @@
 
 use crate::{
     error::IngestError,
-    models::{ServiceRecordsEntity,DeploymentsEntity,CitizenEntity, TransformedCitizen},
+    models::{CitizenEntity, DeploymentsEntity, ServiceRecordsEntity, TransformedCitizen},
     raw::RawNzdfCitizen,
 };
 
 fn parse_date(s: &str, field: &str) -> Result<chrono::NaiveDate, IngestError> {
-    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").map_err(|e| {
-        IngestError::Transform(format!("invalid {field} date '{s}': {e}"))
-    })
+    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d")
+        .map_err(|e| IngestError::Transform(format!("invalid {field} date '{s}': {e}")))
 }
 
 pub fn transform_citizen(raw: &RawNzdfCitizen) -> Result<TransformedCitizen, IngestError> {
@@ -61,8 +60,7 @@ mod tests {
     use super::*;
 
     fn sample() -> RawNzdfCitizen {
-        serde_json::from_value(serde_json::json!([object Object]))
-            .unwrap()
+        serde_json::from_value(serde_json::json!([object Object])).unwrap()
     }
 
     #[test]
@@ -70,15 +68,18 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.nzdf_id, "NZDF-100001");
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.service_records.as_ref().unwrap().service_no, "NZDF-55821");
-         assert_eq!(t.service_records.as_ref().unwrap().branch, "Army");
-         assert_eq!(t.service_records.as_ref().unwrap().status, "active");
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(t.service_records.as_ref().unwrap().service_no, "NZDF-55821");
+        assert_eq!(t.service_records.as_ref().unwrap().branch, "Army");
+        assert_eq!(t.service_records.as_ref().unwrap().status, "active");
 
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.deployments.as_ref().unwrap().operation, "Burnham readiness");
-         assert_eq!(t.deployments.as_ref().unwrap().country, "NZ");
-         assert_eq!(t.deployments.as_ref().unwrap().year, 2025);
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(
+            t.deployments.as_ref().unwrap().operation,
+            "Burnham readiness"
+        );
+        assert_eq!(t.deployments.as_ref().unwrap().country, "NZ");
+        assert_eq!(t.deployments.as_ref().unwrap().year, 2025);
     }
 
     #[test]

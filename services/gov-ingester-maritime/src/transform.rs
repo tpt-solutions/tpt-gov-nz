@@ -2,14 +2,13 @@
 
 use crate::{
     error::IngestError,
-    models::{VesselsEntity,IncidentsEntity,CitizenEntity, TransformedCitizen},
+    models::{CitizenEntity, IncidentsEntity, TransformedCitizen, VesselsEntity},
     raw::RawMaritimeCitizen,
 };
 
 fn parse_date(s: &str, field: &str) -> Result<chrono::NaiveDate, IngestError> {
-    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").map_err(|e| {
-        IngestError::Transform(format!("invalid {field} date '{s}': {e}"))
-    })
+    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d")
+        .map_err(|e| IngestError::Transform(format!("invalid {field} date '{s}': {e}")))
 }
 
 pub fn transform_citizen(raw: &RawMaritimeCitizen) -> Result<TransformedCitizen, IngestError> {
@@ -62,8 +61,7 @@ mod tests {
     use super::*;
 
     fn sample() -> RawMaritimeCitizen {
-        serde_json::from_value(serde_json::json!([object Object]))
-            .unwrap()
+        serde_json::from_value(serde_json::json!([object Object])).unwrap()
     }
 
     #[test]
@@ -71,16 +69,19 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.maritime_id, "MAR-100001");
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.vessels.as_ref().unwrap().vessel_name, "MV Tane Moana");
-         assert_eq!(t.vessels.as_ref().unwrap().flag, "NZ");
-         assert_eq!(t.vessels.as_ref().unwrap().status, "registered");
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(t.vessels.as_ref().unwrap().vessel_name, "MV Tane Moana");
+        assert_eq!(t.vessels.as_ref().unwrap().flag, "NZ");
+        assert_eq!(t.vessels.as_ref().unwrap().status, "registered");
 
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.incidents.as_ref().unwrap().reference, "MAR-2026-02");
-         assert_eq!(t.incidents.as_ref().unwrap().incident_type, "Pollution");
-         assert_eq!(t.incidents.as_ref().unwrap().incident_date.to_string(), "2026-02-14");
-         assert_eq!(t.incidents.as_ref().unwrap().status, "resolved");
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(t.incidents.as_ref().unwrap().reference, "MAR-2026-02");
+        assert_eq!(t.incidents.as_ref().unwrap().incident_type, "Pollution");
+        assert_eq!(
+            t.incidents.as_ref().unwrap().incident_date.to_string(),
+            "2026-02-14"
+        );
+        assert_eq!(t.incidents.as_ref().unwrap().status, "resolved");
     }
 
     #[test]

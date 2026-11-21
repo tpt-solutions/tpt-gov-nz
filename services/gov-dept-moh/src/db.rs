@@ -54,7 +54,10 @@ pub async fn resolve_by_did(pool: &PgPool, did: &str) -> sqlx::Result<Option<Cit
     .await
 }
 
-pub async fn fetch_gp_enrolment(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Option<GpEnrolmentRow>> {
+pub async fn fetch_gp_enrolment(
+    pool: &PgPool,
+    citizen_id: Uuid,
+) -> sqlx::Result<Option<GpEnrolmentRow>> {
     sqlx::query_as!(
         GpEnrolmentRow,
         "SELECT practice_name, address, phone FROM gp_enrolments WHERE citizen_id = $1 LIMIT 1",
@@ -64,7 +67,10 @@ pub async fn fetch_gp_enrolment(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result
     .await
 }
 
-pub async fn fetch_prescriptions(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<PrescriptionRow>> {
+pub async fn fetch_prescriptions(
+    pool: &PgPool,
+    citizen_id: Uuid,
+) -> sqlx::Result<Vec<PrescriptionRow>> {
     sqlx::query_as!(
         PrescriptionRow,
         r#"SELECT id, medication, dose, repeats_total, repeats_remaining, issued_at
@@ -77,7 +83,10 @@ pub async fn fetch_prescriptions(pool: &PgPool, citizen_id: Uuid) -> sqlx::Resul
     .await
 }
 
-pub async fn fetch_appointments(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<AppointmentRow>> {
+pub async fn fetch_appointments(
+    pool: &PgPool,
+    citizen_id: Uuid,
+) -> sqlx::Result<Vec<AppointmentRow>> {
     sqlx::query_as!(
         AppointmentRow,
         r#"SELECT id, provider, appt_date, type, status
@@ -90,7 +99,10 @@ pub async fn fetch_appointments(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result
     .await
 }
 
-pub async fn fetch_vaccinations(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<VaccinationRow>> {
+pub async fn fetch_vaccinations(
+    pool: &PgPool,
+    citizen_id: Uuid,
+) -> sqlx::Result<Vec<VaccinationRow>> {
     sqlx::query_as!(
         VaccinationRow,
         r#"SELECT id, vaccine, vaccine_date, due_for_booster

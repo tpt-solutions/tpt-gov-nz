@@ -2,14 +2,13 @@
 
 use crate::{
     error::IngestError,
-    models::{LicencesEntity,AircraftEntity,CitizenEntity, TransformedCitizen},
+    models::{AircraftEntity, CitizenEntity, LicencesEntity, TransformedCitizen},
     raw::RawCaaCitizen,
 };
 
 fn parse_date(s: &str, field: &str) -> Result<chrono::NaiveDate, IngestError> {
-    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").map_err(|e| {
-        IngestError::Transform(format!("invalid {field} date '{s}': {e}"))
-    })
+    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d")
+        .map_err(|e| IngestError::Transform(format!("invalid {field} date '{s}': {e}")))
 }
 
 pub fn transform_citizen(raw: &RawCaaCitizen) -> Result<TransformedCitizen, IngestError> {
@@ -62,8 +61,7 @@ mod tests {
     use super::*;
 
     fn sample() -> RawCaaCitizen {
-        serde_json::from_value(serde_json::json!([object Object]))
-            .unwrap()
+        serde_json::from_value(serde_json::json!([object Object])).unwrap()
     }
 
     #[test]
@@ -71,16 +69,19 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.caa_id, "CAA-100001");
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.licences.as_ref().unwrap().licence_no, "CAA-P-55821");
-         assert_eq!(t.licences.as_ref().unwrap().category, "Private Pilot");
-         assert_eq!(t.licences.as_ref().unwrap().status, "current");
-         assert_eq!(t.licences.as_ref().unwrap().expires.to_string(), "2027-06-30");
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(t.licences.as_ref().unwrap().licence_no, "CAA-P-55821");
+        assert_eq!(t.licences.as_ref().unwrap().category, "Private Pilot");
+        assert_eq!(t.licences.as_ref().unwrap().status, "current");
+        assert_eq!(
+            t.licences.as_ref().unwrap().expires.to_string(),
+            "2027-06-30"
+        );
 
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.aircraft.as_ref().unwrap().registration, "ZK-TAN");
-         assert_eq!(t.aircraft.as_ref().unwrap().aircraft_type, "Cessna 172");
-         assert_eq!(t.aircraft.as_ref().unwrap().status, "registered");
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(t.aircraft.as_ref().unwrap().registration, "ZK-TAN");
+        assert_eq!(t.aircraft.as_ref().unwrap().aircraft_type, "Cessna 172");
+        assert_eq!(t.aircraft.as_ref().unwrap().status, "registered");
     }
 
     #[test]

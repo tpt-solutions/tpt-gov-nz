@@ -1,18 +1,9 @@
-use axum::{
-    extract::State,
-    Json,
-};
+use axum::{Json, extract::State};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 
-use crate::{
-    actions,
-    consent,
-    db,
-    error::DpmcError,
-    opa,
-};
+use crate::{actions, consent, db, error::DpmcError, opa};
 
 pub async fn health() -> Json<Value> {
     Json(json!({ "status": "ok", "dept_id": "dpmc" }))
@@ -96,11 +87,15 @@ pub async fn fetch_data(
     };
 
     let honours_json = honours.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "awardYear": c.c,
-            "award": c.c,
-            "status": c.c,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "awardYear": c.c,
+                    "award": c.c,
+                    "status": c.c,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     let engagements = if has_scope("dpmc:engagements") {
@@ -110,11 +105,15 @@ pub async fn fetch_data(
     };
 
     let engagements_json = engagements.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "eventName": c.c,
-            "eventDate": c.c.to_string(),
-            "location": c.c,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "eventName": c.c,
+                    "eventDate": c.c.to_string(),
+                    "location": c.c,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     Ok(Json(json!({

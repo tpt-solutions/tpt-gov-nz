@@ -2,11 +2,7 @@ use std::path::PathBuf;
 
 use async_trait::async_trait;
 
-use crate::{
-    error::IngestError,
-    raw::RawCustomsBatch,
-    transport::IngesterTransport,
-};
+use crate::{error::IngestError, raw::RawCustomsBatch, transport::IngesterTransport};
 
 /// Connection details for the real New Zealand Customs Service legacy system integration.
 ///

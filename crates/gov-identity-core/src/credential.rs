@@ -53,20 +53,21 @@ impl VerifiableCredential {
             expires_at: self.expires_at,
             claims: &self.claims,
         };
-        let json = serde_json::to_vec(&payload).expect("serialisation of sign payload must not fail");
+        let json =
+            serde_json::to_vec(&payload).expect("serialisation of sign payload must not fail");
         Sha256::digest(&json).into()
     }
 
     /// Verify the Ed25519 signature against the issuer's public key.
     pub fn verify_signature(&self, issuer_key: &VerifyingKey) -> Result<(), IdentityError> {
         let hash = self.payload_hash();
-        let sig_bytes = base64::Engine::decode(
-            &base64::engine::general_purpose::STANDARD,
-            &self.proof,
-        )
-        .map_err(|e| IdentityError::Crypto(format!("invalid base64 proof: {e}")))?;
+        let sig_bytes =
+            base64::Engine::decode(&base64::engine::general_purpose::STANDARD, &self.proof)
+                .map_err(|e| IdentityError::Crypto(format!("invalid base64 proof: {e}")))?;
         let sig = ed25519_dalek::Signature::from_bytes(
-            &sig_bytes.try_into().map_err(|_| IdentityError::Crypto("proof length invalid".into()))?,
+            &sig_bytes
+                .try_into()
+                .map_err(|_| IdentityError::Crypto("proof length invalid".into()))?,
         );
         issuer_key
             .verify(&hash, &sig)
@@ -116,20 +117,21 @@ impl DataGrantCredential {
             issued_at: self.issued_at,
             expires_at: self.expires_at,
         };
-        let json = serde_json::to_vec(&payload).expect("serialisation of sign payload must not fail");
+        let json =
+            serde_json::to_vec(&payload).expect("serialisation of sign payload must not fail");
         Sha256::digest(&json).into()
     }
 
     /// Verify the Ed25519 signature against the issuer's public key.
     pub fn verify_signature(&self, issuer_key: &VerifyingKey) -> Result<(), IdentityError> {
         let hash = self.payload_hash();
-        let sig_bytes = base64::Engine::decode(
-            &base64::engine::general_purpose::STANDARD,
-            &self.signature,
-        )
-        .map_err(|e| IdentityError::Crypto(format!("invalid base64 signature: {e}")))?;
+        let sig_bytes =
+            base64::Engine::decode(&base64::engine::general_purpose::STANDARD, &self.signature)
+                .map_err(|e| IdentityError::Crypto(format!("invalid base64 signature: {e}")))?;
         let sig = ed25519_dalek::Signature::from_bytes(
-            &sig_bytes.try_into().map_err(|_| IdentityError::Crypto("signature length invalid".into()))?,
+            &sig_bytes
+                .try_into()
+                .map_err(|_| IdentityError::Crypto("signature length invalid".into()))?,
         );
         issuer_key
             .verify(&hash, &sig)
@@ -179,7 +181,8 @@ impl CredentialIssuer {
     /// Base64-encoded Ed25519 public key, published for verifiers.
     pub fn public_key_b64(&self) -> String {
         use base64::Engine;
-        base64::engine::general_purpose::STANDARD.encode(self.signing_key.verifying_key().as_bytes())
+        base64::engine::general_purpose::STANDARD
+            .encode(self.signing_key.verifying_key().as_bytes())
     }
 
     pub fn verifying_key(&self) -> VerifyingKey {
@@ -267,12 +270,7 @@ mod tests {
         let wrong_issuer = CredentialIssuer::generate();
         let subject = GovDid::parse("did:gov:nz:subject456").unwrap();
 
-        let vc = issuer.issue_vc(
-            subject,
-            "IdentityVerification",
-            serde_json::json!({}),
-            3600,
-        );
+        let vc = issuer.issue_vc(subject, "IdentityVerification", serde_json::json!({}), 3600);
 
         assert!(vc.verify_signature(&wrong_issuer.verifying_key()).is_err());
     }
@@ -300,13 +298,7 @@ mod tests {
         let wrong_issuer = CredentialIssuer::generate();
         let citizen = GovDid::parse("did:gov:nz:citizen002").unwrap();
 
-        let dgc = issuer.issue_data_grant(
-            citizen,
-            "moh",
-            "ird",
-            vec!["ird:income".into()],
-            86400,
-        );
+        let dgc = issuer.issue_data_grant(citizen, "moh", "ird", vec!["ird:income".into()], 86400);
 
         assert!(dgc.verify_signature(&wrong_issuer.verifying_key()).is_err());
     }

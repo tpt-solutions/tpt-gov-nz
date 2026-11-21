@@ -2,11 +2,7 @@ use std::path::PathBuf;
 
 use async_trait::async_trait;
 
-use crate::{
-    error::IngestError,
-    raw::RawDpmcBatch,
-    transport::IngesterTransport,
-};
+use crate::{error::IngestError, raw::RawDpmcBatch, transport::IngesterTransport};
 
 /// Connection details for the real Department of the Prime Minister and Cabinet legacy system integration.
 #[derive(Debug, Clone)]

@@ -1,18 +1,9 @@
-use axum::{
-    extract::State,
-    Json,
-};
+use axum::{Json, extract::State};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 
-use crate::{
-    actions,
-    consent,
-    db,
-    error::FenzError,
-    opa,
-};
+use crate::{actions, consent, db, error::FenzError, opa};
 
 pub async fn health() -> Json<Value> {
     Json(json!({ "status": "ok", "dept_id": "fenz" }))
@@ -110,12 +101,16 @@ pub async fn fetch_data(
     };
 
     let incidents_json = incidents.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "reference": c.c,
-            "incidentType": c.c,
-            "incidentDate": c.c.to_string(),
-            "status": c.c,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "reference": c.c,
+                    "incidentType": c.c,
+                    "incidentDate": c.c.to_string(),
+                    "status": c.c,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     Ok(Json(json!({

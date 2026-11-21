@@ -6,12 +6,12 @@
 //! DATABASE_URL=postgresql://ero:ero_dev_password@localhost:5432/ero cargo test -p gov-dept-ero
 //! ```
 
+use crate::{EroError, build_app};
 use axum::{
-    body::{to_bytes, Body},
+    body::{Body, to_bytes},
     http::{Request, StatusCode},
 };
-use crate::{build_app, EroError};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 use tower::ServiceExt;
 
@@ -127,7 +127,12 @@ async fn http_round_trip(pool: PgPool) {
 
     let resp = app
         .clone()
-        .oneshot(Request::builder().uri("/health").body(Body::empty()).unwrap())
+        .oneshot(
+            Request::builder()
+                .uri("/health")
+                .body(Body::empty())
+                .unwrap(),
+        )
         .await
         .unwrap();
     assert_eq!(resp.status(), StatusCode::OK);
@@ -137,8 +142,7 @@ async fn http_round_trip(pool: PgPool) {
         .uri("/citizen/data")
         .header("content-type", "application/json")
         .body(Body::from(
-            json!({ "did": TEST_DID, "scopes": ["ero:reviews","ero:reports"] })
-                .to_string(),
+            json!({ "did": TEST_DID, "scopes": ["ero:reviews","ero:reports"] }).to_string(),
         ))
         .unwrap();
     let resp = app.clone().oneshot(data).await.unwrap();

@@ -28,11 +28,7 @@ pub async fn upsert_citizen(
     Ok((row.id, row.inserted.unwrap_or(false)))
 }
 
-pub async fn upsert_fine(
-    pool: &PgPool,
-    citizen_id: Uuid,
-    e: &FineEntity,
-) -> sqlx::Result<bool> {
+pub async fn upsert_fine(pool: &PgPool, citizen_id: Uuid, e: &FineEntity) -> sqlx::Result<bool> {
     let row = sqlx::query!(
         r#"INSERT INTO moj_fines (citizen_id, fine_number, fine_type, status, amount, offense_date, due_date, description)
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)

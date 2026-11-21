@@ -2,11 +2,7 @@ use std::path::PathBuf;
 
 use async_trait::async_trait;
 
-use crate::{
-    error::IngestError,
-    raw::RawStatsnzBatch,
-    transport::IngesterTransport,
-};
+use crate::{error::IngestError, raw::RawStatsnzBatch, transport::IngesterTransport};
 
 /// Connection details for the real Statistics New Zealand legacy system integration.
 ///

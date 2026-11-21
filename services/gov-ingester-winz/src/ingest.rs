@@ -11,7 +11,7 @@ use uuid::Uuid;
 use crate::{
     db,
     error::IngestError,
-    models::{new_run_id, IngestionStatus, IngestionSummary},
+    models::{IngestionStatus, IngestionSummary, new_run_id},
     transform::transform_citizen,
     transport::IngesterTransport,
 };
@@ -42,10 +42,18 @@ pub async fn run_once(
         }
 
         for b in &t.benefits {
-            count(db::upsert_benefit(pool, citizen_id, b).await?, &mut inserted, &mut updated);
+            count(
+                db::upsert_benefit(pool, citizen_id, b).await?,
+                &mut inserted,
+                &mut updated,
+            );
         }
         for p in &t.payments {
-            count(db::upsert_payment(pool, citizen_id, p).await?, &mut inserted, &mut updated);
+            count(
+                db::upsert_payment(pool, citizen_id, p).await?,
+                &mut inserted,
+                &mut updated,
+            );
         }
     }
 

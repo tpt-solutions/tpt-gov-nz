@@ -28,11 +28,7 @@ pub async fn upsert_citizen(
     Ok((row.id, row.inserted.unwrap_or(false)))
 }
 
-pub async fn upsert_title(
-    pool: &PgPool,
-    citizen_id: Uuid,
-    e: &TitleEntity,
-) -> sqlx::Result<bool> {
+pub async fn upsert_title(pool: &PgPool, citizen_id: Uuid, e: &TitleEntity) -> sqlx::Result<bool> {
     let row = sqlx::query!(
         r#"INSERT INTO linz_titles (citizen_id, title_number, property_address, land_area_sqm, estate_type)
            VALUES ($1, $2, $3, $4, $5)

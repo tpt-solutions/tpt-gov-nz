@@ -1,18 +1,9 @@
-use axum::{
-    extract::State,
-    Json,
-};
+use axum::{Json, extract::State};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 
-use crate::{
-    actions,
-    consent,
-    db,
-    error::PacificError,
-    opa,
-};
+use crate::{actions, consent, db, error::PacificError, opa};
 
 pub async fn health() -> Json<Value> {
     Json(json!({ "status": "ok", "dept_id": "pacific" }))
@@ -96,11 +87,15 @@ pub async fn fetch_data(
     };
 
     let programmes_json = programmes.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "programmeName": c.c,
-            "status": c.c,
-            "year": c.c,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "programmeName": c.c,
+                    "status": c.c,
+                    "year": c.c,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     let language_services = if has_scope("pacific:language-services") {
@@ -110,11 +105,15 @@ pub async fn fetch_data(
     };
 
     let language_services_json = language_services.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "service": c.c,
-            "region": c.c,
-            "status": c.c,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "service": c.c,
+                    "region": c.c,
+                    "status": c.c,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     Ok(Json(json!({

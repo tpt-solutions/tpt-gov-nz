@@ -2,11 +2,7 @@ use std::path::PathBuf;
 
 use async_trait::async_trait;
 
-use crate::{
-    error::IngestError,
-    raw::RawHudBatch,
-    transport::IngesterTransport,
-};
+use crate::{error::IngestError, raw::RawHudBatch, transport::IngesterTransport};
 
 /// Reads a raw HUD batch from a JSON fixture file on disk (dev/demo/CI).
 pub struct MockTransport {

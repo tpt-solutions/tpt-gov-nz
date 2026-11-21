@@ -1,9 +1,6 @@
 use std::path::PathBuf;
 
-use crate::{
-    error::IngestError,
-    transport::legacy::LegacyConfig,
-};
+use crate::{error::IngestError, transport::legacy::LegacyConfig};
 
 #[derive(Debug, Clone)]
 pub enum TransportKind {

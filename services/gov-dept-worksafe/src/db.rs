@@ -17,7 +17,10 @@ pub struct InspectionsRow {
     pub outcome: String,
 }
 
-pub async fn fetch_inspections(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<InspectionsRow>> {
+pub async fn fetch_inspections(
+    pool: &PgPool,
+    citizen_id: Uuid,
+) -> sqlx::Result<Vec<InspectionsRow>> {
     sqlx::query_as!(
         InspectionsRow,
         "SELECT id, reference, site, inspection_date, outcome FROM worksafe_inspections WHERE citizen_id = $1 ORDER BY created_at DESC",
@@ -36,7 +39,10 @@ pub struct InvestigationsRow {
     pub opened_date: chrono::NaiveDate,
 }
 
-pub async fn fetch_investigations(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<InvestigationsRow>> {
+pub async fn fetch_investigations(
+    pool: &PgPool,
+    citizen_id: Uuid,
+) -> sqlx::Result<Vec<InvestigationsRow>> {
     sqlx::query_as!(
         InvestigationsRow,
         "SELECT id, reference, matter, status, opened_date FROM worksafe_investigations WHERE citizen_id = $1 ORDER BY created_at DESC",

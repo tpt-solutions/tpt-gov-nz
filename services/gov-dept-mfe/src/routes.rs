@@ -1,18 +1,9 @@
-use axum::{
-    extract::State,
-    Json,
-};
+use axum::{Json, extract::State};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 
-use crate::{
-    actions,
-    consent,
-    db,
-    error::MfeError,
-    opa,
-};
+use crate::{actions, consent, db, error::MfeError, opa};
 
 pub async fn health() -> Json<Value> {
     Json(json!({ "status": "ok", "dept_id": "mfe" }))
@@ -96,11 +87,15 @@ pub async fn fetch_data(
     };
 
     let emissions_json = emissions.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "reportYear": c.c,
-            "sector": c.c,
-            "tonnesCO2e": c.c,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "reportYear": c.c,
+                    "sector": c.c,
+                    "tonnesCO2e": c.c,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     let reports = if has_scope("mfe:reports") {
@@ -110,11 +105,15 @@ pub async fn fetch_data(
     };
 
     let reports_json = reports.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "title": c.c,
-            "published": c.c.to_string(),
-            "status": c.c,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "title": c.c,
+                    "published": c.c.to_string(),
+                    "status": c.c,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     Ok(Json(json!({

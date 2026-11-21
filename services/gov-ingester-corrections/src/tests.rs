@@ -25,7 +25,10 @@ async fn fixture_parses_and_transforms() {
     let t = transform_citizen(first).unwrap();
     assert_eq!(t.citizen.did, "did:gov:nz:test-citizen-001");
     assert!(t.probation.is_some());
-    assert_eq!(t.probation.as_ref().unwrap().officer_name, "Officer R. Reedy");
+    assert_eq!(
+        t.probation.as_ref().unwrap().officer_name,
+        "Officer R. Reedy"
+    );
     assert_eq!(t.cases.len(), 1);
     assert_eq!(t.cases[0].case_number, "COR-C0001");
 

@@ -1,18 +1,9 @@
-use axum::{
-    extract::State,
-    Json,
-};
+use axum::{Json, extract::State};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 
-use crate::{
-    actions,
-    consent,
-    db,
-    error::MbieError,
-    opa,
-};
+use crate::{actions, consent, db, error::MbieError, opa};
 
 pub async fn health() -> Json<Value> {
     Json(json!({ "status": "ok", "dept_id": "mbie" }))
@@ -102,22 +93,30 @@ pub async fn fetch_data(
     };
 
     let business_registrations_json = business_registrations.as_ref().map(|rows| {
-        json!(rows.iter().map(|b| json!({
-            "nzbn": b.nzbn,
-            "entityName": b.entity_name,
-            "entityType": b.entity_type,
-            "status": b.status,
-            "registeredDate": b.registered_date.to_string(),
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|b| json!({
+                    "nzbn": b.nzbn,
+                    "entityName": b.entity_name,
+                    "entityType": b.entity_type,
+                    "status": b.status,
+                    "registeredDate": b.registered_date.to_string(),
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     let directorships_json = directorships.as_ref().map(|rows| {
-        json!(rows.iter().map(|d| json!({
-            "nzbn": d.nzbn,
-            "entityName": d.entity_name,
-            "role": d.role,
-            "appointedDate": d.appointed_date.to_string(),
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|d| json!({
+                    "nzbn": d.nzbn,
+                    "entityName": d.entity_name,
+                    "role": d.role,
+                    "appointedDate": d.appointed_date.to_string(),
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     Ok(Json(json!({

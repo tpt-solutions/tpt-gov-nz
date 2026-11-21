@@ -10,13 +10,13 @@
 //! development sets the secret in `.env` (see `.env.example`).
 
 use axum::{
+    Json,
     extract::{Request, State},
-    http::{header, StatusCode},
+    http::{StatusCode, header},
     middleware::Next,
     response::{IntoResponse, Response},
-    Json,
 };
-use jsonwebtoken::{decode, Algorithm, DecodingKey, Validation};
+use jsonwebtoken::{Algorithm, DecodingKey, Validation, decode};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -67,9 +67,7 @@ impl JwtConfig {
             )
         })?;
         if secret.len() < MIN_SECRET_LEN {
-            anyhow::bail!(
-                "TPT__GOV__JWT_SECRET must be at least {MIN_SECRET_LEN} characters"
-            );
+            anyhow::bail!("TPT__GOV__JWT_SECRET must be at least {MIN_SECRET_LEN} characters");
         }
 
         let mut validation = Validation::new(Algorithm::HS256);
@@ -97,7 +95,10 @@ pub async fn jwt_auth(State(app): State<AppState>, mut req: Request, next: Next)
         .headers()
         .get(header::AUTHORIZATION)
         .and_then(|v| v.to_str().ok())
-        .and_then(|s| s.strip_prefix("Bearer ").or_else(|| s.strip_prefix("bearer ")))
+        .and_then(|s| {
+            s.strip_prefix("Bearer ")
+                .or_else(|| s.strip_prefix("bearer "))
+        })
         .map(str::trim);
 
     let token = match token {
@@ -131,7 +132,7 @@ fn unauthorized(message: &str) -> Response {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use jsonwebtoken::{encode, EncodingKey, Header};
+    use jsonwebtoken::{EncodingKey, Header, encode};
 
     fn config_with_secret(secret: &str) -> JwtConfig {
         let mut validation = Validation::new(Algorithm::HS256);

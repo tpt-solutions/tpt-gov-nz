@@ -2,14 +2,13 @@
 
 use crate::{
     error::IngestError,
-    models::{FundingEntity,CoursesEntity,CitizenEntity, TransformedCitizen},
+    models::{CitizenEntity, CoursesEntity, FundingEntity, TransformedCitizen},
     raw::RawTecCitizen,
 };
 
 fn parse_date(s: &str, field: &str) -> Result<chrono::NaiveDate, IngestError> {
-    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").map_err(|e| {
-        IngestError::Transform(format!("invalid {field} date '{s}': {e}"))
-    })
+    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d")
+        .map_err(|e| IngestError::Transform(format!("invalid {field} date '{s}': {e}")))
 }
 
 pub fn transform_citizen(raw: &RawTecCitizen) -> Result<TransformedCitizen, IngestError> {
@@ -61,8 +60,7 @@ mod tests {
     use super::*;
 
     fn sample() -> RawTecCitizen {
-        serde_json::from_value(serde_json::json!([object Object]))
-            .unwrap()
+        serde_json::from_value(serde_json::json!([object Object])).unwrap()
     }
 
     #[test]
@@ -70,15 +68,18 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.tec_id, "TEC-100001");
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.funding.as_ref().unwrap().provider, "Whitireia");
-         assert_eq!(t.funding.as_ref().unwrap().amount, 2200000);
-         assert_eq!(t.funding.as_ref().unwrap().year, 2026);
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(t.funding.as_ref().unwrap().provider, "Whitireia");
+        assert_eq!(t.funding.as_ref().unwrap().amount, 2200000);
+        assert_eq!(t.funding.as_ref().unwrap().year, 2026);
 
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.courses.as_ref().unwrap().course_name, "New Zealand Certificate in IT");
-         assert_eq!(t.courses.as_ref().unwrap().provider, "Whitireia");
-         assert_eq!(t.courses.as_ref().unwrap().status, "approved");
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(
+            t.courses.as_ref().unwrap().course_name,
+            "New Zealand Certificate in IT"
+        );
+        assert_eq!(t.courses.as_ref().unwrap().provider, "Whitireia");
+        assert_eq!(t.courses.as_ref().unwrap().status, "approved");
     }
 
     #[test]

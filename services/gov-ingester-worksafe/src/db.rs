@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::models::{InspectionsEntity,InvestigationsEntity,IngestionStatus};
+use crate::models::{IngestionStatus, InspectionsEntity, InvestigationsEntity};
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct CitizenRow {

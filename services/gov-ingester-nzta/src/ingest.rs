@@ -7,7 +7,7 @@ use uuid::Uuid;
 use crate::{
     db,
     error::IngestError,
-    models::{new_run_id, IngestionStatus, IngestionSummary},
+    models::{IngestionStatus, IngestionSummary, new_run_id},
     transform::transform_citizen,
     transport::IngesterTransport,
 };
@@ -38,13 +38,25 @@ pub async fn run_once(
         }
 
         if let Some(p) = &t.driver_licence {
-            count(db::upsert_driver_licence(pool, citizen_id, p).await?, &mut inserted, &mut updated);
+            count(
+                db::upsert_driver_licence(pool, citizen_id, p).await?,
+                &mut inserted,
+                &mut updated,
+            );
         }
         for v in &t.vehicles {
-            count(db::upsert_vehicle(pool, citizen_id, v).await?, &mut inserted, &mut updated);
+            count(
+                db::upsert_vehicle(pool, citizen_id, v).await?,
+                &mut inserted,
+                &mut updated,
+            );
         }
         for r in &t.ruc {
-            count(db::upsert_ruc(pool, citizen_id, r).await?, &mut inserted, &mut updated);
+            count(
+                db::upsert_ruc(pool, citizen_id, r).await?,
+                &mut inserted,
+                &mut updated,
+            );
         }
     }
 

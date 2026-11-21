@@ -1,5 +1,5 @@
 use axum::Json;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 use uuid::Uuid;
 
@@ -15,8 +15,12 @@ pub async fn execute(
 ) -> Result<Json<Value>, DiaError> {
     let result = match action_type {
         "request-passport-renewal" => request_passport_renewal(pool, citizen_id, parameters).await,
-        "request-birth-certificate" => request_birth_certificate(pool, citizen_id, parameters).await,
-        _ => Err(DiaError::InvalidAction(format!("Unknown action: {action_type}"))),
+        "request-birth-certificate" => {
+            request_birth_certificate(pool, citizen_id, parameters).await
+        }
+        _ => Err(DiaError::InvalidAction(format!(
+            "Unknown action: {action_type}"
+        ))),
     };
 
     let (success, message) = match &result {
@@ -50,7 +54,9 @@ async fn request_passport_renewal(
         .unwrap_or("Standard renewal");
 
     if reason.trim().is_empty() {
-        return Err(DiaError::InvalidAction("reason must not be empty".to_owned()));
+        return Err(DiaError::InvalidAction(
+            "reason must not be empty".to_owned(),
+        ));
     }
 
     db::insert_action_request(pool, citizen_id, "request-passport-renewal", reason).await?;
@@ -72,7 +78,9 @@ async fn request_birth_certificate(
         .unwrap_or(1);
 
     if copies < 1 || copies > 10 {
-        return Err(DiaError::InvalidAction("copies must be between 1 and 10".to_owned()));
+        return Err(DiaError::InvalidAction(
+            "copies must be between 1 and 10".to_owned(),
+        ));
     }
 
     let detail = format!("Birth certificate request — {copies} copy(ies)");

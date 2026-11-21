@@ -1,18 +1,12 @@
 use axum::{
-    extract::{Path, State},
     Json,
+    extract::{Path, State},
 };
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 
-use crate::{
-    actions,
-    consent,
-    db,
-    error::AccError,
-    opa,
-};
+use crate::{actions, consent, db, error::AccError, opa};
 
 pub async fn health() -> Json<Value> {
     Json(json!({ "status": "ok", "dept_id": "acc" }))
@@ -108,14 +102,18 @@ pub async fn fetch_data(
     };
 
     let claims_json = claims.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "claimNumber": c.claim_number,
-            "claimType": c.claim_type,
-            "status": c.status,
-            "injuryDate": c.injury_date.to_string(),
-            "description": c.description,
-            "weeklyCompensation": c.weekly_compensation,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "claimNumber": c.claim_number,
+                    "claimType": c.claim_type,
+                    "status": c.status,
+                    "injuryDate": c.injury_date.to_string(),
+                    "description": c.description,
+                    "weeklyCompensation": c.weekly_compensation,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     let entitlements_json = entitlements.as_ref().map(|e| {
@@ -128,13 +126,17 @@ pub async fn fetch_data(
     });
 
     let rehabilitation_json = rehabilitation.as_ref().map(|rows| {
-        json!(rows.iter().map(|r| json!({
-            "planId": r.plan_id,
-            "description": r.description,
-            "status": r.status,
-            "provider": r.provider,
-            "nextReview": r.next_review.map(|d| d.to_string()),
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|r| json!({
+                    "planId": r.plan_id,
+                    "description": r.description,
+                    "status": r.status,
+                    "provider": r.provider,
+                    "nextReview": r.next_review.map(|d| d.to_string()),
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     Ok(Json(json!({

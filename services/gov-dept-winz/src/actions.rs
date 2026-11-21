@@ -1,5 +1,5 @@
 use axum::Json;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 use uuid::Uuid;
 
@@ -16,7 +16,9 @@ pub async fn execute(
     let result = match action_type {
         "request-appointment" => request_appointment(pool, citizen_id, parameters).await,
         "submit-benefit-review" => submit_benefit_review(pool, citizen_id, parameters).await,
-        _ => Err(WinzError::InvalidAction(format!("Unknown action: {action_type}"))),
+        _ => Err(WinzError::InvalidAction(format!(
+            "Unknown action: {action_type}"
+        ))),
     };
 
     let (success, message) = match &result {
@@ -50,7 +52,9 @@ async fn request_appointment(
         .ok_or_else(|| WinzError::InvalidAction("reason required".to_owned()))?;
 
     if reason.trim().is_empty() {
-        return Err(WinzError::InvalidAction("reason must not be empty".to_owned()));
+        return Err(WinzError::InvalidAction(
+            "reason must not be empty".to_owned(),
+        ));
     }
 
     let channel = parameters

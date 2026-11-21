@@ -1,18 +1,9 @@
-use axum::{
-    extract::State,
-    Json,
-};
+use axum::{Json, extract::State};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 
-use crate::{
-    actions,
-    consent,
-    db,
-    error::CrownlawError,
-    opa,
-};
+use crate::{actions, consent, db, error::CrownlawError, opa};
 
 pub async fn health() -> Json<Value> {
     Json(json!({ "status": "ok", "dept_id": "crownlaw" }))
@@ -96,12 +87,16 @@ pub async fn fetch_data(
     };
 
     let legal_opinions_json = legal_opinions.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "reference": c.c,
-            "topic": c.c,
-            "issuedDate": c.c.to_string(),
-            "status": c.c,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "reference": c.c,
+                    "topic": c.c,
+                    "issuedDate": c.c.to_string(),
+                    "status": c.c,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     let litigation = if has_scope("crownlaw:litigation") {
@@ -111,11 +106,15 @@ pub async fn fetch_data(
     };
 
     let litigation_json = litigation.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "caseName": c.c,
-            "crownRole": c.c,
-            "status": c.c,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "caseName": c.c,
+                    "crownRole": c.c,
+                    "status": c.c,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     Ok(Json(json!({

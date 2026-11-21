@@ -2,14 +2,13 @@
 
 use crate::{
     error::IngestError,
-    models::{EmissionsEntity,ReportsEntity,CitizenEntity, TransformedCitizen},
+    models::{CitizenEntity, EmissionsEntity, ReportsEntity, TransformedCitizen},
     raw::RawMfeCitizen,
 };
 
 fn parse_date(s: &str, field: &str) -> Result<chrono::NaiveDate, IngestError> {
-    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").map_err(|e| {
-        IngestError::Transform(format!("invalid {field} date '{s}': {e}"))
-    })
+    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d")
+        .map_err(|e| IngestError::Transform(format!("invalid {field} date '{s}': {e}")))
 }
 
 pub fn transform_citizen(raw: &RawMfeCitizen) -> Result<TransformedCitizen, IngestError> {
@@ -61,8 +60,7 @@ mod tests {
     use super::*;
 
     fn sample() -> RawMfeCitizen {
-        serde_json::from_value(serde_json::json!([object Object]))
-            .unwrap()
+        serde_json::from_value(serde_json::json!([object Object])).unwrap()
     }
 
     #[test]
@@ -70,15 +68,21 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.mfe_id, "MFE-100001");
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.emissions.as_ref().unwrap().report_year, 2025);
-         assert_eq!(t.emissions.as_ref().unwrap().sector, "Transport");
-         assert_eq!(t.emissions.as_ref().unwrap().tonnes_co2e, 3200.5);
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(t.emissions.as_ref().unwrap().report_year, 2025);
+        assert_eq!(t.emissions.as_ref().unwrap().sector, "Transport");
+        assert_eq!(t.emissions.as_ref().unwrap().tonnes_co2e, 3200.5);
 
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.reports.as_ref().unwrap().title, "Aotearoa New Zealand's Environment 2026");
-         assert_eq!(t.reports.as_ref().unwrap().published.to_string(), "2026-05-01");
-         assert_eq!(t.reports.as_ref().unwrap().status, "published");
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(
+            t.reports.as_ref().unwrap().title,
+            "Aotearoa New Zealand's Environment 2026"
+        );
+        assert_eq!(
+            t.reports.as_ref().unwrap().published.to_string(),
+            "2026-05-01"
+        );
+        assert_eq!(t.reports.as_ref().unwrap().status, "published");
     }
 
     #[test]

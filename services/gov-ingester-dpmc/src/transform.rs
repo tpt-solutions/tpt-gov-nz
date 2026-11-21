@@ -2,14 +2,13 @@
 
 use crate::{
     error::IngestError,
-    models::{HonoursEntity,EngagementsEntity,CitizenEntity, TransformedCitizen},
+    models::{CitizenEntity, EngagementsEntity, HonoursEntity, TransformedCitizen},
     raw::RawDpmcCitizen,
 };
 
 fn parse_date(s: &str, field: &str) -> Result<chrono::NaiveDate, IngestError> {
-    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").map_err(|e| {
-        IngestError::Transform(format!("invalid {field} date '{s}': {e}"))
-    })
+    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d")
+        .map_err(|e| IngestError::Transform(format!("invalid {field} date '{s}': {e}")))
 }
 
 pub fn transform_citizen(raw: &RawDpmcCitizen) -> Result<TransformedCitizen, IngestError> {
@@ -61,8 +60,7 @@ mod tests {
     use super::*;
 
     fn sample() -> RawDpmcCitizen {
-        serde_json::from_value(serde_json::json!([object Object]))
-            .unwrap()
+        serde_json::from_value(serde_json::json!([object Object])).unwrap()
     }
 
     #[test]
@@ -70,15 +68,21 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.dpmc_id, "DPMC-100001");
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.honours.as_ref().unwrap().award_year, 2025);
-         assert_eq!(t.honours.as_ref().unwrap().award, "Queen's Service Medal");
-         assert_eq!(t.honours.as_ref().unwrap().status, "nominated");
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(t.honours.as_ref().unwrap().award_year, 2025);
+        assert_eq!(t.honours.as_ref().unwrap().award, "Queen's Service Medal");
+        assert_eq!(t.honours.as_ref().unwrap().status, "nominated");
 
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.engagements.as_ref().unwrap().event_name, "Citizens' Honours Reception");
-         assert_eq!(t.engagements.as_ref().unwrap().event_date.to_string(), "2026-05-12");
-         assert_eq!(t.engagements.as_ref().unwrap().location, "Wellington");
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(
+            t.engagements.as_ref().unwrap().event_name,
+            "Citizens' Honours Reception"
+        );
+        assert_eq!(
+            t.engagements.as_ref().unwrap().event_date.to_string(),
+            "2026-05-12"
+        );
+        assert_eq!(t.engagements.as_ref().unwrap().location, "Wellington");
     }
 
     #[test]

@@ -2,11 +2,7 @@ use std::path::PathBuf;
 
 use async_trait::async_trait;
 
-use crate::{
-    error::IngestError,
-    raw::RawRetirementBatch,
-    transport::IngesterTransport,
-};
+use crate::{error::IngestError, raw::RawRetirementBatch, transport::IngesterTransport};
 
 /// Connection details for the real Retirement Commission (Te Ara Ahunga Ora) legacy system integration.
 #[derive(Debug, Clone)]

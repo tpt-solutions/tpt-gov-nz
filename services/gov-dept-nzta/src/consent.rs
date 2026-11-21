@@ -15,7 +15,10 @@ pub struct ConsentInput<'a> {
 }
 
 pub fn evaluate_allow(input: &ConsentInput) -> bool {
-    input.requested_scopes.iter().all(|scope| scope_covered(input, scope))
+    input
+        .requested_scopes
+        .iter()
+        .all(|scope| scope_covered(input, scope))
 }
 
 fn scope_covered(input: &ConsentInput, scope: &str) -> bool {
@@ -74,7 +77,11 @@ mod tests {
         CredentialIssuer::generate()
     }
 
-    fn grant(issuer: &CredentialIssuer, requesting: &str, scopes: Vec<String>) -> DataGrantCredential {
+    fn grant(
+        issuer: &CredentialIssuer,
+        requesting: &str,
+        scopes: Vec<String>,
+    ) -> DataGrantCredential {
         issuer.issue_data_grant(
             gov_identity_core::GovDid::parse("did:gov:nz:test-citizen-001").unwrap(),
             requesting,

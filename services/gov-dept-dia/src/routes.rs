@@ -1,18 +1,12 @@
 use axum::{
-    extract::{Path, State},
     Json,
+    extract::{Path, State},
 };
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 
-use crate::{
-    actions,
-    consent,
-    db,
-    error::DiaError,
-    opa,
-};
+use crate::{actions, consent, db, error::DiaError, opa};
 
 pub async fn health() -> Json<Value> {
     Json(json!({ "status": "ok", "dept_id": "dia" }))
@@ -165,7 +159,9 @@ pub async fn list_passports(
     State(pool): State<PgPool>,
     Path(did): Path<String>,
 ) -> Result<Json<Value>, DiaError> {
-    let citizen = db::resolve_by_did(&pool, &did).await?.ok_or(DiaError::CitizenNotFound)?;
+    let citizen = db::resolve_by_did(&pool, &did)
+        .await?
+        .ok_or(DiaError::CitizenNotFound)?;
     let passport = db::fetch_passport(&pool, citizen.id).await?;
     Ok(Json(json!({
         "passports": passport.as_ref().map(|p| vec![json!({
@@ -180,7 +176,9 @@ pub async fn list_documents(
     State(pool): State<PgPool>,
     Path(did): Path<String>,
 ) -> Result<Json<Value>, DiaError> {
-    let citizen = db::resolve_by_did(&pool, &did).await?.ok_or(DiaError::CitizenNotFound)?;
+    let citizen = db::resolve_by_did(&pool, &did)
+        .await?
+        .ok_or(DiaError::CitizenNotFound)?;
     let birth = db::fetch_birth_cert(&pool, citizen.id).await?;
     let citizenship = db::fetch_citizenship(&pool, citizen.id).await?;
     Ok(Json(json!({

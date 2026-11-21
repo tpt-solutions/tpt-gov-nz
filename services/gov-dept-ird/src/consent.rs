@@ -19,7 +19,10 @@ pub struct ConsentInput<'a> {
 
 /// Mirrors `policies/ird.rego` `allow`: every requested scope must be covered.
 pub fn evaluate_allow(input: &ConsentInput) -> bool {
-    input.requested_scopes.iter().all(|scope| scope_covered(input, scope))
+    input
+        .requested_scopes
+        .iter()
+        .all(|scope| scope_covered(input, scope))
 }
 
 /// Mirrors `policies/ird.rego` `scope_covered`.

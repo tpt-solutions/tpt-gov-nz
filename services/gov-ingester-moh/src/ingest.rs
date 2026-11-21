@@ -7,7 +7,7 @@ use uuid::Uuid;
 use crate::{
     db,
     error::IngestError,
-    models::{new_run_id, IngestionStatus, IngestionSummary},
+    models::{IngestionStatus, IngestionSummary, new_run_id},
     transform::transform_citizen,
     transport::IngesterTransport,
 };
@@ -38,16 +38,32 @@ pub async fn run_once(
         }
 
         if let Some(gp) = &t.gp {
-            count(db::upsert_gp_enrolment(pool, citizen_id, gp).await?, &mut inserted, &mut updated);
+            count(
+                db::upsert_gp_enrolment(pool, citizen_id, gp).await?,
+                &mut inserted,
+                &mut updated,
+            );
         }
         for p in &t.prescriptions {
-            count(db::upsert_prescription(pool, citizen_id, p).await?, &mut inserted, &mut updated);
+            count(
+                db::upsert_prescription(pool, citizen_id, p).await?,
+                &mut inserted,
+                &mut updated,
+            );
         }
         for a in &t.appointments {
-            count(db::upsert_appointment(pool, citizen_id, a).await?, &mut inserted, &mut updated);
+            count(
+                db::upsert_appointment(pool, citizen_id, a).await?,
+                &mut inserted,
+                &mut updated,
+            );
         }
         for v in &t.vaccinations {
-            count(db::upsert_vaccination(pool, citizen_id, v).await?, &mut inserted, &mut updated);
+            count(
+                db::upsert_vaccination(pool, citizen_id, v).await?,
+                &mut inserted,
+                &mut updated,
+            );
         }
     }
 

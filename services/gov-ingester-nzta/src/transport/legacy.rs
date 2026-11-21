@@ -2,11 +2,7 @@ use std::path::PathBuf;
 
 use async_trait::async_trait;
 
-use crate::{
-    error::IngestError,
-    raw::RawNztaBatch,
-    transport::IngesterTransport,
-};
+use crate::{error::IngestError, raw::RawNztaBatch, transport::IngesterTransport};
 
 /// Connection details for the real NZTA legacy system integration.
 ///

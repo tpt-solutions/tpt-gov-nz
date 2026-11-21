@@ -6,12 +6,12 @@
 //! DATABASE_URL=postgresql://mfat:mfat_dev_password@localhost:5432/mfat cargo test -p gov-dept-mfat
 //! ```
 
+use crate::{MfatError, build_app};
 use axum::{
-    body::{to_bytes, Body},
+    body::{Body, to_bytes},
     http::{Request, StatusCode},
 };
-use crate::{build_app, MfatError};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 use tower::ServiceExt;
 
@@ -127,7 +127,12 @@ async fn http_round_trip(pool: PgPool) {
 
     let resp = app
         .clone()
-        .oneshot(Request::builder().uri("/health").body(Body::empty()).unwrap())
+        .oneshot(
+            Request::builder()
+                .uri("/health")
+                .body(Body::empty())
+                .unwrap(),
+        )
         .await
         .unwrap();
     assert_eq!(resp.status(), StatusCode::OK);

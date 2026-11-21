@@ -3,7 +3,7 @@ use std::time::Duration;
 
 use axum::{body::Bytes, extract::FromRef};
 use http_body_util::Full;
-use hyper_util::client::legacy::{connect::HttpConnector, Client};
+use hyper_util::client::legacy::{Client, connect::HttpConnector};
 
 use crate::auth::JwtConfig;
 use crate::circuit_breaker::CircuitBreakerRegistry;

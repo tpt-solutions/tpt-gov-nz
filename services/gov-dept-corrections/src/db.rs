@@ -53,10 +53,7 @@ pub async fn fetch_probation(
     .await
 }
 
-pub async fn fetch_cases(
-    pool: &PgPool,
-    citizen_id: Uuid,
-) -> sqlx::Result<Vec<CaseRow>> {
+pub async fn fetch_cases(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<CaseRow>> {
     sqlx::query_as!(
         CaseRow,
         "SELECT id, citizen_id, case_number, sentence_type, start_date, end_date, summary \

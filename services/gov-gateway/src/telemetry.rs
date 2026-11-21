@@ -7,8 +7,8 @@
 //! starts cleanly in development.
 
 use opentelemetry::KeyValue;
-use opentelemetry_sdk::{trace::SdkTracerProvider, Resource};
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
+use opentelemetry_sdk::{Resource, trace::SdkTracerProvider};
+use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
 
 const SERVICE_NAME: &str = "gov-gateway";
 

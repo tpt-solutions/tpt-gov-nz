@@ -2,11 +2,7 @@ use std::path::PathBuf;
 
 use async_trait::async_trait;
 
-use crate::{
-    error::IngestError,
-    raw::RawMchBatch,
-    transport::IngesterTransport,
-};
+use crate::{error::IngestError, raw::RawMchBatch, transport::IngesterTransport};
 
 /// Connection details for the real Ministry for Culture and Heritage legacy system integration.
 #[derive(Debug, Clone)]

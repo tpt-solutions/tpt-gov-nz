@@ -1,4 +1,8 @@
-use axum::{http::StatusCode, response::{IntoResponse, Response}, Json};
+use axum::{
+    Json,
+    http::StatusCode,
+    response::{IntoResponse, Response},
+};
 use serde_json::json;
 use thiserror::Error;
 
@@ -25,7 +29,10 @@ impl IntoResponse for PacificError {
         let (status, message) = match &self {
             PacificError::CitizenNotFound => (StatusCode::NOT_FOUND, self.to_string()),
             PacificError::ScopeNotGranted(_) => (StatusCode::FORBIDDEN, self.to_string()),
-            PacificError::Database(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Internal error".to_owned()),
+            PacificError::Database(_) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Internal error".to_owned(),
+            ),
             PacificError::InvalidAction(_) => (StatusCode::BAD_REQUEST, self.to_string()),
             PacificError::ActionFailed(_) => (StatusCode::UNPROCESSABLE_ENTITY, self.to_string()),
         };

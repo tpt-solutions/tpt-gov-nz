@@ -1,5 +1,5 @@
 use axum::Json;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 use uuid::Uuid;
 
@@ -14,7 +14,9 @@ pub async fn execute(
     ai_level: Option<&str>,
 ) -> Result<Json<Value>, HudError> {
     let result = match action_type {
-        "submit-housing-application" => submit_housing_application(pool, citizen_id, parameters).await,
+        "submit-housing-application" => {
+            submit_housing_application(pool, citizen_id, parameters).await
+        }
         "request-maintenance" => request_maintenance(pool, citizen_id, parameters).await,
         _ => Err(HudError::InvalidAction(format!(
             "Unknown action: {action_type}"

@@ -6,12 +6,12 @@
 //! DATABASE_URL=postgresql://nzta:nzta_dev_password@localhost:5432/nzta cargo test -p gov-dept-nzta
 //! ```
 
+use crate::{NztaError, build_app};
 use axum::{
-    body::{to_bytes, Body},
+    body::{Body, to_bytes},
     http::{Request, StatusCode},
 };
-use crate::{build_app, NztaError};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 use tower::ServiceExt;
 
@@ -27,7 +27,9 @@ async fn resolve_found(pool: PgPool) {
 
 #[sqlx::test]
 async fn resolve_not_found(pool: PgPool) {
-    let row = crate::db::resolve_by_did(&pool, "did:gov:nz:missing").await.unwrap();
+    let row = crate::db::resolve_by_did(&pool, "did:gov:nz:missing")
+        .await
+        .unwrap();
     assert!(row.is_none());
 }
 
@@ -168,7 +170,12 @@ async fn http_round_trip(pool: PgPool) {
 
     let resp = app
         .clone()
-        .oneshot(Request::builder().uri("/health").body(Body::empty()).unwrap())
+        .oneshot(
+            Request::builder()
+                .uri("/health")
+                .body(Body::empty())
+                .unwrap(),
+        )
         .await
         .unwrap();
     assert_eq!(resp.status(), StatusCode::OK);
@@ -177,7 +184,10 @@ async fn http_round_trip(pool: PgPool) {
         .method("POST")
         .uri("/citizen/data")
         .header("content-type", "application/json")
-        .body(Body::from(json!({ "did": TEST_DID, "scopes": ["nzta:driver-licence", "nzta:vehicles"] }).to_string()))
+        .body(Body::from(
+            json!({ "did": TEST_DID, "scopes": ["nzta:driver-licence", "nzta:vehicles"] })
+                .to_string(),
+        ))
         .unwrap();
     let resp = app.clone().oneshot(data).await.unwrap();
     assert_eq!(resp.status(), StatusCode::OK);

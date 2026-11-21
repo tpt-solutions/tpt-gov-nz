@@ -1,9 +1,6 @@
 use std::path::PathBuf;
 
-use crate::{
-    error::IngestError,
-    transport::sftp::SftpConfig,
-};
+use crate::{error::IngestError, transport::sftp::SftpConfig};
 
 #[derive(Debug, Clone)]
 pub enum TransportKind {
@@ -40,8 +37,7 @@ impl Config {
         };
 
         let mock_fixture = PathBuf::from(
-            std::env::var("IRD_MOCK_FIXTURE")
-                .unwrap_or_else(|_| "fixtures/ird_batch.json".into()),
+            std::env::var("IRD_MOCK_FIXTURE").unwrap_or_else(|_| "fixtures/ird_batch.json".into()),
         );
 
         let sftp = SftpConfig {
@@ -51,9 +47,7 @@ impl Config {
                 .and_then(|v| v.parse().ok())
                 .unwrap_or(22),
             username: std::env::var("IRD_SFTP_USER").unwrap_or_default(),
-            private_key_path: PathBuf::from(
-                std::env::var("IRD_SFTP_KEY").unwrap_or_default(),
-            ),
+            private_key_path: PathBuf::from(std::env::var("IRD_SFTP_KEY").unwrap_or_default()),
             remote_path: std::env::var("IRD_SFTP_REMOTE")
                 .unwrap_or_else(|_| "/inbound/ird_batch.json".into()),
         };

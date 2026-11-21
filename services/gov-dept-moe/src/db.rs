@@ -16,7 +16,10 @@ pub struct EnrolmentRow {
     pub status: String,
 }
 
-pub async fn fetch_enrolment(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Option<EnrolmentRow>> {
+pub async fn fetch_enrolment(
+    pool: &PgPool,
+    citizen_id: Uuid,
+) -> sqlx::Result<Option<EnrolmentRow>> {
     sqlx::query_as!(
         EnrolmentRow,
         "SELECT id, school, year_level, status FROM moe_enrolment WHERE citizen_id = $1",
@@ -34,7 +37,10 @@ pub struct StudentSupportRow {
     pub next_review: chrono::NaiveDate,
 }
 
-pub async fn fetch_student_support(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<StudentSupportRow>> {
+pub async fn fetch_student_support(
+    pool: &PgPool,
+    citizen_id: Uuid,
+) -> sqlx::Result<Vec<StudentSupportRow>> {
     sqlx::query_as!(
         StudentSupportRow,
         "SELECT id, service, status, next_review FROM moe_student_support WHERE citizen_id = $1 ORDER BY created_at DESC",

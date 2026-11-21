@@ -35,10 +35,7 @@ pub async fn resolve_by_did(pool: &PgPool, did: &str) -> sqlx::Result<Option<Cit
     .await
 }
 
-pub async fn fetch_titles(
-    pool: &PgPool,
-    citizen_id: Uuid,
-) -> sqlx::Result<Vec<TitleRow>> {
+pub async fn fetch_titles(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<TitleRow>> {
     sqlx::query_as!(
         TitleRow,
         "SELECT id, title_number, property_address, land_area_sqm, estate_type \
@@ -49,10 +46,7 @@ pub async fn fetch_titles(
     .await
 }
 
-pub async fn fetch_ownership(
-    pool: &PgPool,
-    citizen_id: Uuid,
-) -> sqlx::Result<Vec<OwnershipRow>> {
+pub async fn fetch_ownership(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<OwnershipRow>> {
     sqlx::query_as!(
         OwnershipRow,
         "SELECT id, title_number, ownership_share, registered_owners \

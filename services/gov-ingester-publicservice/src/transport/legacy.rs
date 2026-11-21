@@ -2,11 +2,7 @@ use std::path::PathBuf;
 
 use async_trait::async_trait;
 
-use crate::{
-    error::IngestError,
-    raw::RawPublicserviceBatch,
-    transport::IngesterTransport,
-};
+use crate::{error::IngestError, raw::RawPublicserviceBatch, transport::IngesterTransport};
 
 /// Connection details for the real Te Kawa Mataaho Public Service Commission legacy system integration.
 #[derive(Debug, Clone)]

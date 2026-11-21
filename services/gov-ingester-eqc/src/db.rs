@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::models::{ClaimsEntity,CoverEntity,IngestionStatus};
+use crate::models::{ClaimsEntity, CoverEntity, IngestionStatus};
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct CitizenRow {
@@ -10,11 +10,7 @@ pub struct CitizenRow {
     pub eqc_id: String,
 }
 
-pub async fn upsert_citizen(
-    pool: &PgPool,
-    did: &str,
-    eqc_id: &str,
-) -> sqlx::Result<(Uuid, bool)> {
+pub async fn upsert_citizen(pool: &PgPool, did: &str, eqc_id: &str) -> sqlx::Result<(Uuid, bool)> {
     let row = sqlx::query!(
         r#"INSERT INTO citizens (did, eqc_id)
            VALUES ($1, $2)
@@ -50,11 +46,7 @@ pub async fn upsert_claims(
     Ok(row.inserted.unwrap_or(false))
 }
 
-pub async fn upsert_cover(
-    pool: &PgPool,
-    citizen_id: Uuid,
-    e: &CoverEntity,
-) -> sqlx::Result<bool> {
+pub async fn upsert_cover(pool: &PgPool, citizen_id: Uuid, e: &CoverEntity) -> sqlx::Result<bool> {
     let row = sqlx::query!(
         r#"INSERT INTO eqc_cover (citizen_id, property, sum_insured, valid_to)
            VALUES ($1, $2, $3, $4)

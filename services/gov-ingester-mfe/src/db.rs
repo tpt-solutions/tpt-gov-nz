@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::models::{EmissionsEntity,ReportsEntity,IngestionStatus};
+use crate::models::{EmissionsEntity, IngestionStatus, ReportsEntity};
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct CitizenRow {
@@ -10,11 +10,7 @@ pub struct CitizenRow {
     pub mfe_id: String,
 }
 
-pub async fn upsert_citizen(
-    pool: &PgPool,
-    did: &str,
-    mfe_id: &str,
-) -> sqlx::Result<(Uuid, bool)> {
+pub async fn upsert_citizen(pool: &PgPool, did: &str, mfe_id: &str) -> sqlx::Result<(Uuid, bool)> {
     let row = sqlx::query!(
         r#"INSERT INTO citizens (did, mfe_id)
            VALUES ($1, $2)

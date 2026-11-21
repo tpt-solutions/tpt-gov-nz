@@ -1,8 +1,8 @@
 use axum::{
+    Json,
     body::Body,
     extract::{Extension, Path, State},
     http::{HeaderMap, Method, Request, StatusCode, Uri},
-    Json,
 };
 use http_body_util::{BodyExt, Full, Limited};
 use serde::{Deserialize, Serialize};
@@ -201,7 +201,10 @@ fn build_target(base_url: &str, path: &str, query: Option<&str>, https: bool) ->
     target
 }
 
-fn forward_headers(builder: axum::http::request::Builder, incoming: &HeaderMap) -> axum::http::request::Builder {
+fn forward_headers(
+    builder: axum::http::request::Builder,
+    incoming: &HeaderMap,
+) -> axum::http::request::Builder {
     let mut builder = builder;
     for name in FORWARDED_HEADERS {
         if let Some(value) = incoming.get(name) {

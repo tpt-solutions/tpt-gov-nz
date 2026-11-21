@@ -1,18 +1,9 @@
-use axum::{
-    extract::State,
-    Json,
-};
+use axum::{Json, extract::State};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 
-use crate::{
-    actions,
-    consent,
-    db,
-    error::EqcError,
-    opa,
-};
+use crate::{actions, consent, db, error::EqcError, opa};
 
 pub async fn health() -> Json<Value> {
     Json(json!({ "status": "ok", "dept_id": "eqc" }))
@@ -96,12 +87,16 @@ pub async fn fetch_data(
     };
 
     let claims_json = claims.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "reference": c.c,
-            "property": c.c,
-            "status": c.c,
-            "lodgedDate": c.c.to_string(),
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "reference": c.c,
+                    "property": c.c,
+                    "status": c.c,
+                    "lodgedDate": c.c.to_string(),
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     let cover = if has_scope("eqc:cover") {

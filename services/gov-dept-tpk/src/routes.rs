@@ -1,18 +1,9 @@
-use axum::{
-    extract::State,
-    Json,
-};
+use axum::{Json, extract::State};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 
-use crate::{
-    actions,
-    consent,
-    db,
-    error::TpkError,
-    opa,
-};
+use crate::{actions, consent, db, error::TpkError, opa};
 
 pub async fn health() -> Json<Value> {
     Json(json!({ "status": "ok", "dept_id": "tpk" }))
@@ -102,20 +93,28 @@ pub async fn fetch_data(
     };
 
     let programmes_json = programmes.as_ref().map(|rows| {
-        json!(rows.iter().map(|p| json!({
-            "programmeName": p.programme_name,
-            "status": p.status,
-            "region": p.region,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|p| json!({
+                    "programmeName": p.programme_name,
+                    "status": p.status,
+                    "region": p.region,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     let funding_json = funding.as_ref().map(|rows| {
-        json!(rows.iter().map(|f| json!({
-            "grantId": f.grant_id,
-            "amount": f.amount as i64,
-            "purpose": f.purpose,
-            "status": f.status,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|f| json!({
+                    "grantId": f.grant_id,
+                    "amount": f.amount as i64,
+                    "purpose": f.purpose,
+                    "status": f.status,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     Ok(Json(json!({

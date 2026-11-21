@@ -11,11 +11,7 @@
 use std::path::PathBuf;
 
 use crate::{
-    db,
-    ingest,
-    models::IngestionStatus,
-    raw::RawIrdBatch,
-    transform::transform_citizen,
+    db, ingest, models::IngestionStatus, raw::RawIrdBatch, transform::transform_citizen,
     transport::mock::MockTransport,
 };
 

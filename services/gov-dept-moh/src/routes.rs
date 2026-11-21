@@ -1,18 +1,12 @@
 use axum::{
-    extract::{Path, State},
     Json,
+    extract::{Path, State},
 };
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 
-use crate::{
-    actions,
-    consent,
-    db,
-    error::MohError,
-    opa,
-};
+use crate::{actions, consent, db, error::MohError, opa};
 
 // ── Health ────────────────────────────────────────────────────────────────────
 
@@ -191,7 +185,9 @@ pub async fn list_prescriptions(
     State(pool): State<PgPool>,
     Path(did): Path<String>,
 ) -> Result<Json<Value>, MohError> {
-    let citizen = db::resolve_by_did(&pool, &did).await?.ok_or(MohError::CitizenNotFound)?;
+    let citizen = db::resolve_by_did(&pool, &did)
+        .await?
+        .ok_or(MohError::CitizenNotFound)?;
     let prescriptions = db::fetch_prescriptions(&pool, citizen.id).await?;
     Ok(Json(json!({
         "prescriptions": prescriptions.iter().map(|p| json!({
@@ -209,7 +205,9 @@ pub async fn list_appointments(
     State(pool): State<PgPool>,
     Path(did): Path<String>,
 ) -> Result<Json<Value>, MohError> {
-    let citizen = db::resolve_by_did(&pool, &did).await?.ok_or(MohError::CitizenNotFound)?;
+    let citizen = db::resolve_by_did(&pool, &did)
+        .await?
+        .ok_or(MohError::CitizenNotFound)?;
     let appointments = db::fetch_appointments(&pool, citizen.id).await?;
     Ok(Json(json!({
         "appointments": appointments.iter().map(|a| json!({
@@ -226,7 +224,9 @@ pub async fn list_vaccinations(
     State(pool): State<PgPool>,
     Path(did): Path<String>,
 ) -> Result<Json<Value>, MohError> {
-    let citizen = db::resolve_by_did(&pool, &did).await?.ok_or(MohError::CitizenNotFound)?;
+    let citizen = db::resolve_by_did(&pool, &did)
+        .await?
+        .ok_or(MohError::CitizenNotFound)?;
     let vaccinations = db::fetch_vaccinations(&pool, citizen.id).await?;
     Ok(Json(json!({
         "vaccinations": vaccinations.iter().map(|v| json!({

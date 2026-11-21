@@ -1,18 +1,9 @@
-use axum::{
-    extract::State,
-    Json,
-};
+use axum::{Json, extract::State};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 
-use crate::{
-    actions,
-    consent,
-    db,
-    error::NzdfError,
-    opa,
-};
+use crate::{actions, consent, db, error::NzdfError, opa};
 
 pub async fn health() -> Json<Value> {
     Json(json!({ "status": "ok", "dept_id": "nzdf" }))
@@ -96,11 +87,15 @@ pub async fn fetch_data(
     };
 
     let service_records_json = service_records.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "serviceNo": c.c,
-            "branch": c.c,
-            "status": c.c,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "serviceNo": c.c,
+                    "branch": c.c,
+                    "status": c.c,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     let deployments = if has_scope("nzdf:deployments") {
@@ -110,11 +105,15 @@ pub async fn fetch_data(
     };
 
     let deployments_json = deployments.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "operation": c.c,
-            "country": c.c,
-            "year": c.c,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "operation": c.c,
+                    "country": c.c,
+                    "year": c.c,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     Ok(Json(json!({

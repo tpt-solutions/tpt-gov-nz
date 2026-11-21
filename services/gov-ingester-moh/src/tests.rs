@@ -16,15 +16,21 @@ use crate::{
 
 #[sqlx::test(migrations = "../gov-dept-moh/migrations")]
 async fn upsert_citizen_is_idempotent(pool: sqlx::PgPool) {
-    let (_, first) = db::upsert_citizen(&pool, "did:gov:nz:t", "ABC1234").await.unwrap();
+    let (_, first) = db::upsert_citizen(&pool, "did:gov:nz:t", "ABC1234")
+        .await
+        .unwrap();
     assert!(first);
-    let (_, second) = db::upsert_citizen(&pool, "did:gov:nz:t", "ABC1234").await.unwrap();
+    let (_, second) = db::upsert_citizen(&pool, "did:gov:nz:t", "ABC1234")
+        .await
+        .unwrap();
     assert!(!second);
 }
 
 #[sqlx::test(migrations = "../gov-dept-moh/migrations")]
 async fn upsert_prescription_is_idempotent(pool: sqlx::PgPool) {
-    let (cid, _) = db::upsert_citizen(&pool, "did:gov:nz:p", "DEF5678").await.unwrap();
+    let (cid, _) = db::upsert_citizen(&pool, "did:gov:nz:p", "DEF5678")
+        .await
+        .unwrap();
     let e = crate::models::PrescriptionEntity {
         medication: "Atorvastatin".into(),
         dose: "20mg".into(),

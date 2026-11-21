@@ -1,18 +1,9 @@
-use axum::{
-    extract::State,
-    Json,
-};
+use axum::{Json, extract::State};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 
-use crate::{
-    actions,
-    consent,
-    db,
-    error::GcsbError,
-    opa,
-};
+use crate::{actions, consent, db, error::GcsbError, opa};
 
 pub async fn health() -> Json<Value> {
     Json(json!({ "status": "ok", "dept_id": "gcsb" }))
@@ -96,12 +87,16 @@ pub async fn fetch_data(
     };
 
     let mandates_json = mandates.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "reference": c.c,
-            "agency": c.c,
-            "status": c.c,
-            "issuedDate": c.c.to_string(),
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "reference": c.c,
+                    "agency": c.c,
+                    "status": c.c,
+                    "issuedDate": c.c.to_string(),
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     let engagements = if has_scope("gcsb:engagements") {
@@ -111,11 +106,15 @@ pub async fn fetch_data(
     };
 
     let engagements_json = engagements.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "partner": c.c,
-            "engagementType": c.c,
-            "engagementDate": c.c.to_string(),
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "partner": c.c,
+                    "engagementType": c.c,
+                    "engagementDate": c.c.to_string(),
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     Ok(Json(json!({

@@ -1,8 +1,8 @@
 use axum::{
+    Json,
     extract::{Path, Query, State},
     http::StatusCode,
     response::{IntoResponse, Response},
-    Json,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -40,10 +40,7 @@ impl ApiError {
 
     fn internal(error: impl std::fmt::Display) -> Self {
         tracing::error!(error = %error, "identity-server internal error");
-        Self::new(
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "internal server error",
-        )
+        Self::new(StatusCode::INTERNAL_SERVER_ERROR, "internal server error")
     }
 }
 
@@ -149,8 +146,7 @@ fn decode_public_key(encoded: &str) -> Result<ed25519_dalek::VerifyingKey, ApiEr
 }
 
 fn validate_did(did: &str) -> ApiResult<gov_identity_core::GovDid> {
-    gov_identity_core::GovDid::parse(did)
-        .map_err(|_| ApiError::bad_request("invalid citizen DID"))
+    gov_identity_core::GovDid::parse(did).map_err(|_| ApiError::bad_request("invalid citizen DID"))
 }
 
 // ── DID registration ──────────────────────────────────────────────────────────
@@ -432,13 +428,12 @@ pub async fn grant_status(
         revoked_at: Option<chrono::DateTime<chrono::Utc>>,
     }
 
-    let rows = sqlx::query_as::<_, StatusRow>(
-        "SELECT id, revoked_at FROM data_grants WHERE id = ANY($1)",
-    )
-    .bind(&req.ids)
-    .fetch_all(&state.pool)
-    .await
-    .map_err(ApiError::internal)?;
+    let rows =
+        sqlx::query_as::<_, StatusRow>("SELECT id, revoked_at FROM data_grants WHERE id = ANY($1)")
+            .bind(&req.ids)
+            .fetch_all(&state.pool)
+            .await
+            .map_err(ApiError::internal)?;
 
     let mut active = Vec::new();
     let mut revoked = Vec::new();
@@ -450,7 +445,8 @@ pub async fn grant_status(
         }
     }
 
-    let known: std::collections::HashSet<_> = active.iter().chain(revoked.iter()).copied().collect();
+    let known: std::collections::HashSet<_> =
+        active.iter().chain(revoked.iter()).copied().collect();
     let unknown = req
         .ids
         .into_iter()
@@ -560,7 +556,10 @@ mod tests {
         assert_eq!(decode_public_key(&standard).unwrap().as_bytes(), bytes);
         assert_eq!(decode_public_key(&url_safe).unwrap().as_bytes(), bytes);
         assert!(decode_public_key("not base64 !!!").is_err());
-        assert!(decode_public_key(&base64::engine::general_purpose::STANDARD.encode([0u8; 31])).is_err());
+        assert!(
+            decode_public_key(&base64::engine::general_purpose::STANDARD.encode([0u8; 31]))
+                .is_err()
+        );
     }
 
     #[test]
@@ -569,6 +568,9 @@ mod tests {
 
         let key = SigningKey::generate(&mut rand::rngs::OsRng);
         let did = gov_identity_core::GovDid::from_verifying_key(&key.verifying_key());
-        assert_eq!(did.as_str(), gov_identity_core::GovDid::from_verifying_key(&key.verifying_key()).as_str());
+        assert_eq!(
+            did.as_str(),
+            gov_identity_core::GovDid::from_verifying_key(&key.verifying_key()).as_str()
+        );
     }
 }

@@ -2,11 +2,7 @@ use std::path::PathBuf;
 
 use async_trait::async_trait;
 
-use crate::{
-    error::IngestError,
-    raw::RawNzsisBatch,
-    transport::IngesterTransport,
-};
+use crate::{error::IngestError, raw::RawNzsisBatch, transport::IngesterTransport};
 
 /// Connection details for the real New Zealand Security Intelligence Service legacy system integration.
 #[derive(Debug, Clone)]

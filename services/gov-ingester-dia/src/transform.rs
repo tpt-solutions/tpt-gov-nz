@@ -9,9 +9,8 @@ use crate::{
 };
 
 fn parse_date(s: &str, field: &str) -> Result<chrono::NaiveDate, IngestError> {
-    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").map_err(|e| {
-        IngestError::Transform(format!("invalid {field} date '{s}': {e}"))
-    })
+    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d")
+        .map_err(|e| IngestError::Transform(format!("invalid {field} date '{s}': {e}")))
 }
 
 pub fn transform_citizen(raw: &RawDiaCitizen) -> Result<TransformedCitizen, IngestError> {
@@ -78,7 +77,10 @@ mod tests {
         let t = transform_citizen(&sample()).unwrap();
         assert_eq!(t.citizen.passport_number, "XA123456");
         assert!(t.passport.is_some());
-        assert_eq!(t.passport.as_ref().unwrap().expiry_date.to_string(), "2028-03-15");
+        assert_eq!(
+            t.passport.as_ref().unwrap().expiry_date.to_string(),
+            "2028-03-15"
+        );
     }
 
     #[test]

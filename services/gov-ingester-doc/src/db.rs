@@ -10,11 +10,7 @@ pub struct CitizenRow {
     pub doc_id: String,
 }
 
-pub async fn upsert_citizen(
-    pool: &PgPool,
-    did: &str,
-    doc_id: &str,
-) -> sqlx::Result<(Uuid, bool)> {
+pub async fn upsert_citizen(pool: &PgPool, did: &str, doc_id: &str) -> sqlx::Result<(Uuid, bool)> {
     let row = sqlx::query!(
         r#"INSERT INTO citizens (did, doc_id)
            VALUES ($1, $2)

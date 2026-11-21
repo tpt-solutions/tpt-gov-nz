@@ -15,7 +15,10 @@ pub struct OverseasMissionsRow {
     pub status: String,
 }
 
-pub async fn fetch_overseas_missions(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<OverseasMissionsRow>> {
+pub async fn fetch_overseas_missions(
+    pool: &PgPool,
+    citizen_id: Uuid,
+) -> sqlx::Result<Vec<OverseasMissionsRow>> {
     sqlx::query_as!(
         OverseasMissionsRow,
         "SELECT id, country, status FROM mfat_overseas_missions WHERE citizen_id = $1 ORDER BY created_at DESC",
@@ -33,7 +36,10 @@ pub struct TravelAdvisoriesRow {
     pub updated: chrono::NaiveDate,
 }
 
-pub async fn fetch_travel_advisories(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<TravelAdvisoriesRow>> {
+pub async fn fetch_travel_advisories(
+    pool: &PgPool,
+    citizen_id: Uuid,
+) -> sqlx::Result<Vec<TravelAdvisoriesRow>> {
     sqlx::query_as!(
         TravelAdvisoriesRow,
         "SELECT id, country, level, updated FROM mfat_travel_advisories WHERE citizen_id = $1 ORDER BY created_at DESC",

@@ -1,4 +1,4 @@
-use axum::{routing::get, Router};
+use axum::{Router, routing::get};
 use sqlx::PgPool;
 use tower_http::trace::TraceLayer;
 
@@ -16,12 +16,27 @@ pub use error::MohError;
 pub fn build_app(pool: PgPool) -> Router {
     Router::new()
         .route("/health", get(routes::health))
-        .route("/citizen/resolve", axum::routing::post(routes::resolve_citizen))
+        .route(
+            "/citizen/resolve",
+            axum::routing::post(routes::resolve_citizen),
+        )
         .route("/citizen/data", axum::routing::post(routes::fetch_data))
-        .route("/citizen/action", axum::routing::post(routes::submit_action))
-        .route("/citizen/{did}/prescriptions", get(routes::list_prescriptions))
-        .route("/citizen/{did}/appointments", get(routes::list_appointments))
-        .route("/citizen/{did}/vaccinations", get(routes::list_vaccinations))
+        .route(
+            "/citizen/action",
+            axum::routing::post(routes::submit_action),
+        )
+        .route(
+            "/citizen/{did}/prescriptions",
+            get(routes::list_prescriptions),
+        )
+        .route(
+            "/citizen/{did}/appointments",
+            get(routes::list_appointments),
+        )
+        .route(
+            "/citizen/{did}/vaccinations",
+            get(routes::list_vaccinations),
+        )
         .with_state(pool)
         .layer(TraceLayer::new_for_http())
 }

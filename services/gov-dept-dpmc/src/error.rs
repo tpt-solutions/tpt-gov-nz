@@ -1,4 +1,8 @@
-use axum::{http::StatusCode, response::{IntoResponse, Response}, Json};
+use axum::{
+    Json,
+    http::StatusCode,
+    response::{IntoResponse, Response},
+};
 use serde_json::json;
 use thiserror::Error;
 
@@ -25,7 +29,10 @@ impl IntoResponse for DpmcError {
         let (status, message) = match &self {
             DpmcError::CitizenNotFound => (StatusCode::NOT_FOUND, self.to_string()),
             DpmcError::ScopeNotGranted(_) => (StatusCode::FORBIDDEN, self.to_string()),
-            DpmcError::Database(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Internal error".to_owned()),
+            DpmcError::Database(_) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Internal error".to_owned(),
+            ),
             DpmcError::InvalidAction(_) => (StatusCode::BAD_REQUEST, self.to_string()),
             DpmcError::ActionFailed(_) => (StatusCode::UNPROCESSABLE_ENTITY, self.to_string()),
         };

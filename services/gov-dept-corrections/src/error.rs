@@ -1,4 +1,8 @@
-use axum::{http::StatusCode, response::{IntoResponse, Response}, Json};
+use axum::{
+    Json,
+    http::StatusCode,
+    response::{IntoResponse, Response},
+};
 use serde_json::json;
 use thiserror::Error;
 
@@ -25,9 +29,14 @@ impl IntoResponse for CorrectionsError {
         let (status, message) = match &self {
             CorrectionsError::CitizenNotFound => (StatusCode::NOT_FOUND, self.to_string()),
             CorrectionsError::ScopeNotGranted(_) => (StatusCode::FORBIDDEN, self.to_string()),
-            CorrectionsError::Database(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Internal error".to_owned()),
+            CorrectionsError::Database(_) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Internal error".to_owned(),
+            ),
             CorrectionsError::InvalidAction(_) => (StatusCode::BAD_REQUEST, self.to_string()),
-            CorrectionsError::ActionFailed(_) => (StatusCode::UNPROCESSABLE_ENTITY, self.to_string()),
+            CorrectionsError::ActionFailed(_) => {
+                (StatusCode::UNPROCESSABLE_ENTITY, self.to_string())
+            }
         };
         (status, Json(json!({ "error": message }))).into_response()
     }

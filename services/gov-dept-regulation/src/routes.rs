@@ -1,18 +1,9 @@
-use axum::{
-    extract::State,
-    Json,
-};
+use axum::{Json, extract::State};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 
-use crate::{
-    actions,
-    consent,
-    db,
-    error::RegulationError,
-    opa,
-};
+use crate::{actions, consent, db, error::RegulationError, opa};
 
 pub async fn health() -> Json<Value> {
     Json(json!({ "status": "ok", "dept_id": "regulation" }))
@@ -96,12 +87,16 @@ pub async fn fetch_data(
     };
 
     let regulatory_reviews_json = regulatory_reviews.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "topic": c.c,
-            "agency": c.c,
-            "status": c.c,
-            "reviewYear": c.c,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "topic": c.c,
+                    "agency": c.c,
+                    "status": c.c,
+                    "reviewYear": c.c,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     let proposals = if has_scope("regulation:proposals") {
@@ -111,10 +106,14 @@ pub async fn fetch_data(
     };
 
     let proposals_json = proposals.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "title": c.c,
-            "status": c.c,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "title": c.c,
+                    "status": c.c,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     Ok(Json(json!({

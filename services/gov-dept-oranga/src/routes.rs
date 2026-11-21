@@ -1,18 +1,9 @@
-use axum::{
-    extract::State,
-    Json,
-};
+use axum::{Json, extract::State};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 
-use crate::{
-    actions,
-    consent,
-    db,
-    error::OrangaError,
-    opa,
-};
+use crate::{actions, consent, db, error::OrangaError, opa};
 
 pub async fn health() -> Json<Value> {
     Json(json!({ "status": "ok", "dept_id": "oranga" }))
@@ -96,11 +87,15 @@ pub async fn fetch_data(
     };
 
     let care_placements_json = care_placements.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "placementType": c.c,
-            "startDate": c.c.to_string(),
-            "region": c.c,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "placementType": c.c,
+                    "startDate": c.c.to_string(),
+                    "region": c.c,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     let support_services = if has_scope("oranga:support-services") {
@@ -110,11 +105,15 @@ pub async fn fetch_data(
     };
 
     let support_services_json = support_services.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "service": c.c,
-            "status": c.c,
-            "nextReview": c.c.to_string(),
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "service": c.c,
+                    "status": c.c,
+                    "nextReview": c.c.to_string(),
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     Ok(Json(json!({

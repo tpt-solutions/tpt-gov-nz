@@ -46,7 +46,9 @@ pub fn verify_access(
     issuer_key: Option<&VerifyingKey>,
 ) -> Result<(), StatsnzError> {
     if !evaluate_allow(input) {
-        return Err(StatsnzError::ScopeNotGranted(denied_scopes(input).join(",")));
+        return Err(StatsnzError::ScopeNotGranted(
+            denied_scopes(input).join(","),
+        ));
     }
 
     if let Some(key) = issuer_key {
@@ -61,7 +63,9 @@ pub fn verify_access(
             })
         });
         if !all_signed {
-            return Err(StatsnzError::ScopeNotGranted("grant signature invalid".into()));
+            return Err(StatsnzError::ScopeNotGranted(
+                "grant signature invalid".into(),
+            ));
         }
     }
 

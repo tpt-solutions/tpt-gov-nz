@@ -1,18 +1,9 @@
-use axum::{
-    extract::State,
-    Json,
-};
+use axum::{Json, extract::State};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 
-use crate::{
-    actions,
-    consent,
-    db,
-    error::TearawhitiError,
-    opa,
-};
+use crate::{actions, consent, db, error::TearawhitiError, opa};
 
 pub async fn health() -> Json<Value> {
     Json(json!({ "status": "ok", "dept_id": "tearawhiti" }))
@@ -96,11 +87,15 @@ pub async fn fetch_data(
     };
 
     let treaty_settlements_json = treaty_settlements.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "iwi": c.c,
-            "status": c.c,
-            "settledDate": c.c.to_string(),
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "iwi": c.c,
+                    "status": c.c,
+                    "settledDate": c.c.to_string(),
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     let engagements = if has_scope("tearawhiti:engagements") {
@@ -110,11 +105,15 @@ pub async fn fetch_data(
     };
 
     let engagements_json = engagements.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "topic": c.c,
-            "engagementDate": c.c.to_string(),
-            "outcome": c.c,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "topic": c.c,
+                    "engagementDate": c.c.to_string(),
+                    "outcome": c.c,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     Ok(Json(json!({

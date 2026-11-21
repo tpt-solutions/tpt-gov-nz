@@ -35,7 +35,10 @@ pub struct EngagementsRow {
     pub engagement_date: chrono::NaiveDate,
 }
 
-pub async fn fetch_engagements(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<EngagementsRow>> {
+pub async fn fetch_engagements(
+    pool: &PgPool,
+    citizen_id: Uuid,
+) -> sqlx::Result<Vec<EngagementsRow>> {
     sqlx::query_as!(
         EngagementsRow,
         "SELECT id, partner, engagement_type, engagement_date FROM gcsb_engagements WHERE citizen_id = $1 ORDER BY created_at DESC",

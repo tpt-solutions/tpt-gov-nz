@@ -62,8 +62,8 @@ impl TlsPaths {
 
 /// Decode all `-----BEGIN ...-----` / `-----END ...-----` PEM blocks in a file.
 fn read_pem_blocks(path: &PathBuf) -> Result<Vec<Vec<u8>>> {
-    let file = fs::File::open(path)
-        .with_context(|| format!("opening PEM file {}", path.display()))?;
+    let file =
+        fs::File::open(path).with_context(|| format!("opening PEM file {}", path.display()))?;
     let reader = std::io::BufReader::new(file);
     let mut blocks: Vec<Vec<u8>> = Vec::new();
     let mut buf: Option<String> = None;
@@ -104,7 +104,9 @@ fn ca_store(path: &PathBuf) -> Result<RootCertStore> {
     let certs = load_certs(path)?;
     let mut store = RootCertStore::empty();
     for c in certs {
-        store.add(c).context("adding CA certificate to root store")?;
+        store
+            .add(c)
+            .context("adding CA certificate to root store")?;
     }
     Ok(store)
 }
@@ -170,7 +172,9 @@ impl MtlsClient {
             .context("resolving mTLS peer")?
             .next()
             .context("no address for mTLS peer")?;
-        let tcp = TcpStream::connect(addr).await.context("TCP connect to mTLS peer")?;
+        let tcp = TcpStream::connect(addr)
+            .await
+            .context("TCP connect to mTLS peer")?;
         let tls = TlsConnector::from(self.config.clone())
             .connect(server_name, tcp)
             .await
@@ -186,7 +190,10 @@ impl MtlsClient {
             }
         });
 
-        sender.send_request(req).await.context("mTLS request failed")
+        sender
+            .send_request(req)
+            .await
+            .context("mTLS request failed")
     }
 
     /// Convenience POST with a JSON body.
@@ -247,6 +254,3 @@ mod tests {
         assert!(TlsPaths::from_env().is_none());
     }
 }
-
-
-

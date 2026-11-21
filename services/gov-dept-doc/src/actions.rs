@@ -1,5 +1,5 @@
 use axum::Json;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 use uuid::Uuid;
 
@@ -14,7 +14,9 @@ pub async fn execute(
     ai_level: Option<&str>,
 ) -> Result<Json<Value>, DocError> {
     let result = match action_type {
-        "apply-conservation-permit" => apply_conservation_permit(pool, citizen_id, parameters).await,
+        "apply-conservation-permit" => {
+            apply_conservation_permit(pool, citizen_id, parameters).await
+        }
         _ => Err(DocError::InvalidAction(format!(
             "Unknown action: {action_type}"
         ))),

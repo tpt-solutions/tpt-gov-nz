@@ -2,14 +2,13 @@
 
 use crate::{
     error::IngestError,
-    models::{MandatesEntity,ThreatsEntity,CitizenEntity, TransformedCitizen},
+    models::{CitizenEntity, MandatesEntity, ThreatsEntity, TransformedCitizen},
     raw::RawNzsisCitizen,
 };
 
 fn parse_date(s: &str, field: &str) -> Result<chrono::NaiveDate, IngestError> {
-    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").map_err(|e| {
-        IngestError::Transform(format!("invalid {field} date '{s}': {e}"))
-    })
+    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d")
+        .map_err(|e| IngestError::Transform(format!("invalid {field} date '{s}': {e}")))
 }
 
 pub fn transform_citizen(raw: &RawNzsisCitizen) -> Result<TransformedCitizen, IngestError> {
@@ -63,8 +62,7 @@ mod tests {
     use super::*;
 
     fn sample() -> RawNzsisCitizen {
-        serde_json::from_value(serde_json::json!([object Object]))
-            .unwrap()
+        serde_json::from_value(serde_json::json!([object Object])).unwrap()
     }
 
     #[test]
@@ -72,17 +70,23 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.nzsis_id, "NZSIS-100001");
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.mandates.as_ref().unwrap().reference, "NZSIS-M-2026-002");
-         assert_eq!(t.mandates.as_ref().unwrap().agency, "GCSB");
-         assert_eq!(t.mandates.as_ref().unwrap().status, "active");
-         assert_eq!(t.mandates.as_ref().unwrap().issued_date.to_string(), "2026-01-08");
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(t.mandates.as_ref().unwrap().reference, "NZSIS-M-2026-002");
+        assert_eq!(t.mandates.as_ref().unwrap().agency, "GCSB");
+        assert_eq!(t.mandates.as_ref().unwrap().status, "active");
+        assert_eq!(
+            t.mandates.as_ref().unwrap().issued_date.to_string(),
+            "2026-01-08"
+        );
 
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.threats.as_ref().unwrap().reference, "NZSIS-T-2026-014");
-         assert_eq!(t.threats.as_ref().unwrap().category, "Foreign interference");
-         assert_eq!(t.threats.as_ref().unwrap().status, "monitored");
-         assert_eq!(t.threats.as_ref().unwrap().assessed_date.to_string(), "2026-02-11");
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(t.threats.as_ref().unwrap().reference, "NZSIS-T-2026-014");
+        assert_eq!(t.threats.as_ref().unwrap().category, "Foreign interference");
+        assert_eq!(t.threats.as_ref().unwrap().status, "monitored");
+        assert_eq!(
+            t.threats.as_ref().unwrap().assessed_date.to_string(),
+            "2026-02-11"
+        );
     }
 
     #[test]

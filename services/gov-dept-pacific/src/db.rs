@@ -34,7 +34,10 @@ pub struct LanguageServicesRow {
     pub status: String,
 }
 
-pub async fn fetch_language_services(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<LanguageServicesRow>> {
+pub async fn fetch_language_services(
+    pool: &PgPool,
+    citizen_id: Uuid,
+) -> sqlx::Result<Vec<LanguageServicesRow>> {
     sqlx::query_as!(
         LanguageServicesRow,
         "SELECT id, service, region, status FROM pacific_language_services WHERE citizen_id = $1 ORDER BY created_at DESC",

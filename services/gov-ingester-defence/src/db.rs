@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::models::{ProcurementsEntity,BasesEntity,IngestionStatus};
+use crate::models::{BasesEntity, IngestionStatus, ProcurementsEntity};
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct CitizenRow {
@@ -49,11 +49,7 @@ pub async fn upsert_procurements(
     Ok(row.inserted.unwrap_or(false))
 }
 
-pub async fn upsert_bases(
-    pool: &PgPool,
-    citizen_id: Uuid,
-    e: &BasesEntity,
-) -> sqlx::Result<bool> {
+pub async fn upsert_bases(pool: &PgPool, citizen_id: Uuid, e: &BasesEntity) -> sqlx::Result<bool> {
     let row = sqlx::query!(
         r#"INSERT INTO defence_bases (citizen_id, name, location, status)
            VALUES ($1, $2, $3, $4)

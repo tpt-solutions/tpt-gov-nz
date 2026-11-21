@@ -1,18 +1,9 @@
-use axum::{
-    extract::State,
-    Json,
-};
+use axum::{Json, extract::State};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 
-use crate::{
-    actions,
-    consent,
-    db,
-    error::MojError,
-    opa,
-};
+use crate::{actions, consent, db, error::MojError, opa};
 
 pub async fn health() -> Json<Value> {
     Json(json!({ "status": "ok", "dept_id": "moj" }))
@@ -108,36 +99,48 @@ pub async fn fetch_data(
     };
 
     let fines_json = fines.as_ref().map(|rows| {
-        json!(rows.iter().map(|f| json!({
-            "fineNumber": f.fine_number,
-            "fineType": f.fine_type,
-            "status": f.status,
-            "amount": f.amount,
-            "offenseDate": f.offense_date.to_string(),
-            "dueDate": f.due_date.to_string(),
-            "description": f.description,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|f| json!({
+                    "fineNumber": f.fine_number,
+                    "fineType": f.fine_type,
+                    "status": f.status,
+                    "amount": f.amount,
+                    "offenseDate": f.offense_date.to_string(),
+                    "dueDate": f.due_date.to_string(),
+                    "description": f.description,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     let disputes_json = disputes.as_ref().map(|rows| {
-        json!(rows.iter().map(|d| json!({
-            "disputeNumber": d.dispute_number,
-            "claimType": d.claim_type,
-            "status": d.status,
-            "amountClaimed": d.amount_claimed,
-            "hearingDate": d.hearing_date.map(|d| d.to_string()),
-            "description": d.description,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|d| json!({
+                    "disputeNumber": d.dispute_number,
+                    "claimType": d.claim_type,
+                    "status": d.status,
+                    "amountClaimed": d.amount_claimed,
+                    "hearingDate": d.hearing_date.map(|d| d.to_string()),
+                    "description": d.description,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     let court_records_json = court_records.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "caseNumber": c.case_number,
-            "caseType": c.case_type,
-            "status": c.status,
-            "nextHearingDate": c.next_hearing_date.map(|d| d.to_string()),
-            "description": c.description,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "caseNumber": c.case_number,
+                    "caseType": c.case_type,
+                    "status": c.status,
+                    "nextHearingDate": c.next_hearing_date.map(|d| d.to_string()),
+                    "description": c.description,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     Ok(Json(json!({

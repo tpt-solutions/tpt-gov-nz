@@ -1,18 +1,9 @@
-use axum::{
-    extract::State,
-    Json,
-};
+use axum::{Json, extract::State};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 
-use crate::{
-    actions,
-    consent,
-    db,
-    error::HudError,
-    opa,
-};
+use crate::{actions, consent, db, error::HudError, opa};
 
 pub async fn health() -> Json<Value> {
     Json(json!({ "status": "ok", "dept_id": "hud" }))
@@ -108,35 +99,47 @@ pub async fn fetch_data(
     };
 
     let applications_json = applications.as_ref().map(|rows| {
-        json!(rows.iter().map(|a| json!({
-            "applicationNumber": a.application_number,
-            "applicationType": a.application_type,
-            "status": a.status,
-            "priorityBand": a.priority_band,
-            "bedroomsNeeded": a.bedrooms_needed,
-            "submittedDate": a.submitted_date.to_string(),
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|a| json!({
+                    "applicationNumber": a.application_number,
+                    "applicationType": a.application_type,
+                    "status": a.status,
+                    "priorityBand": a.priority_band,
+                    "bedroomsNeeded": a.bedrooms_needed,
+                    "submittedDate": a.submitted_date.to_string(),
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     let tenancies_json = tenancies.as_ref().map(|rows| {
-        json!(rows.iter().map(|t| json!({
-            "tenancyId": t.tenancy_id,
-            "propertyAddress": t.property_address,
-            "weeklyRent": t.weekly_rent,
-            "incomeRelatedRent": t.income_related_rent,
-            "startDate": t.start_date.to_string(),
-            "status": t.status,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|t| json!({
+                    "tenancyId": t.tenancy_id,
+                    "propertyAddress": t.property_address,
+                    "weeklyRent": t.weekly_rent,
+                    "incomeRelatedRent": t.income_related_rent,
+                    "startDate": t.start_date.to_string(),
+                    "status": t.status,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     let maintenance_requests_json = maintenance_requests.as_ref().map(|rows| {
-        json!(rows.iter().map(|m| json!({
-            "requestNumber": m.request_number,
-            "category": m.category,
-            "status": m.status,
-            "description": m.description,
-            "requestedDate": m.requested_date.to_string(),
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|m| json!({
+                    "requestNumber": m.request_number,
+                    "category": m.category,
+                    "status": m.status,
+                    "description": m.description,
+                    "requestedDate": m.requested_date.to_string(),
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     Ok(Json(json!({

@@ -1,18 +1,12 @@
 use axum::{
-    extract::{Path, State},
     Json,
+    extract::{Path, State},
 };
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 
-use crate::{
-    actions,
-    consent,
-    db,
-    error::NztaError,
-    opa,
-};
+use crate::{actions, consent, db, error::NztaError, opa};
 
 pub async fn health() -> Json<Value> {
     Json(json!({ "status": "ok", "dept_id": "nzta" }))
@@ -170,7 +164,9 @@ pub async fn list_driver_licences(
     State(pool): State<PgPool>,
     Path(did): Path<String>,
 ) -> Result<Json<Value>, NztaError> {
-    let citizen = db::resolve_by_did(&pool, &did).await?.ok_or(NztaError::CitizenNotFound)?;
+    let citizen = db::resolve_by_did(&pool, &did)
+        .await?
+        .ok_or(NztaError::CitizenNotFound)?;
     let licence = db::fetch_driver_licence(&pool, citizen.id).await?;
     Ok(Json(json!({
         "driverLicences": licence.as_ref().map(|d| vec![json!({
@@ -187,7 +183,9 @@ pub async fn list_vehicles(
     State(pool): State<PgPool>,
     Path(did): Path<String>,
 ) -> Result<Json<Value>, NztaError> {
-    let citizen = db::resolve_by_did(&pool, &did).await?.ok_or(NztaError::CitizenNotFound)?;
+    let citizen = db::resolve_by_did(&pool, &did)
+        .await?
+        .ok_or(NztaError::CitizenNotFound)?;
     let vehicles = db::fetch_vehicles(&pool, citizen.id).await?;
     Ok(Json(json!({
         "vehicles": vehicles.iter().map(|v| json!({
@@ -205,7 +203,9 @@ pub async fn list_ruc(
     State(pool): State<PgPool>,
     Path(did): Path<String>,
 ) -> Result<Json<Value>, NztaError> {
-    let citizen = db::resolve_by_did(&pool, &did).await?.ok_or(NztaError::CitizenNotFound)?;
+    let citizen = db::resolve_by_did(&pool, &did)
+        .await?
+        .ok_or(NztaError::CitizenNotFound)?;
     let ruc = db::fetch_ruc(&pool, citizen.id).await?;
     Ok(Json(json!({
         "ruc": ruc.iter().map(|r| json!({

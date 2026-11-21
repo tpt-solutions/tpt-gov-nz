@@ -2,11 +2,7 @@ use std::path::PathBuf;
 
 use async_trait::async_trait;
 
-use crate::{
-    error::IngestError,
-    raw::RawMchBatch,
-    transport::IngesterTransport,
-};
+use crate::{error::IngestError, raw::RawMchBatch, transport::IngesterTransport};
 
 /// Reads a raw Ministry for Culture and Heritage batch from a JSON fixture file on disk (dev/demo/CI).
 pub struct MockTransport {

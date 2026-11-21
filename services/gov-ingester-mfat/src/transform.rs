@@ -2,14 +2,13 @@
 
 use crate::{
     error::IngestError,
-    models::{OverseasMissionsEntity,TravelAdvisoriesEntity,CitizenEntity, TransformedCitizen},
+    models::{CitizenEntity, OverseasMissionsEntity, TransformedCitizen, TravelAdvisoriesEntity},
     raw::RawMfatCitizen,
 };
 
 fn parse_date(s: &str, field: &str) -> Result<chrono::NaiveDate, IngestError> {
-    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").map_err(|e| {
-        IngestError::Transform(format!("invalid {field} date '{s}': {e}"))
-    })
+    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d")
+        .map_err(|e| IngestError::Transform(format!("invalid {field} date '{s}': {e}")))
 }
 
 pub fn transform_citizen(raw: &RawMfatCitizen) -> Result<TransformedCitizen, IngestError> {
@@ -60,8 +59,7 @@ mod tests {
     use super::*;
 
     fn sample() -> RawMfatCitizen {
-        serde_json::from_value(serde_json::json!([object Object]))
-            .unwrap()
+        serde_json::from_value(serde_json::json!([object Object])).unwrap()
     }
 
     #[test]
@@ -69,14 +67,20 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.mfat_id, "MFAT-100001");
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.overseas_missions.as_ref().unwrap().country, "Australia");
-         assert_eq!(t.overseas_missions.as_ref().unwrap().status, "active");
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(t.overseas_missions.as_ref().unwrap().country, "Australia");
+        assert_eq!(t.overseas_missions.as_ref().unwrap().status, "active");
 
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.travel_advisories.as_ref().unwrap().country, "Indonesia");
-         assert_eq!(t.travel_advisories.as_ref().unwrap().level, "Exercise increased caution");
-         assert_eq!(t.travel_advisories.as_ref().unwrap().updated.to_string(), "2026-03-10");
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(t.travel_advisories.as_ref().unwrap().country, "Indonesia");
+        assert_eq!(
+            t.travel_advisories.as_ref().unwrap().level,
+            "Exercise increased caution"
+        );
+        assert_eq!(
+            t.travel_advisories.as_ref().unwrap().updated.to_string(),
+            "2026-03-10"
+        );
     }
 
     #[test]

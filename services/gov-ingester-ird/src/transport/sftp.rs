@@ -2,11 +2,7 @@ use std::path::PathBuf;
 
 use async_trait::async_trait;
 
-use crate::{
-    error::IngestError,
-    raw::RawIrdBatch,
-    transport::IngesterTransport,
-};
+use crate::{error::IngestError, raw::RawIrdBatch, transport::IngesterTransport};
 
 /// Connection details for the real IRD legacy batch-file integration.
 ///

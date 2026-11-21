@@ -20,7 +20,11 @@ impl NodeKeypair {
         use rand::rngs::OsRng;
         let signing_key = SigningKey::generate(&mut OsRng);
         let verifying_key = signing_key.verifying_key();
-        Self { signing_key, verifying_key, dept_id: dept_id.into() }
+        Self {
+            signing_key,
+            verifying_key,
+            dept_id: dept_id.into(),
+        }
     }
 
     pub fn public_key_b64(&self) -> String {

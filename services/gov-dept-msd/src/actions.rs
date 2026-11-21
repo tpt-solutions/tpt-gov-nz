@@ -1,5 +1,5 @@
 use axum::Json;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 use uuid::Uuid;
 
@@ -15,7 +15,9 @@ pub async fn execute(
 ) -> Result<Json<Value>, MsdError> {
     let result = match action_type {
         "apply-student-allowance" => apply_student_allowance(pool, citizen_id, parameters).await,
-        "update-loan-repayment-plan" => update_loan_repayment_plan(pool, citizen_id, parameters).await,
+        "update-loan-repayment-plan" => {
+            update_loan_repayment_plan(pool, citizen_id, parameters).await
+        }
         _ => Err(MsdError::InvalidAction(format!(
             "Unknown action: {action_type}"
         ))),

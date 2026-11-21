@@ -11,7 +11,7 @@ use uuid::Uuid;
 use crate::{
     db,
     error::IngestError,
-    models::{new_run_id, IngestionStatus, IngestionSummary},
+    models::{IngestionStatus, IngestionSummary, new_run_id},
     transform::transform_citizen,
     transport::IngesterTransport,
 };
@@ -42,10 +42,18 @@ pub async fn run_once(
         }
 
         if let Some(e) = &t.income {
-            count(db::upsert_income(pool, citizen_id, e).await?, &mut inserted, &mut updated);
+            count(
+                db::upsert_income(pool, citizen_id, e).await?,
+                &mut inserted,
+                &mut updated,
+            );
         }
         if let Some(e) = &t.tax {
-            count(db::upsert_tax_assessment(pool, citizen_id, e).await?, &mut inserted, &mut updated);
+            count(
+                db::upsert_tax_assessment(pool, citizen_id, e).await?,
+                &mut inserted,
+                &mut updated,
+            );
         }
         count(
             db::upsert_gst_registration(pool, citizen_id, &t.gst).await?,
@@ -53,10 +61,18 @@ pub async fn run_once(
             &mut updated,
         );
         if let Some(e) = &t.kiwisaver {
-            count(db::upsert_kiwisaver(pool, citizen_id, e).await?, &mut inserted, &mut updated);
+            count(
+                db::upsert_kiwisaver(pool, citizen_id, e).await?,
+                &mut inserted,
+                &mut updated,
+            );
         }
         if let Some(e) = &t.wff {
-            count(db::upsert_wff(pool, citizen_id, e).await?, &mut inserted, &mut updated);
+            count(
+                db::upsert_wff(pool, citizen_id, e).await?,
+                &mut inserted,
+                &mut updated,
+            );
         }
     }
 

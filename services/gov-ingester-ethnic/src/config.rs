@@ -1,9 +1,6 @@
 use std::path::PathBuf;
 
-use crate::{
-    error::IngestError,
-    transport::legacy::LegacyConfig,
-};
+use crate::{error::IngestError, transport::legacy::LegacyConfig};
 
 #[derive(Debug, Clone)]
 pub enum TransportKind {
@@ -50,9 +47,7 @@ impl Config {
                 .and_then(|v| v.parse().ok())
                 .unwrap_or(22),
             username: std::env::var("ETHNIC_LEGACY_USER").unwrap_or_default(),
-            private_key_path: PathBuf::from(
-                std::env::var("ETHNIC_LEGACY_KEY").unwrap_or_default(),
-            ),
+            private_key_path: PathBuf::from(std::env::var("ETHNIC_LEGACY_KEY").unwrap_or_default()),
             remote_path: std::env::var("ETHNIC_LEGACY_REMOTE")
                 .unwrap_or_else(|_| "/inbound/ethnic_batch.json".into()),
         };

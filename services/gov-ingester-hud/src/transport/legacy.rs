@@ -2,11 +2,7 @@ use std::path::PathBuf;
 
 use async_trait::async_trait;
 
-use crate::{
-    error::IngestError,
-    raw::RawHudBatch,
-    transport::IngesterTransport,
-};
+use crate::{error::IngestError, raw::RawHudBatch, transport::IngesterTransport};
 
 /// Connection details for the real HUD / Kainga Ora legacy system integration.
 ///

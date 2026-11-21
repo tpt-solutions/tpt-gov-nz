@@ -2,14 +2,12 @@ use chrono::{DateTime, Utc};
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::models::{AppointmentEntity, GpEntity, IngestionStatus, PrescriptionEntity, VaccinationEntity};
+use crate::models::{
+    AppointmentEntity, GpEntity, IngestionStatus, PrescriptionEntity, VaccinationEntity,
+};
 
 /// Upsert a citizen. Returns `(citizen_id, inserted)`.
-pub async fn upsert_citizen(
-    pool: &PgPool,
-    did: &str,
-    nhi: &str,
-) -> sqlx::Result<(Uuid, bool)> {
+pub async fn upsert_citizen(pool: &PgPool, did: &str, nhi: &str) -> sqlx::Result<(Uuid, bool)> {
     let row = sqlx::query!(
         r#"INSERT INTO citizens (did, nhi)
            VALUES ($1, $2)

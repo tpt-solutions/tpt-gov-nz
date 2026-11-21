@@ -1,18 +1,9 @@
-use axum::{
-    extract::State,
-    Json,
-};
+use axum::{Json, extract::State};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 
-use crate::{
-    actions,
-    consent,
-    db,
-    error::MfatError,
-    opa,
-};
+use crate::{actions, consent, db, error::MfatError, opa};
 
 pub async fn health() -> Json<Value> {
     Json(json!({ "status": "ok", "dept_id": "mfat" }))
@@ -96,10 +87,14 @@ pub async fn fetch_data(
     };
 
     let overseas_missions_json = overseas_missions.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "country": c.c,
-            "status": c.c,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "country": c.c,
+                    "status": c.c,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     let travel_advisories = if has_scope("mfat:travel-advisories") {
@@ -109,11 +104,15 @@ pub async fn fetch_data(
     };
 
     let travel_advisories_json = travel_advisories.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "country": c.c,
-            "level": c.c,
-            "updated": c.c.to_string(),
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "country": c.c,
+                    "level": c.c,
+                    "updated": c.c.to_string(),
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     Ok(Json(json!({

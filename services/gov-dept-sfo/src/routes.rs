@@ -1,18 +1,9 @@
-use axum::{
-    extract::State,
-    Json,
-};
+use axum::{Json, extract::State};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 
-use crate::{
-    actions,
-    consent,
-    db,
-    error::SfoError,
-    opa,
-};
+use crate::{actions, consent, db, error::SfoError, opa};
 
 pub async fn health() -> Json<Value> {
     Json(json!({ "status": "ok", "dept_id": "sfo" }))
@@ -96,12 +87,16 @@ pub async fn fetch_data(
     };
 
     let investigations_json = investigations.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "reference": c.c,
-            "matter": c.c,
-            "status": c.c,
-            "openedDate": c.c.to_string(),
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "reference": c.c,
+                    "matter": c.c,
+                    "status": c.c,
+                    "openedDate": c.c.to_string(),
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     let outcomes = if has_scope("sfo:outcomes") {
@@ -111,11 +106,15 @@ pub async fn fetch_data(
     };
 
     let outcomes_json = outcomes.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "reference": c.c,
-            "result": c.c,
-            "resultDate": c.c.to_string(),
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "reference": c.c,
+                    "result": c.c,
+                    "resultDate": c.c.to_string(),
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     Ok(Json(json!({

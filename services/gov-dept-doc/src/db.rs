@@ -38,10 +38,7 @@ pub async fn resolve_by_did(pool: &PgPool, did: &str) -> sqlx::Result<Option<Cit
     .await
 }
 
-pub async fn fetch_permits(
-    pool: &PgPool,
-    citizen_id: Uuid,
-) -> sqlx::Result<Vec<PermitRow>> {
+pub async fn fetch_permits(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<PermitRow>> {
     sqlx::query_as!(
         PermitRow,
         "SELECT id, permit_number, activity, location, status, expires_date \

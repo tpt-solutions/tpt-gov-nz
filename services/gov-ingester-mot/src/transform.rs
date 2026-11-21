@@ -2,14 +2,13 @@
 
 use crate::{
     error::IngestError,
-    models::{StrategiesEntity,ProgrammesEntity,CitizenEntity, TransformedCitizen},
+    models::{CitizenEntity, ProgrammesEntity, StrategiesEntity, TransformedCitizen},
     raw::RawMotCitizen,
 };
 
 fn parse_date(s: &str, field: &str) -> Result<chrono::NaiveDate, IngestError> {
-    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").map_err(|e| {
-        IngestError::Transform(format!("invalid {field} date '{s}': {e}"))
-    })
+    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d")
+        .map_err(|e| IngestError::Transform(format!("invalid {field} date '{s}': {e}")))
 }
 
 pub fn transform_citizen(raw: &RawMotCitizen) -> Result<TransformedCitizen, IngestError> {
@@ -61,8 +60,7 @@ mod tests {
     use super::*;
 
     fn sample() -> RawMotCitizen {
-        serde_json::from_value(serde_json::json!([object Object]))
-            .unwrap()
+        serde_json::from_value(serde_json::json!([object Object])).unwrap()
     }
 
     #[test]
@@ -70,15 +68,18 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.mot_id, "MOT-100001");
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.strategies.as_ref().unwrap().title, "Te Tangi a Te Manu");
-         assert_eq!(t.strategies.as_ref().unwrap().year, 2026);
-         assert_eq!(t.strategies.as_ref().unwrap().status, "active");
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(t.strategies.as_ref().unwrap().title, "Te Tangi a Te Manu");
+        assert_eq!(t.strategies.as_ref().unwrap().year, 2026);
+        assert_eq!(t.strategies.as_ref().unwrap().status, "active");
 
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.programmes.as_ref().unwrap().name, "Road maintenance boost");
-         assert_eq!(t.programmes.as_ref().unwrap().budget, 800000000);
-         assert_eq!(t.programmes.as_ref().unwrap().status, "funded");
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(
+            t.programmes.as_ref().unwrap().name,
+            "Road maintenance boost"
+        );
+        assert_eq!(t.programmes.as_ref().unwrap().budget, 800000000);
+        assert_eq!(t.programmes.as_ref().unwrap().status, "funded");
     }
 
     #[test]

@@ -22,9 +22,8 @@ fn parse_date(s: &Option<String>) -> Option<chrono::NaiveDate> {
 }
 
 fn parse_date_required(s: &str, field: &str) -> Result<chrono::NaiveDate, IngestError> {
-    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").map_err(|e| {
-        IngestError::Transform(format!("invalid {field} date '{s}': {e}"))
-    })
+    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d")
+        .map_err(|e| IngestError::Transform(format!("invalid {field} date '{s}': {e}")))
 }
 
 /// Transform a single raw citizen record into schema-aligned entities.
@@ -95,7 +94,10 @@ mod tests {
         assert_eq!(t.citizen.did, "did:gov:nz:test-citizen-001");
         assert_eq!(t.benefits.len(), 1);
         assert_eq!(t.benefits[0].benefit_type, "jobseeker");
-        assert_eq!(t.benefits[0].weekly_amount, Decimal::try_from(275.40).unwrap());
+        assert_eq!(
+            t.benefits[0].weekly_amount,
+            Decimal::try_from(275.40).unwrap()
+        );
     }
 
     #[test]

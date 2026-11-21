@@ -1,18 +1,12 @@
 use axum::{
-    extract::{Path, State},
     Json,
+    extract::{Path, State},
 };
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 
-use crate::{
-    actions,
-    consent,
-    db,
-    error::WinzError,
-    opa,
-};
+use crate::{actions, consent, db, error::WinzError, opa};
 
 // ── Health ────────────────────────────────────────────────────────────────────
 

@@ -1,4 +1,8 @@
-use axum::{http::StatusCode, response::{IntoResponse, Response}, Json};
+use axum::{
+    Json,
+    http::StatusCode,
+    response::{IntoResponse, Response},
+};
 use serde_json::json;
 use thiserror::Error;
 
@@ -25,7 +29,10 @@ impl IntoResponse for MotError {
         let (status, message) = match &self {
             MotError::CitizenNotFound => (StatusCode::NOT_FOUND, self.to_string()),
             MotError::ScopeNotGranted(_) => (StatusCode::FORBIDDEN, self.to_string()),
-            MotError::Database(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Internal error".to_owned()),
+            MotError::Database(_) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Internal error".to_owned(),
+            ),
             MotError::InvalidAction(_) => (StatusCode::BAD_REQUEST, self.to_string()),
             MotError::ActionFailed(_) => (StatusCode::UNPROCESSABLE_ENTITY, self.to_string()),
         };

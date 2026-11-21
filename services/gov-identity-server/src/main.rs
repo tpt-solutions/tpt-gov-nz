@@ -1,9 +1,8 @@
 use std::net::SocketAddr;
 
 use axum::{
-    middleware,
+    Router, middleware,
     routing::{delete, get, post},
-    Router,
 };
 use gov_identity_core::CredentialIssuer;
 use sqlx::PgPool;
@@ -21,8 +20,7 @@ async fn main() -> anyhow::Result<()> {
     dotenvy::dotenv().ok();
     tracing_subscriber::fmt()
         .with_env_filter(
-            std::env::var("RUST_LOG")
-                .unwrap_or_else(|_| "gov_identity_server=info".into()),
+            std::env::var("RUST_LOG").unwrap_or_else(|_| "gov_identity_server=info".into()),
         )
         .json()
         .init();

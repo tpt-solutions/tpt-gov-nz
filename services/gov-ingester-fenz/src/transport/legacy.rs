@@ -2,11 +2,7 @@ use std::path::PathBuf;
 
 use async_trait::async_trait;
 
-use crate::{
-    error::IngestError,
-    raw::RawFenzBatch,
-    transport::IngesterTransport,
-};
+use crate::{error::IngestError, raw::RawFenzBatch, transport::IngesterTransport};
 
 /// Connection details for the real Fire and Emergency New Zealand legacy system integration.
 #[derive(Debug, Clone)]

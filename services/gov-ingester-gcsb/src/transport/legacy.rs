@@ -2,11 +2,7 @@ use std::path::PathBuf;
 
 use async_trait::async_trait;
 
-use crate::{
-    error::IngestError,
-    raw::RawGcsbBatch,
-    transport::IngesterTransport,
-};
+use crate::{error::IngestError, raw::RawGcsbBatch, transport::IngesterTransport};
 
 /// Connection details for the real Government Communications Security Bureau legacy system integration.
 #[derive(Debug, Clone)]

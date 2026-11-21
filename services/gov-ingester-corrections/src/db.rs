@@ -53,11 +53,7 @@ pub async fn upsert_probation(
     Ok(row.inserted.unwrap_or(false))
 }
 
-pub async fn upsert_case(
-    pool: &PgPool,
-    citizen_id: Uuid,
-    e: &CaseEntity,
-) -> sqlx::Result<bool> {
+pub async fn upsert_case(pool: &PgPool, citizen_id: Uuid, e: &CaseEntity) -> sqlx::Result<bool> {
     let row = sqlx::query!(
         r#"INSERT INTO corrections_case (citizen_id, case_number, sentence_type, start_date, end_date, summary)
            VALUES ($1, $2, $3, $4, $5, $6)

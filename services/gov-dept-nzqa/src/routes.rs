@@ -1,18 +1,9 @@
-use axum::{
-    extract::State,
-    Json,
-};
+use axum::{Json, extract::State};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 
-use crate::{
-    actions,
-    consent,
-    db,
-    error::NzqaError,
-    opa,
-};
+use crate::{actions, consent, db, error::NzqaError, opa};
 
 pub async fn health() -> Json<Value> {
     Json(json!({ "status": "ok", "dept_id": "nzqa" }))
@@ -102,13 +93,17 @@ pub async fn fetch_data(
     };
 
     let qualifications_json = qualifications.as_ref().map(|rows| {
-        json!(rows.iter().map(|q| json!({
-            "qualificationId": q.qualification_id,
-            "title": q.title,
-            "level": q.level,
-            "awardedDate": q.awarded_date.to_string(),
-            "provider": q.provider,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|q| json!({
+                    "qualificationId": q.qualification_id,
+                    "title": q.title,
+                    "level": q.level,
+                    "awardedDate": q.awarded_date.to_string(),
+                    "provider": q.provider,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     let transcript_json = transcript.as_ref().map(|row| {

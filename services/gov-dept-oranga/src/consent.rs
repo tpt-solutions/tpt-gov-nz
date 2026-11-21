@@ -61,7 +61,9 @@ pub fn verify_access(
             })
         });
         if !all_signed {
-            return Err(OrangaError::ScopeNotGranted("grant signature invalid".into()));
+            return Err(OrangaError::ScopeNotGranted(
+                "grant signature invalid".into(),
+            ));
         }
     }
 

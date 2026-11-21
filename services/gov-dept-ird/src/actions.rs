@@ -1,5 +1,5 @@
 use axum::Json;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 use uuid::Uuid;
 
@@ -17,7 +17,9 @@ pub async fn execute(
         "update-kiwisaver-rate" => update_kiwisaver_rate(pool, citizen_id, parameters).await,
         "file-gst-return" => file_gst_return(pool, citizen_id, parameters).await,
         "request-tax-summary" => Ok(json!({ "success": true, "message": "Tax summary queued" })),
-        _ => Err(IrdError::InvalidAction(format!("Unknown action: {action_type}"))),
+        _ => Err(IrdError::InvalidAction(format!(
+            "Unknown action: {action_type}"
+        ))),
     };
 
     let (success, message) = match &result {
@@ -52,9 +54,9 @@ async fn update_kiwisaver_rate(
 
     let valid_rates = [3.0, 4.0, 6.0, 8.0, 10.0];
     if !valid_rates.contains(&new_rate) {
-        return Err(IrdError::InvalidAction(
-            format!("newRate must be one of: {valid_rates:?}")
-        ));
+        return Err(IrdError::InvalidAction(format!(
+            "newRate must be one of: {valid_rates:?}"
+        )));
     }
 
     db::update_kiwisaver_rate(pool, citizen_id, new_rate).await?;
@@ -79,14 +81,28 @@ async fn file_gst_return(
     let period_id = Uuid::parse_str(period_id_str)
         .map_err(|_| IrdError::InvalidAction("periodId must be a valid UUID".to_owned()))?;
 
-    let sales_income = parameters.get("salesIncome").and_then(|v| v.as_f64())
+    let sales_income = parameters
+        .get("salesIncome")
+        .and_then(|v| v.as_f64())
         .ok_or_else(|| IrdError::InvalidAction("salesIncome required".to_owned()))?;
-    let gst_on_sales = parameters.get("gstOnSales").and_then(|v| v.as_f64())
+    let gst_on_sales = parameters
+        .get("gstOnSales")
+        .and_then(|v| v.as_f64())
         .ok_or_else(|| IrdError::InvalidAction("gstOnSales required".to_owned()))?;
-    let gst_on_purchases = parameters.get("gstOnPurchases").and_then(|v| v.as_f64())
+    let gst_on_purchases = parameters
+        .get("gstOnPurchases")
+        .and_then(|v| v.as_f64())
         .ok_or_else(|| IrdError::InvalidAction("gstOnPurchases required".to_owned()))?;
 
-    db::file_gst_return(pool, citizen_id, period_id, sales_income, gst_on_sales, gst_on_purchases).await?;
+    db::file_gst_return(
+        pool,
+        citizen_id,
+        period_id,
+        sales_income,
+        gst_on_sales,
+        gst_on_purchases,
+    )
+    .await?;
 
     Ok(json!({
         "success": true,

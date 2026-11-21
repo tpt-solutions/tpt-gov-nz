@@ -6,12 +6,12 @@
 //! DATABASE_URL=postgresql://dia:dia_dev_password@localhost:5432/dia cargo test -p gov-dept-dia
 //! ```
 
+use crate::{DiaError, build_app};
 use axum::{
-    body::{to_bytes, Body},
+    body::{Body, to_bytes},
     http::{Request, StatusCode},
 };
-use crate::{build_app, DiaError};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 use tower::ServiceExt;
 
@@ -27,7 +27,9 @@ async fn resolve_found(pool: PgPool) {
 
 #[sqlx::test]
 async fn resolve_not_found(pool: PgPool) {
-    let row = crate::db::resolve_by_did(&pool, "did:gov:nz:missing").await.unwrap();
+    let row = crate::db::resolve_by_did(&pool, "did:gov:nz:missing")
+        .await
+        .unwrap();
     assert!(row.is_none());
 }
 
@@ -65,7 +67,10 @@ async fn fetch_data_passport_scope(pool: PgPool) {
 async fn fetch_data_documents_scope(pool: PgPool) {
     let data = fetch_data(&pool, &["dia:documents"]).await;
     assert_eq!(data["birthCertificate"]["certificateNumber"], "BC-9001");
-    assert_eq!(data["birthCertificate"]["placeOfBirth"], "Auckland, New Zealand");
+    assert_eq!(
+        data["birthCertificate"]["placeOfBirth"],
+        "Auckland, New Zealand"
+    );
 }
 
 #[sqlx::test]
@@ -144,7 +149,12 @@ async fn http_round_trip(pool: PgPool) {
 
     let resp = app
         .clone()
-        .oneshot(Request::builder().uri("/health").body(Body::empty()).unwrap())
+        .oneshot(
+            Request::builder()
+                .uri("/health")
+                .body(Body::empty())
+                .unwrap(),
+        )
         .await
         .unwrap();
     assert_eq!(resp.status(), StatusCode::OK);
@@ -153,7 +163,9 @@ async fn http_round_trip(pool: PgPool) {
         .method("POST")
         .uri("/citizen/data")
         .header("content-type", "application/json")
-        .body(Body::from(json!({ "did": TEST_DID, "scopes": ["dia:passport", "dia:citizenship"] }).to_string()))
+        .body(Body::from(
+            json!({ "did": TEST_DID, "scopes": ["dia:passport", "dia:citizenship"] }).to_string(),
+        ))
         .unwrap();
     let resp = app.clone().oneshot(data).await.unwrap();
     assert_eq!(resp.status(), StatusCode::OK);

@@ -1,4 +1,8 @@
-use axum::{http::StatusCode, response::{IntoResponse, Response}, Json};
+use axum::{
+    Json,
+    http::StatusCode,
+    response::{IntoResponse, Response},
+};
 use serde_json::json;
 use thiserror::Error;
 
@@ -25,7 +29,10 @@ impl IntoResponse for DiaError {
         let (status, message) = match &self {
             DiaError::CitizenNotFound => (StatusCode::NOT_FOUND, self.to_string()),
             DiaError::ScopeNotGranted(_) => (StatusCode::FORBIDDEN, self.to_string()),
-            DiaError::Database(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Internal error".to_owned()),
+            DiaError::Database(_) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Internal error".to_owned(),
+            ),
             DiaError::InvalidAction(_) => (StatusCode::BAD_REQUEST, self.to_string()),
             DiaError::ActionFailed(_) => (StatusCode::UNPROCESSABLE_ENTITY, self.to_string()),
         };

@@ -2,11 +2,7 @@ use std::path::PathBuf;
 
 use async_trait::async_trait;
 
-use crate::{
-    error::IngestError,
-    raw::RawWinzBatch,
-    transport::IngesterTransport,
-};
+use crate::{error::IngestError, raw::RawWinzBatch, transport::IngesterTransport};
 
 /// Reads a raw WINZ batch from a JSON fixture file on disk.
 ///

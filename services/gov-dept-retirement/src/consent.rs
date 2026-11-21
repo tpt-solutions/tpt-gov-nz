@@ -46,7 +46,9 @@ pub fn verify_access(
     issuer_key: Option<&VerifyingKey>,
 ) -> Result<(), RetirementError> {
     if !evaluate_allow(input) {
-        return Err(RetirementError::ScopeNotGranted(denied_scopes(input).join(",")));
+        return Err(RetirementError::ScopeNotGranted(
+            denied_scopes(input).join(","),
+        ));
     }
 
     if let Some(key) = issuer_key {
@@ -61,7 +63,9 @@ pub fn verify_access(
             })
         });
         if !all_signed {
-            return Err(RetirementError::ScopeNotGranted("grant signature invalid".into()));
+            return Err(RetirementError::ScopeNotGranted(
+                "grant signature invalid".into(),
+            ));
         }
     }
 

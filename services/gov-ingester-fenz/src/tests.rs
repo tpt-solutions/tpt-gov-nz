@@ -18,7 +18,10 @@ async fn fixture_parses_and_transforms() {
     assert_eq!(first.fenz_id, "FENZ-100001");
     let t = transform_citizen(&batch.citizens[0]).unwrap();
     assert!(t.fire_safety.is_some());
-    assert_eq!(t.fire_safety.as_ref().unwrap().property, "12 Totara Street, Porirua");
+    assert_eq!(
+        t.fire_safety.as_ref().unwrap().property,
+        "12 Totara Street, Porirua"
+    );
 
     let t = transform_citizen(&batch.citizens[0]).unwrap();
     assert_eq!(t.incidents.len(), 1);

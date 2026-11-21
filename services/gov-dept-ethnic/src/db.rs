@@ -34,7 +34,10 @@ pub struct CommunityGrantsRow {
     pub status: String,
 }
 
-pub async fn fetch_community_grants(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<CommunityGrantsRow>> {
+pub async fn fetch_community_grants(
+    pool: &PgPool,
+    citizen_id: Uuid,
+) -> sqlx::Result<Vec<CommunityGrantsRow>> {
     sqlx::query_as!(
         CommunityGrantsRow,
         "SELECT id, grant_name, amount, status FROM ethnic_community_grants WHERE citizen_id = $1 ORDER BY created_at DESC",

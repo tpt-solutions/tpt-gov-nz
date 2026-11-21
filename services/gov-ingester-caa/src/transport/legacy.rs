@@ -2,11 +2,7 @@ use std::path::PathBuf;
 
 use async_trait::async_trait;
 
-use crate::{
-    error::IngestError,
-    raw::RawCaaBatch,
-    transport::IngesterTransport,
-};
+use crate::{error::IngestError, raw::RawCaaBatch, transport::IngesterTransport};
 
 /// Connection details for the real Civil Aviation Authority legacy system integration.
 #[derive(Debug, Clone)]

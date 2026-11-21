@@ -46,7 +46,9 @@ pub fn verify_access(
     issuer_key: Option<&VerifyingKey>,
 ) -> Result<(), CustomsError> {
     if !evaluate_allow(input) {
-        return Err(CustomsError::ScopeNotGranted(denied_scopes(input).join(",")));
+        return Err(CustomsError::ScopeNotGranted(
+            denied_scopes(input).join(","),
+        ));
     }
 
     if let Some(key) = issuer_key {
@@ -61,7 +63,9 @@ pub fn verify_access(
             })
         });
         if !all_signed {
-            return Err(CustomsError::ScopeNotGranted("grant signature invalid".into()));
+            return Err(CustomsError::ScopeNotGranted(
+                "grant signature invalid".into(),
+            ));
         }
     }
 

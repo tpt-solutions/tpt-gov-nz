@@ -2,14 +2,13 @@
 
 use crate::{
     error::IngestError,
-    models::{WorkforceEntity,AgencyRatingsEntity,CitizenEntity, TransformedCitizen},
+    models::{AgencyRatingsEntity, CitizenEntity, TransformedCitizen, WorkforceEntity},
     raw::RawPublicserviceCitizen,
 };
 
 fn parse_date(s: &str, field: &str) -> Result<chrono::NaiveDate, IngestError> {
-    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").map_err(|e| {
-        IngestError::Transform(format!("invalid {field} date '{s}': {e}"))
-    })
+    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d")
+        .map_err(|e| IngestError::Transform(format!("invalid {field} date '{s}': {e}")))
 }
 
 pub fn transform_citizen(raw: &RawPublicserviceCitizen) -> Result<TransformedCitizen, IngestError> {
@@ -61,8 +60,7 @@ mod tests {
     use super::*;
 
     fn sample() -> RawPublicserviceCitizen {
-        serde_json::from_value(serde_json::json!([object Object]))
-            .unwrap()
+        serde_json::from_value(serde_json::json!([object Object])).unwrap()
     }
 
     #[test]
@@ -70,15 +68,21 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.psc_id, "PSC-100001");
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.workforce.as_ref().unwrap().report_year, 2025);
-         assert_eq!(t.workforce.as_ref().unwrap().agency, "Department of Internal Affairs");
-         assert_eq!(t.workforce.as_ref().unwrap().headcount, 4200);
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(t.workforce.as_ref().unwrap().report_year, 2025);
+        assert_eq!(
+            t.workforce.as_ref().unwrap().agency,
+            "Department of Internal Affairs"
+        );
+        assert_eq!(t.workforce.as_ref().unwrap().headcount, 4200);
 
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.agency_ratings.as_ref().unwrap().agency, "Department of Internal Affairs");
-         assert_eq!(t.agency_ratings.as_ref().unwrap().rating, "Good");
-         assert_eq!(t.agency_ratings.as_ref().unwrap().rating_year, 2025);
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(
+            t.agency_ratings.as_ref().unwrap().agency,
+            "Department of Internal Affairs"
+        );
+        assert_eq!(t.agency_ratings.as_ref().unwrap().rating, "Good");
+        assert_eq!(t.agency_ratings.as_ref().unwrap().rating_year, 2025);
     }
 
     #[test]

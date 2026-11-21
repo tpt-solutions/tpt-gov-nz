@@ -1,4 +1,8 @@
-use axum::{http::StatusCode, response::{IntoResponse, Response}, Json};
+use axum::{
+    Json,
+    http::StatusCode,
+    response::{IntoResponse, Response},
+};
 use serde_json::json;
 use thiserror::Error;
 
@@ -25,7 +29,10 @@ impl IntoResponse for WinzError {
         let (status, message) = match &self {
             WinzError::CitizenNotFound => (StatusCode::NOT_FOUND, self.to_string()),
             WinzError::ScopeNotGranted(_) => (StatusCode::FORBIDDEN, self.to_string()),
-            WinzError::Database(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Internal error".to_owned()),
+            WinzError::Database(_) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Internal error".to_owned(),
+            ),
             WinzError::InvalidAction(_) => (StatusCode::BAD_REQUEST, self.to_string()),
             WinzError::ActionFailed(_) => (StatusCode::UNPROCESSABLE_ENTITY, self.to_string()),
         };

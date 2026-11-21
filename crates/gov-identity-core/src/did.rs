@@ -10,8 +10,7 @@ pub struct GovDid(String);
 impl GovDid {
     pub fn from_verifying_key(key: &VerifyingKey) -> Self {
         use base64::Engine;
-        let fingerprint =
-            base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(key.as_bytes());
+        let fingerprint = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(key.as_bytes());
         Self(format!("{DID_PREFIX}{fingerprint}"))
     }
 

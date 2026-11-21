@@ -2,11 +2,7 @@ use std::path::PathBuf;
 
 use async_trait::async_trait;
 
-use crate::{
-    error::IngestError,
-    raw::RawNzdfBatch,
-    transport::IngesterTransport,
-};
+use crate::{error::IngestError, raw::RawNzdfBatch, transport::IngesterTransport};
 
 /// Reads a raw New Zealand Defence Force batch from a JSON fixture file on disk (dev/demo/CI).
 pub struct MockTransport {

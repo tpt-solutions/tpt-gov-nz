@@ -1,4 +1,4 @@
-use axum::{routing::get, Router};
+use axum::{Router, routing::get};
 use sqlx::PgPool;
 use tower_http::trace::TraceLayer;
 
@@ -15,10 +15,19 @@ pub use error::NztaError;
 pub fn build_app(pool: PgPool) -> Router {
     Router::new()
         .route("/health", get(routes::health))
-        .route("/citizen/resolve", axum::routing::post(routes::resolve_citizen))
+        .route(
+            "/citizen/resolve",
+            axum::routing::post(routes::resolve_citizen),
+        )
         .route("/citizen/data", axum::routing::post(routes::fetch_data))
-        .route("/citizen/action", axum::routing::post(routes::submit_action))
-        .route("/citizen/{did}/driver-licences", get(routes::list_driver_licences))
+        .route(
+            "/citizen/action",
+            axum::routing::post(routes::submit_action),
+        )
+        .route(
+            "/citizen/{did}/driver-licences",
+            get(routes::list_driver_licences),
+        )
         .route("/citizen/{did}/vehicles", get(routes::list_vehicles))
         .route("/citizen/{did}/ruc", get(routes::list_ruc))
         .with_state(pool)

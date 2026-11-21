@@ -7,9 +7,8 @@ use crate::{
 };
 
 fn parse_date(s: &str, field: &str) -> Result<chrono::NaiveDate, IngestError> {
-    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").map_err(|e| {
-        IngestError::Transform(format!("invalid {field} date '{s}': {e}"))
-    })
+    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d")
+        .map_err(|e| IngestError::Transform(format!("invalid {field} date '{s}': {e}")))
 }
 
 pub fn transform_citizen(raw: &RawNzqaCitizen) -> Result<TransformedCitizen, IngestError> {
@@ -88,7 +87,10 @@ mod tests {
         let t = transform_citizen(&sample()).unwrap();
         let tr = t.transcript.unwrap();
         assert_eq!(tr.total_credits, Some(360));
-        assert_eq!(tr.record_summary, Some("Full Record of Achievement on file.".to_owned()));
+        assert_eq!(
+            tr.record_summary,
+            Some("Full Record of Achievement on file.".to_owned())
+        );
     }
 
     #[test]

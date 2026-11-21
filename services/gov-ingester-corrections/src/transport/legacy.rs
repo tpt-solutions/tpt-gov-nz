@@ -2,11 +2,7 @@ use std::path::PathBuf;
 
 use async_trait::async_trait;
 
-use crate::{
-    error::IngestError,
-    raw::RawCorrectionsBatch,
-    transport::IngesterTransport,
-};
+use crate::{error::IngestError, raw::RawCorrectionsBatch, transport::IngesterTransport};
 
 /// Connection details for the real Department of Corrections legacy system integration.
 ///

@@ -35,10 +35,7 @@ pub async fn resolve_by_did(pool: &PgPool, did: &str) -> sqlx::Result<Option<Cit
     .await
 }
 
-pub async fn fetch_programmes(
-    pool: &PgPool,
-    citizen_id: Uuid,
-) -> sqlx::Result<Vec<ProgrammeRow>> {
+pub async fn fetch_programmes(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<ProgrammeRow>> {
     sqlx::query_as!(
         ProgrammeRow,
         "SELECT id, programme_name, status, region \
@@ -49,10 +46,7 @@ pub async fn fetch_programmes(
     .await
 }
 
-pub async fn fetch_funding(
-    pool: &PgPool,
-    citizen_id: Uuid,
-) -> sqlx::Result<Vec<FundingRow>> {
+pub async fn fetch_funding(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<FundingRow>> {
     sqlx::query_as!(
         FundingRow,
         "SELECT id, grant_id, amount, purpose, status \

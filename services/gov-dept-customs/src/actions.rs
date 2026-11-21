@@ -1,5 +1,5 @@
 use axum::Json;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 use uuid::Uuid;
 
@@ -40,9 +40,7 @@ pub async fn execute(
     result.map(Json)
 }
 
-async fn submit_traveller_declaration(
-    _parameters: &Value,
-) -> Result<Value, CustomsError> {
+async fn submit_traveller_declaration(_parameters: &Value) -> Result<Value, CustomsError> {
     let country_from = _parameters
         .get("countryFrom")
         .and_then(|v| v.as_str())

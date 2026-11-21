@@ -35,10 +35,7 @@ pub async fn resolve_by_did(pool: &PgPool, did: &str) -> sqlx::Result<Option<Cit
     .await
 }
 
-pub async fn fetch_census(
-    pool: &PgPool,
-    citizen_id: Uuid,
-) -> sqlx::Result<Vec<CensusRow>> {
+pub async fn fetch_census(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<CensusRow>> {
     sqlx::query_as!(
         CensusRow,
         "SELECT id, census_year, dwelling_type, household_size, region \
@@ -49,10 +46,7 @@ pub async fn fetch_census(
     .await
 }
 
-pub async fn fetch_profile(
-    pool: &PgPool,
-    citizen_id: Uuid,
-) -> sqlx::Result<Option<ProfileRow>> {
+pub async fn fetch_profile(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Option<ProfileRow>> {
     sqlx::query_as!(
         ProfileRow,
         "SELECT id, data_summary, record_count, last_updated \

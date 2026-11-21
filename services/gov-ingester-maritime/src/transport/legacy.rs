@@ -2,11 +2,7 @@ use std::path::PathBuf;
 
 use async_trait::async_trait;
 
-use crate::{
-    error::IngestError,
-    raw::RawMaritimeBatch,
-    transport::IngesterTransport,
-};
+use crate::{error::IngestError, raw::RawMaritimeBatch, transport::IngesterTransport};
 
 /// Connection details for the real Maritime New Zealand legacy system integration.
 #[derive(Debug, Clone)]

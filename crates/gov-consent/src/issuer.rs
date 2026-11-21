@@ -58,7 +58,9 @@ mod tests {
     #[test]
     fn rejects_bad_keys() {
         assert!(decode_public_key("not base64 !!!").is_err());
-        assert!(decode_public_key(&base64::engine::general_purpose::STANDARD.encode([0u8; 31]))
-            .is_err());
+        assert!(
+            decode_public_key(&base64::engine::general_purpose::STANDARD.encode([0u8; 31]))
+                .is_err()
+        );
     }
 }

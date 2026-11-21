@@ -53,7 +53,10 @@ pub async fn fetch_passport(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Opt
     .await
 }
 
-pub async fn fetch_birth_cert(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Option<BirthCertRow>> {
+pub async fn fetch_birth_cert(
+    pool: &PgPool,
+    citizen_id: Uuid,
+) -> sqlx::Result<Option<BirthCertRow>> {
     sqlx::query_as!(
         BirthCertRow,
         "SELECT id, certificate_number, date_of_birth, place_of_birth, parents FROM birth_certs WHERE citizen_id = $1 LIMIT 1",
@@ -63,7 +66,10 @@ pub async fn fetch_birth_cert(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<O
     .await
 }
 
-pub async fn fetch_citizenship(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Option<CitizenshipRow>> {
+pub async fn fetch_citizenship(
+    pool: &PgPool,
+    citizen_id: Uuid,
+) -> sqlx::Result<Option<CitizenshipRow>> {
     sqlx::query_as!(
         CitizenshipRow,
         "SELECT id, status, certificate_number, granted_at FROM citizenship_records WHERE citizen_id = $1 LIMIT 1",

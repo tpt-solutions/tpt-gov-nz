@@ -37,10 +37,7 @@ pub async fn resolve_by_did(pool: &PgPool, did: &str) -> sqlx::Result<Option<Cit
     .await
 }
 
-pub async fn fetch_travel(
-    pool: &PgPool,
-    citizen_id: Uuid,
-) -> sqlx::Result<Vec<TravelRow>> {
+pub async fn fetch_travel(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<TravelRow>> {
     sqlx::query_as!(
         TravelRow,
         "SELECT id, passport_number, last_arrival, arrival_port, frequent_traveller \

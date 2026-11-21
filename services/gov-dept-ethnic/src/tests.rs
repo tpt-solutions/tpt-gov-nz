@@ -6,12 +6,12 @@
 //! DATABASE_URL=postgresql://ethnic:ethnic_dev_password@localhost:5432/ethnic cargo test -p gov-dept-ethnic
 //! ```
 
+use crate::{EthnicError, build_app};
 use axum::{
-    body::{to_bytes, Body},
+    body::{Body, to_bytes},
     http::{Request, StatusCode},
 };
-use crate::{build_app, EthnicError};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 use tower::ServiceExt;
 
@@ -61,7 +61,10 @@ async fn fetch_data_programmes_scope(pool: PgPool) {
     let data = fetch_data(&pool, &["ethnic:programmes"]).await;
     let arr = data["programmes"].as_array().unwrap();
     assert_eq!(arr.len(), 1);
-    assert_eq!(arr[0]["programmeName"], "Ethnic Communities Graduate Programme");
+    assert_eq!(
+        arr[0]["programmeName"],
+        "Ethnic Communities Graduate Programme"
+    );
 }
 
 #[sqlx::test]
@@ -127,7 +130,12 @@ async fn http_round_trip(pool: PgPool) {
 
     let resp = app
         .clone()
-        .oneshot(Request::builder().uri("/health").body(Body::empty()).unwrap())
+        .oneshot(
+            Request::builder()
+                .uri("/health")
+                .body(Body::empty())
+                .unwrap(),
+        )
         .await
         .unwrap();
     assert_eq!(resp.status(), StatusCode::OK);

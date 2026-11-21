@@ -6,12 +6,12 @@
 //! DATABASE_URL=postgresql://nzqa:nzqa_dev_password@localhost:5432/nzqa cargo test -p gov-dept-nzqa
 //! ```
 
+use crate::{NzqaError, build_app};
 use axum::{
-    body::{to_bytes, Body},
+    body::{Body, to_bytes},
     http::{Request, StatusCode},
 };
-use crate::{build_app, NzqaError};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 use tower::ServiceExt;
 
@@ -68,7 +68,10 @@ async fn fetch_data_qualifications_scope(pool: PgPool) {
 #[sqlx::test]
 async fn fetch_data_transcript_scope(pool: PgPool) {
     let data = fetch_data(&pool, &["nzqa:transcripts"]).await;
-    assert_eq!(data["transcript"]["recordSummary"], "Full Record of Achievement on file.");
+    assert_eq!(
+        data["transcript"]["recordSummary"],
+        "Full Record of Achievement on file."
+    );
     assert_eq!(data["transcript"]["totalCredits"], 360);
 }
 
@@ -142,7 +145,12 @@ async fn http_round_trip(pool: PgPool) {
 
     let resp = app
         .clone()
-        .oneshot(Request::builder().uri("/health").body(Body::empty()).unwrap())
+        .oneshot(
+            Request::builder()
+                .uri("/health")
+                .body(Body::empty())
+                .unwrap(),
+        )
         .await
         .unwrap();
     assert_eq!(resp.status(), StatusCode::OK);

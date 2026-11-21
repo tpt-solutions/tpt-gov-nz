@@ -16,7 +16,10 @@ pub struct HeritageSitesRow {
     pub region: String,
 }
 
-pub async fn fetch_heritage_sites(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<HeritageSitesRow>> {
+pub async fn fetch_heritage_sites(
+    pool: &PgPool,
+    citizen_id: Uuid,
+) -> sqlx::Result<Vec<HeritageSitesRow>> {
     sqlx::query_as!(
         HeritageSitesRow,
         "SELECT id, name, status, region FROM mch_heritage_sites WHERE citizen_id = $1 ORDER BY created_at DESC",

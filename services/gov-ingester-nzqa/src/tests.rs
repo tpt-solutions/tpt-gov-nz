@@ -34,7 +34,10 @@ async fn fixture_parses_and_transforms() {
     let t2 = transform_citizen(second).unwrap();
     assert_eq!(t2.citizen.did, "did:gov:nz:test-citizen-002");
     assert_eq!(t2.qualifications.len(), 1);
-    assert_eq!(t2.qualifications[0].title, "National Certificate in Computing");
+    assert_eq!(
+        t2.qualifications[0].title,
+        "National Certificate in Computing"
+    );
     assert!(t2.transcript.is_none());
 }
 

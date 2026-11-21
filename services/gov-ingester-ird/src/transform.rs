@@ -154,7 +154,10 @@ mod tests {
         let t = transform_citizen(&sample()).unwrap();
         let inc = t.income.unwrap();
         assert_eq!(inc.assessment_year, 2025);
-        assert_eq!(inc.employment_income, Some(Decimal::try_from(65000.0).unwrap()));
+        assert_eq!(
+            inc.employment_income,
+            Some(Decimal::try_from(65000.0).unwrap())
+        );
         let tax = t.tax.unwrap();
         assert_eq!(tax.tax_refund_due, Decimal::try_from(167.0).unwrap());
         assert_eq!(tax.assessment_status, "final");

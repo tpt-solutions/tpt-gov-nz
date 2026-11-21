@@ -7,7 +7,7 @@ use uuid::Uuid;
 use crate::{
     db,
     error::IngestError,
-    models::{new_run_id, IngestionStatus, IngestionSummary},
+    models::{IngestionStatus, IngestionSummary, new_run_id},
     transform::transform_citizen,
     transport::IngesterTransport,
 };
@@ -38,7 +38,11 @@ pub async fn run_once(
         }
 
         for fine in &t.fines {
-            count(db::upsert_fine(pool, citizen_id, fine).await?, &mut inserted, &mut updated);
+            count(
+                db::upsert_fine(pool, citizen_id, fine).await?,
+                &mut inserted,
+                &mut updated,
+            );
         }
         for dispute in &t.disputes {
             count(

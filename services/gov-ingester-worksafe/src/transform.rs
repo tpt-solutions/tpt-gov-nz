@@ -2,14 +2,13 @@
 
 use crate::{
     error::IngestError,
-    models::{InspectionsEntity,InvestigationsEntity,CitizenEntity, TransformedCitizen},
+    models::{CitizenEntity, InspectionsEntity, InvestigationsEntity, TransformedCitizen},
     raw::RawWorksafeCitizen,
 };
 
 fn parse_date(s: &str, field: &str) -> Result<chrono::NaiveDate, IngestError> {
-    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").map_err(|e| {
-        IngestError::Transform(format!("invalid {field} date '{s}': {e}"))
-    })
+    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d")
+        .map_err(|e| IngestError::Transform(format!("invalid {field} date '{s}': {e}")))
 }
 
 pub fn transform_citizen(raw: &RawWorksafeCitizen) -> Result<TransformedCitizen, IngestError> {
@@ -63,8 +62,7 @@ mod tests {
     use super::*;
 
     fn sample() -> RawWorksafeCitizen {
-        serde_json::from_value(serde_json::json!([object Object]))
-            .unwrap()
+        serde_json::from_value(serde_json::json!([object Object])).unwrap()
     }
 
     #[test]
@@ -72,17 +70,35 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.worksafe_id, "WS-100001");
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.inspections.as_ref().unwrap().reference, "WS-I-2026-003");
-         assert_eq!(t.inspections.as_ref().unwrap().site, "Tane Construction Ltd");
-         assert_eq!(t.inspections.as_ref().unwrap().inspection_date.to_string(), "2026-02-10");
-         assert_eq!(t.inspections.as_ref().unwrap().outcome, "Compliance order issued");
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(t.inspections.as_ref().unwrap().reference, "WS-I-2026-003");
+        assert_eq!(
+            t.inspections.as_ref().unwrap().site,
+            "Tane Construction Ltd"
+        );
+        assert_eq!(
+            t.inspections.as_ref().unwrap().inspection_date.to_string(),
+            "2026-02-10"
+        );
+        assert_eq!(
+            t.inspections.as_ref().unwrap().outcome,
+            "Compliance order issued"
+        );
 
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.investigations.as_ref().unwrap().reference, "WS-INV-2026-011");
-         assert_eq!(t.investigations.as_ref().unwrap().matter, "Fatality inquiry");
-         assert_eq!(t.investigations.as_ref().unwrap().status, "ongoing");
-         assert_eq!(t.investigations.as_ref().unwrap().opened_date.to_string(), "2026-01-15");
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(
+            t.investigations.as_ref().unwrap().reference,
+            "WS-INV-2026-011"
+        );
+        assert_eq!(
+            t.investigations.as_ref().unwrap().matter,
+            "Fatality inquiry"
+        );
+        assert_eq!(t.investigations.as_ref().unwrap().status, "ongoing");
+        assert_eq!(
+            t.investigations.as_ref().unwrap().opened_date.to_string(),
+            "2026-01-15"
+        );
     }
 
     #[test]

@@ -61,7 +61,9 @@ pub fn verify_access(
             })
         });
         if !all_signed {
-            return Err(PoliceError::ScopeNotGranted("grant signature invalid".into()));
+            return Err(PoliceError::ScopeNotGranted(
+                "grant signature invalid".into(),
+            ));
         }
     }
 

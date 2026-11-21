@@ -16,7 +16,10 @@ pub struct RetirementPlanRow {
     pub last_review: chrono::NaiveDate,
 }
 
-pub async fn fetch_retirement_plan(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Option<RetirementPlanRow>> {
+pub async fn fetch_retirement_plan(
+    pool: &PgPool,
+    citizen_id: Uuid,
+) -> sqlx::Result<Option<RetirementPlanRow>> {
     sqlx::query_as!(
         RetirementPlanRow,
         "SELECT id, has_plan, retirement_age, last_review FROM retirement_retirement_plan WHERE citizen_id = $1",

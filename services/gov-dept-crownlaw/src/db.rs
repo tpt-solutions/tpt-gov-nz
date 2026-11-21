@@ -17,7 +17,10 @@ pub struct LegalOpinionsRow {
     pub status: String,
 }
 
-pub async fn fetch_legal_opinions(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<LegalOpinionsRow>> {
+pub async fn fetch_legal_opinions(
+    pool: &PgPool,
+    citizen_id: Uuid,
+) -> sqlx::Result<Vec<LegalOpinionsRow>> {
     sqlx::query_as!(
         LegalOpinionsRow,
         "SELECT id, reference, topic, issued_date, status FROM crownlaw_legal_opinions WHERE citizen_id = $1 ORDER BY created_at DESC",

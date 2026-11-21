@@ -1,4 +1,8 @@
-use axum::{http::StatusCode, response::{IntoResponse, Response}, Json};
+use axum::{
+    Json,
+    http::StatusCode,
+    response::{IntoResponse, Response},
+};
 use serde_json::json;
 use thiserror::Error;
 
@@ -25,9 +29,14 @@ impl IntoResponse for RegulationError {
         let (status, message) = match &self {
             RegulationError::CitizenNotFound => (StatusCode::NOT_FOUND, self.to_string()),
             RegulationError::ScopeNotGranted(_) => (StatusCode::FORBIDDEN, self.to_string()),
-            RegulationError::Database(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Internal error".to_owned()),
+            RegulationError::Database(_) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Internal error".to_owned(),
+            ),
             RegulationError::InvalidAction(_) => (StatusCode::BAD_REQUEST, self.to_string()),
-            RegulationError::ActionFailed(_) => (StatusCode::UNPROCESSABLE_ENTITY, self.to_string()),
+            RegulationError::ActionFailed(_) => {
+                (StatusCode::UNPROCESSABLE_ENTITY, self.to_string())
+            }
         };
         (status, Json(json!({ "error": message }))).into_response()
     }

@@ -36,7 +36,10 @@ pub struct EconomicOutlookRow {
     pub net_debt_pct: f64,
 }
 
-pub async fn fetch_economic_outlook(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Option<EconomicOutlookRow>> {
+pub async fn fetch_economic_outlook(
+    pool: &PgPool,
+    citizen_id: Uuid,
+) -> sqlx::Result<Option<EconomicOutlookRow>> {
     sqlx::query_as!(
         EconomicOutlookRow,
         "SELECT id, forecast_year, gdp_growth_pct, inflation_pct, net_debt_pct FROM treasury_economic_outlook WHERE citizen_id = $1",

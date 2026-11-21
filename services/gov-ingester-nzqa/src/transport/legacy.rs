@@ -2,11 +2,7 @@ use std::path::PathBuf;
 
 use async_trait::async_trait;
 
-use crate::{
-    error::IngestError,
-    raw::RawNzqaBatch,
-    transport::IngesterTransport,
-};
+use crate::{error::IngestError, raw::RawNzqaBatch, transport::IngesterTransport};
 
 /// Connection details for the real NZQA / Ministry of Education legacy system integration.
 ///

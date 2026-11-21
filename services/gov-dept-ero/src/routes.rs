@@ -1,18 +1,9 @@
-use axum::{
-    extract::State,
-    Json,
-};
+use axum::{Json, extract::State};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 
-use crate::{
-    actions,
-    consent,
-    db,
-    error::EroError,
-    opa,
-};
+use crate::{actions, consent, db, error::EroError, opa};
 
 pub async fn health() -> Json<Value> {
     Json(json!({ "status": "ok", "dept_id": "ero" }))
@@ -96,12 +87,16 @@ pub async fn fetch_data(
     };
 
     let reviews_json = reviews.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "school": c.c,
-            "rating": c.c,
-            "reviewDate": c.c.to_string(),
-            "nextReview": c.c.to_string(),
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "school": c.c,
+                    "rating": c.c,
+                    "reviewDate": c.c.to_string(),
+                    "nextReview": c.c.to_string(),
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     let reports = if has_scope("ero:reports") {
@@ -111,10 +106,14 @@ pub async fn fetch_data(
     };
 
     let reports_json = reports.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "title": c.c,
-            "published": c.c.to_string(),
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "title": c.c,
+                    "published": c.c.to_string(),
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     Ok(Json(json!({

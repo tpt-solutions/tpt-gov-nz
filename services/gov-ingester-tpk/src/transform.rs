@@ -22,11 +22,13 @@ pub fn transform_citizen(raw: &RawTpkCitizen) -> Result<TransformedCitizen, Inge
     let programmes = raw
         .programmes
         .iter()
-        .map(|p| Ok(ProgrammeEntity {
-            programme_name: p.programme_name.clone(),
-            status: p.status.clone(),
-            region: p.region.clone(),
-        }))
+        .map(|p| {
+            Ok(ProgrammeEntity {
+                programme_name: p.programme_name.clone(),
+                status: p.status.clone(),
+                region: p.region.clone(),
+            })
+        })
         .collect::<Result<Vec<_>, IngestError>>()?;
 
     let funding = raw

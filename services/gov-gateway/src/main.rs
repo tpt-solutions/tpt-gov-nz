@@ -1,8 +1,8 @@
 use axum::{
+    Router,
     extract::DefaultBodyLimit,
     middleware,
     routing::{any, get, post},
-    Router,
 };
 use std::net::SocketAddr;
 use std::sync::Arc;

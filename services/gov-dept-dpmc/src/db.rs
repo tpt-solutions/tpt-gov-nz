@@ -34,7 +34,10 @@ pub struct EngagementsRow {
     pub location: String,
 }
 
-pub async fn fetch_engagements(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<EngagementsRow>> {
+pub async fn fetch_engagements(
+    pool: &PgPool,
+    citizen_id: Uuid,
+) -> sqlx::Result<Vec<EngagementsRow>> {
     sqlx::query_as!(
         EngagementsRow,
         "SELECT id, event_name, event_date, location FROM dpmc_engagements WHERE citizen_id = $1 ORDER BY created_at DESC",

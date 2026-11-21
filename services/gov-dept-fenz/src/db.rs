@@ -16,7 +16,10 @@ pub struct FireSafetyRow {
     pub last_inspection: chrono::NaiveDate,
 }
 
-pub async fn fetch_fire_safety(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Option<FireSafetyRow>> {
+pub async fn fetch_fire_safety(
+    pool: &PgPool,
+    citizen_id: Uuid,
+) -> sqlx::Result<Option<FireSafetyRow>> {
     sqlx::query_as!(
         FireSafetyRow,
         "SELECT id, property, grade, last_inspection FROM fenz_fire_safety WHERE citizen_id = $1",

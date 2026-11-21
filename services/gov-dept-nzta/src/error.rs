@@ -1,4 +1,8 @@
-use axum::{http::StatusCode, response::{IntoResponse, Response}, Json};
+use axum::{
+    Json,
+    http::StatusCode,
+    response::{IntoResponse, Response},
+};
 use serde_json::json;
 use thiserror::Error;
 
@@ -25,7 +29,10 @@ impl IntoResponse for NztaError {
         let (status, message) = match &self {
             NztaError::CitizenNotFound => (StatusCode::NOT_FOUND, self.to_string()),
             NztaError::ScopeNotGranted(_) => (StatusCode::FORBIDDEN, self.to_string()),
-            NztaError::Database(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Internal error".to_owned()),
+            NztaError::Database(_) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Internal error".to_owned(),
+            ),
             NztaError::InvalidAction(_) => (StatusCode::BAD_REQUEST, self.to_string()),
             NztaError::ActionFailed(_) => (StatusCode::UNPROCESSABLE_ENTITY, self.to_string()),
         };

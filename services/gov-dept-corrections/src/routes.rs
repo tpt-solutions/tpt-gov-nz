@@ -1,18 +1,9 @@
-use axum::{
-    extract::State,
-    Json,
-};
+use axum::{Json, extract::State};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 
-use crate::{
-    actions,
-    consent,
-    db,
-    error::CorrectionsError,
-    opa,
-};
+use crate::{actions, consent, db, error::CorrectionsError, opa};
 
 pub async fn health() -> Json<Value> {
     Json(json!({ "status": "ok", "dept_id": "corrections" }))
@@ -114,13 +105,17 @@ pub async fn fetch_data(
         if rows.is_empty() {
             None
         } else {
-            Some(json!(rows.iter().map(|c| json!({
-                "caseNumber": c.case_number,
-                "sentenceType": c.sentence_type,
-                "startDate": c.start_date.to_string(),
-                "endDate": c.end_date.map(|d| d.to_string()),
-                "summary": c.summary,
-            })).collect::<Vec<_>>()))
+            Some(json!(
+                rows.iter()
+                    .map(|c| json!({
+                        "caseNumber": c.case_number,
+                        "sentenceType": c.sentence_type,
+                        "startDate": c.start_date.to_string(),
+                        "endDate": c.end_date.map(|d| d.to_string()),
+                        "summary": c.summary,
+                    }))
+                    .collect::<Vec<_>>()
+            ))
         }
     });
 

@@ -1,5 +1,5 @@
 use axum::Json;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 use uuid::Uuid;
 
@@ -16,7 +16,9 @@ pub async fn execute(
     let result = match action_type {
         "renew-vehicle-registration" => renew_vehicle_registration(citizen_id, parameters).await,
         "request-licence-replacement" => request_licence_replacement(citizen_id, parameters).await,
-        _ => Err(NztaError::InvalidAction(format!("Unknown action: {action_type}"))),
+        _ => Err(NztaError::InvalidAction(format!(
+            "Unknown action: {action_type}"
+        ))),
     };
 
     let (success, message) = match &result {
@@ -50,7 +52,9 @@ async fn renew_vehicle_registration(
         .to_owned();
 
     if registration.trim().is_empty() {
-        return Err(NztaError::InvalidAction("registration must not be empty".to_owned()));
+        return Err(NztaError::InvalidAction(
+            "registration must not be empty".to_owned(),
+        ));
     }
 
     let months = parameters
@@ -59,7 +63,9 @@ async fn renew_vehicle_registration(
         .unwrap_or(0);
 
     if !(1..=24).contains(&months) {
-        return Err(NztaError::InvalidAction("months must be between 1 and 24".to_owned()));
+        return Err(NztaError::InvalidAction(
+            "months must be between 1 and 24".to_owned(),
+        ));
     }
 
     Ok(json!({
@@ -78,7 +84,9 @@ async fn request_licence_replacement(
         .unwrap_or("");
 
     if reason.trim().is_empty() {
-        return Err(NztaError::InvalidAction("reason must not be empty".to_owned()));
+        return Err(NztaError::InvalidAction(
+            "reason must not be empty".to_owned(),
+        ));
     }
 
     Ok(json!({

@@ -1,18 +1,9 @@
-use axum::{
-    extract::State,
-    Json,
-};
+use axum::{Json, extract::State};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 
-use crate::{
-    actions,
-    consent,
-    db,
-    error::StatsnzError,
-    opa,
-};
+use crate::{actions, consent, db, error::StatsnzError, opa};
 
 pub async fn health() -> Json<Value> {
     Json(json!({ "status": "ok", "dept_id": "statsnz" }))
@@ -102,12 +93,16 @@ pub async fn fetch_data(
     };
 
     let census_json = census.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "censusYear": c.census_year,
-            "dwellingType": c.dwelling_type,
-            "householdSize": c.household_size,
-            "region": c.region,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "censusYear": c.census_year,
+                    "dwellingType": c.dwelling_type,
+                    "householdSize": c.household_size,
+                    "region": c.region,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     let profile_json = profile.as_ref().map(|p| {

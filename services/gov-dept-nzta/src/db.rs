@@ -48,7 +48,10 @@ pub async fn resolve_by_did(pool: &PgPool, did: &str) -> sqlx::Result<Option<Cit
     .await
 }
 
-pub async fn fetch_driver_licence(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Option<DriverLicenceRow>> {
+pub async fn fetch_driver_licence(
+    pool: &PgPool,
+    citizen_id: Uuid,
+) -> sqlx::Result<Option<DriverLicenceRow>> {
     sqlx::query_as!(
         DriverLicenceRow,
         "SELECT id, licence_number, full_name, licence_class, expiry_date, conditions FROM driver_licences WHERE citizen_id = $1 LIMIT 1",

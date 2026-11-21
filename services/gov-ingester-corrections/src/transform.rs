@@ -7,9 +7,8 @@ use crate::{
 };
 
 fn parse_date(s: &str, field: &str) -> Result<chrono::NaiveDate, IngestError> {
-    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").map_err(|e| {
-        IngestError::Transform(format!("invalid {field} date '{s}': {e}"))
-    })
+    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d")
+        .map_err(|e| IngestError::Transform(format!("invalid {field} date '{s}': {e}")))
 }
 
 pub fn transform_citizen(raw: &RawCorrectionsCitizen) -> Result<TransformedCitizen, IngestError> {
@@ -25,14 +24,18 @@ pub fn transform_citizen(raw: &RawCorrectionsCitizen) -> Result<TransformedCitiz
         corrections_id: raw.corrections_id.clone(),
     };
 
-    let probation = raw.probation.as_ref().map(|p| {
-        Ok::<_, IngestError>(ProbationEntity {
-            status: p.status.clone(),
-            officer_name: p.officer_name.clone(),
-            next_report_date: parse_date(&p.next_report_date, "next report date")?,
-            location: p.location.clone(),
+    let probation = raw
+        .probation
+        .as_ref()
+        .map(|p| {
+            Ok::<_, IngestError>(ProbationEntity {
+                status: p.status.clone(),
+                officer_name: p.officer_name.clone(),
+                next_report_date: parse_date(&p.next_report_date, "next report date")?,
+                location: p.location.clone(),
+            })
         })
-    }).transpose()?;
+        .transpose()?;
 
     let cases = raw
         .case
@@ -78,7 +81,10 @@ mod tests {
         let t = transform_citizen(&sample()).unwrap();
         assert_eq!(t.citizen.corrections_id, "COR-100001");
         assert!(t.probation.is_some());
-        assert_eq!(t.probation.as_ref().unwrap().officer_name, "Officer R. Reedy");
+        assert_eq!(
+            t.probation.as_ref().unwrap().officer_name,
+            "Officer R. Reedy"
+        );
     }
 
     #[test]
@@ -86,7 +92,10 @@ mod tests {
         let t = transform_citizen(&sample()).unwrap();
         assert_eq!(t.cases.len(), 1);
         assert_eq!(t.cases[0].case_number, "COR-C0001");
-        assert_eq!(t.cases[0].end_date, Some(chrono::NaiveDate::from_ymd_opt(2027, 3, 1).unwrap()));
+        assert_eq!(
+            t.cases[0].end_date,
+            Some(chrono::NaiveDate::from_ymd_opt(2027, 3, 1).unwrap())
+        );
     }
 
     #[test]

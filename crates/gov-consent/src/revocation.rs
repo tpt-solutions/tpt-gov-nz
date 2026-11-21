@@ -84,9 +84,8 @@ impl RevocationClient {
     pub fn from_env() -> Result<Self> {
         let base_url = std::env::var("TPT__GOV__IDENTITY_SERVER_URL")
             .unwrap_or_else(|_| "http://localhost:8081".into());
-        let api_key = std::env::var("TPT__GOV__IDENTITY_API_KEY").context(
-            "TPT__GOV__IDENTITY_API_KEY is required to check grant revocation",
-        )?;
+        let api_key = std::env::var("TPT__GOV__IDENTITY_API_KEY")
+            .context("TPT__GOV__IDENTITY_API_KEY is required to check grant revocation")?;
         let timeout = Duration::from_secs(
             std::env::var("TPT__GOV__REVOCATION_TIMEOUT_SECS")
                 .ok()
@@ -122,10 +121,13 @@ impl RevocationClient {
     fn store(&self, statuses: &[(Uuid, Status)], now: Instant) {
         let mut cache = self.lock();
         for (id, status) in statuses {
-            cache.insert(*id, Cached {
-                status: *status,
-                checked_at: now,
-            });
+            cache.insert(
+                *id,
+                Cached {
+                    status: *status,
+                    checked_at: now,
+                },
+            );
         }
     }
 

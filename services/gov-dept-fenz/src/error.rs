@@ -1,4 +1,8 @@
-use axum::{http::StatusCode, response::{IntoResponse, Response}, Json};
+use axum::{
+    Json,
+    http::StatusCode,
+    response::{IntoResponse, Response},
+};
 use serde_json::json;
 use thiserror::Error;
 
@@ -25,7 +29,10 @@ impl IntoResponse for FenzError {
         let (status, message) = match &self {
             FenzError::CitizenNotFound => (StatusCode::NOT_FOUND, self.to_string()),
             FenzError::ScopeNotGranted(_) => (StatusCode::FORBIDDEN, self.to_string()),
-            FenzError::Database(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Internal error".to_owned()),
+            FenzError::Database(_) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Internal error".to_owned(),
+            ),
             FenzError::InvalidAction(_) => (StatusCode::BAD_REQUEST, self.to_string()),
             FenzError::ActionFailed(_) => (StatusCode::UNPROCESSABLE_ENTITY, self.to_string()),
         };

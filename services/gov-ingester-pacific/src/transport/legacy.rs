@@ -2,11 +2,7 @@ use std::path::PathBuf;
 
 use async_trait::async_trait;
 
-use crate::{
-    error::IngestError,
-    raw::RawPacificBatch,
-    transport::IngesterTransport,
-};
+use crate::{error::IngestError, raw::RawPacificBatch, transport::IngesterTransport};
 
 /// Connection details for the real Ministry for Pacific Peoples legacy system integration.
 #[derive(Debug, Clone)]

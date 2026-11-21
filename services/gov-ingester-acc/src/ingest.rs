@@ -7,7 +7,7 @@ use uuid::Uuid;
 use crate::{
     db,
     error::IngestError,
-    models::{new_run_id, IngestionStatus, IngestionSummary},
+    models::{IngestionStatus, IngestionSummary, new_run_id},
     transform::transform_citizen,
     transport::IngesterTransport,
 };
@@ -38,7 +38,11 @@ pub async fn run_once(
         }
 
         for claim in &t.claims {
-            count(db::upsert_claim(pool, citizen_id, claim).await?, &mut inserted, &mut updated);
+            count(
+                db::upsert_claim(pool, citizen_id, claim).await?,
+                &mut inserted,
+                &mut updated,
+            );
         }
         if let Some(ent) = &t.entitlements {
             count(

@@ -2,14 +2,13 @@
 
 use crate::{
     error::IngestError,
-    models::{ReviewsEntity,ReportsEntity,CitizenEntity, TransformedCitizen},
+    models::{CitizenEntity, ReportsEntity, ReviewsEntity, TransformedCitizen},
     raw::RawEroCitizen,
 };
 
 fn parse_date(s: &str, field: &str) -> Result<chrono::NaiveDate, IngestError> {
-    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").map_err(|e| {
-        IngestError::Transform(format!("invalid {field} date '{s}': {e}"))
-    })
+    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d")
+        .map_err(|e| IngestError::Transform(format!("invalid {field} date '{s}': {e}")))
 }
 
 pub fn transform_citizen(raw: &RawEroCitizen) -> Result<TransformedCitizen, IngestError> {
@@ -61,8 +60,7 @@ mod tests {
     use super::*;
 
     fn sample() -> RawEroCitizen {
-        serde_json::from_value(serde_json::json!([object Object]))
-            .unwrap()
+        serde_json::from_value(serde_json::json!([object Object])).unwrap()
     }
 
     #[test]
@@ -70,15 +68,27 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.ero_id, "ERO-100001");
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.reviews.as_ref().unwrap().school, "Porirua College");
-         assert_eq!(t.reviews.as_ref().unwrap().rating, "Developing");
-         assert_eq!(t.reviews.as_ref().unwrap().review_date.to_string(), "2025-09-01");
-         assert_eq!(t.reviews.as_ref().unwrap().next_review.to_string(), "2027-09-01");
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(t.reviews.as_ref().unwrap().school, "Porirua College");
+        assert_eq!(t.reviews.as_ref().unwrap().rating, "Developing");
+        assert_eq!(
+            t.reviews.as_ref().unwrap().review_date.to_string(),
+            "2025-09-01"
+        );
+        assert_eq!(
+            t.reviews.as_ref().unwrap().next_review.to_string(),
+            "2027-09-01"
+        );
 
-    let t = transform_citizen(&batch.citizens[0]).unwrap();
-         assert_eq!(t.reports.as_ref().unwrap().title, "Porirua College annual report");
-         assert_eq!(t.reports.as_ref().unwrap().published.to_string(), "2025-10-15");
+        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        assert_eq!(
+            t.reports.as_ref().unwrap().title,
+            "Porirua College annual report"
+        );
+        assert_eq!(
+            t.reports.as_ref().unwrap().published.to_string(),
+            "2025-10-15"
+        );
     }
 
     #[test]

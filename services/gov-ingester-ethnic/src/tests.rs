@@ -18,11 +18,17 @@ async fn fixture_parses_and_transforms() {
     assert_eq!(first.ethnic_id, "ETH-100001");
     let t = transform_citizen(&batch.citizens[0]).unwrap();
     assert_eq!(t.programmes.len(), 1);
-    assert_eq!(t.programmes[0].programme_name, "Ethnic Communities Graduate Programme");
+    assert_eq!(
+        t.programmes[0].programme_name,
+        "Ethnic Communities Graduate Programme"
+    );
 
     let t = transform_citizen(&batch.citizens[0]).unwrap();
     assert_eq!(t.community_grants.len(), 1);
-    assert_eq!(t.community_grants[0].grant_name, "Community-led response fund");
+    assert_eq!(
+        t.community_grants[0].grant_name,
+        "Community-led response fund"
+    );
 }
 
 #[test]

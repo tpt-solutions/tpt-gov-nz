@@ -16,7 +16,10 @@ pub struct ServiceRecordsRow {
     pub status: String,
 }
 
-pub async fn fetch_service_records(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<ServiceRecordsRow>> {
+pub async fn fetch_service_records(
+    pool: &PgPool,
+    citizen_id: Uuid,
+) -> sqlx::Result<Vec<ServiceRecordsRow>> {
     sqlx::query_as!(
         ServiceRecordsRow,
         "SELECT id, service_no, branch, status FROM nzdf_service_records WHERE citizen_id = $1 ORDER BY created_at DESC",
@@ -34,7 +37,10 @@ pub struct DeploymentsRow {
     pub year: i32,
 }
 
-pub async fn fetch_deployments(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<DeploymentsRow>> {
+pub async fn fetch_deployments(
+    pool: &PgPool,
+    citizen_id: Uuid,
+) -> sqlx::Result<Vec<DeploymentsRow>> {
     sqlx::query_as!(
         DeploymentsRow,
         "SELECT id, operation, country, year FROM nzdf_deployments WHERE citizen_id = $1 ORDER BY created_at DESC",

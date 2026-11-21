@@ -22,7 +22,10 @@ async fn fixture_parses_and_transforms() {
 
     let t = transform_citizen(&batch.citizens[0]).unwrap();
     assert!(t.cover.is_some());
-    assert_eq!(t.cover.as_ref().unwrap().property, "12 Totara Street, Porirua");
+    assert_eq!(
+        t.cover.as_ref().unwrap().property,
+        "12 Totara Street, Porirua"
+    );
 }
 
 #[test]

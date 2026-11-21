@@ -2,11 +2,7 @@ use std::path::PathBuf;
 
 use async_trait::async_trait;
 
-use crate::{
-    error::IngestError,
-    raw::RawMbieBatch,
-    transport::IngesterTransport,
-};
+use crate::{error::IngestError, raw::RawMbieBatch, transport::IngesterTransport};
 
 /// Connection details for the real MBIE legacy system integration.
 ///

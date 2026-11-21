@@ -1,18 +1,9 @@
-use axum::{
-    extract::State,
-    Json,
-};
+use axum::{Json, extract::State};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 
-use crate::{
-    actions,
-    consent,
-    db,
-    error::WomenError,
-    opa,
-};
+use crate::{actions, consent, db, error::WomenError, opa};
 
 pub async fn health() -> Json<Value> {
     Json(json!({ "status": "ok", "dept_id": "women" }))
@@ -96,11 +87,15 @@ pub async fn fetch_data(
     };
 
     let programmes_json = programmes.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "programmeName": c.c,
-            "status": c.c,
-            "year": c.c,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "programmeName": c.c,
+                    "status": c.c,
+                    "year": c.c,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     let insights = if has_scope("women:insights") {
@@ -110,11 +105,15 @@ pub async fn fetch_data(
     };
 
     let insights_json = insights.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "topic": c.c,
-            "summary": c.c,
-            "published": c.c.to_string(),
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "topic": c.c,
+                    "summary": c.c,
+                    "published": c.c.to_string(),
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     Ok(Json(json!({

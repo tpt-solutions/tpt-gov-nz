@@ -1,18 +1,9 @@
-use axum::{
-    extract::State,
-    Json,
-};
+use axum::{Json, extract::State};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 
-use crate::{
-    actions,
-    consent,
-    db,
-    error::MchError,
-    opa,
-};
+use crate::{actions, consent, db, error::MchError, opa};
 
 pub async fn health() -> Json<Value> {
     Json(json!({ "status": "ok", "dept_id": "mch" }))
@@ -96,11 +87,15 @@ pub async fn fetch_data(
     };
 
     let heritage_sites_json = heritage_sites.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "name": c.c,
-            "status": c.c,
-            "region": c.c,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "name": c.c,
+                    "status": c.c,
+                    "region": c.c,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     let grants = if has_scope("mch:grants") {
@@ -110,11 +105,15 @@ pub async fn fetch_data(
     };
 
     let grants_json = grants.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "grantName": c.c,
-            "amount": c.c,
-            "status": c.c,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "grantName": c.c,
+                    "amount": c.c,
+                    "status": c.c,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     Ok(Json(json!({

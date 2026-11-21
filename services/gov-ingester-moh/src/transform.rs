@@ -10,9 +10,8 @@ use crate::{
 };
 
 fn parse_date(s: &str, field: &str) -> Result<chrono::NaiveDate, IngestError> {
-    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").map_err(|e| {
-        IngestError::Transform(format!("invalid {field} date '{s}': {e}"))
-    })
+    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d")
+        .map_err(|e| IngestError::Transform(format!("invalid {field} date '{s}': {e}")))
 }
 
 fn parse_datetime(s: &str, field: &str) -> Result<chrono::DateTime<chrono::Utc>, IngestError> {
@@ -112,7 +111,10 @@ mod tests {
         let t = transform_citizen(&sample()).unwrap();
         assert_eq!(t.citizen.nhi, "NBA1234");
         assert!(t.gp.is_some());
-        assert_eq!(t.gp.as_ref().unwrap().practice_name, "Pukekohe Family Health");
+        assert_eq!(
+            t.gp.as_ref().unwrap().practice_name,
+            "Pukekohe Family Health"
+        );
     }
 
     #[test]

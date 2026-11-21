@@ -1,18 +1,9 @@
-use axum::{
-    extract::State,
-    Json,
-};
+use axum::{Json, extract::State};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 
-use crate::{
-    actions,
-    consent,
-    db,
-    error::CaaError,
-    opa,
-};
+use crate::{actions, consent, db, error::CaaError, opa};
 
 pub async fn health() -> Json<Value> {
     Json(json!({ "status": "ok", "dept_id": "caa" }))
@@ -96,12 +87,16 @@ pub async fn fetch_data(
     };
 
     let licences_json = licences.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "licenceNo": c.c,
-            "category": c.c,
-            "status": c.c,
-            "expires": c.c.to_string(),
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "licenceNo": c.c,
+                    "category": c.c,
+                    "status": c.c,
+                    "expires": c.c.to_string(),
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     let aircraft = if has_scope("caa:aircraft") {
@@ -111,11 +106,15 @@ pub async fn fetch_data(
     };
 
     let aircraft_json = aircraft.as_ref().map(|rows| {
-        json!(rows.iter().map(|c| json!({
-            "registration": c.c,
-            "aircraftType": c.c,
-            "status": c.c,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|c| json!({
+                    "registration": c.c,
+                    "aircraftType": c.c,
+                    "status": c.c,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     Ok(Json(json!({

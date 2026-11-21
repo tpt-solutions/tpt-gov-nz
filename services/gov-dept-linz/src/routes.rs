@@ -1,18 +1,9 @@
-use axum::{
-    extract::State,
-    Json,
-};
+use axum::{Json, extract::State};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 
-use crate::{
-    actions,
-    consent,
-    db,
-    error::LinzError,
-    opa,
-};
+use crate::{actions, consent, db, error::LinzError, opa};
 
 pub async fn health() -> Json<Value> {
     Json(json!({ "status": "ok", "dept_id": "linz" }))
@@ -102,20 +93,28 @@ pub async fn fetch_data(
     };
 
     let titles_json = titles.as_ref().map(|rows| {
-        json!(rows.iter().map(|t| json!({
-            "titleNumber": t.title_number,
-            "propertyAddress": t.property_address,
-            "landAreaSqm": t.land_area_sqm,
-            "estateType": t.estate_type,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|t| json!({
+                    "titleNumber": t.title_number,
+                    "propertyAddress": t.property_address,
+                    "landAreaSqm": t.land_area_sqm,
+                    "estateType": t.estate_type,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     let ownership_json = ownership.as_ref().map(|rows| {
-        json!(rows.iter().map(|o| json!({
-            "titleNumber": o.title_number,
-            "ownershipShare": o.ownership_share,
-            "registeredOwners": o.registered_owners,
-        })).collect::<Vec<_>>())
+        json!(
+            rows.iter()
+                .map(|o| json!({
+                    "titleNumber": o.title_number,
+                    "ownershipShare": o.ownership_share,
+                    "registeredOwners": o.registered_owners,
+                }))
+                .collect::<Vec<_>>()
+        )
     });
 
     Ok(Json(json!({

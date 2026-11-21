@@ -8,12 +8,12 @@
 //! DATABASE_URL=postgresql://ird:ird_dev_password@localhost:5432/ird cargo test -p gov-dept-ird
 //! ```
 
+use crate::{IrdError, build_app};
 use axum::{
-    body::{to_bytes, Body},
+    body::{Body, to_bytes},
     http::{Request, StatusCode},
 };
-use crate::{build_app, IrdError};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 use tower::ServiceExt;
 
@@ -23,9 +23,7 @@ const TEST_DID: &str = "did:gov:nz:test-citizen-001";
 
 #[sqlx::test]
 async fn resolve_found(pool: PgPool) {
-    let row = crate::db::resolve_by_did(&pool, TEST_DID)
-        .await
-        .unwrap();
+    let row = crate::db::resolve_by_did(&pool, TEST_DID).await.unwrap();
     let row = row.expect("seed migration should create the test citizen");
     assert_eq!(row.did, TEST_DID);
     assert_eq!(row.ird_number, "123-456-789");
@@ -254,7 +252,10 @@ async fn action_file_gst_return_valid(pool: PgPool) {
     .await
     .unwrap();
     assert_eq!(period.status, "filed");
-    assert_eq!(period.refund_or_payment, Some(sqlx::types::Decimal::from(-100)));
+    assert_eq!(
+        period.refund_or_payment,
+        Some(sqlx::types::Decimal::from(-100))
+    );
 }
 
 #[sqlx::test]
@@ -302,7 +303,12 @@ async fn http_round_trip(pool: PgPool) {
     // 1. health
     let resp = app
         .clone()
-        .oneshot(Request::builder().uri("/health").body(Body::empty()).unwrap())
+        .oneshot(
+            Request::builder()
+                .uri("/health")
+                .body(Body::empty())
+                .unwrap(),
+        )
         .await
         .unwrap();
     assert_eq!(resp.status(), StatusCode::OK);
@@ -325,7 +331,9 @@ async fn http_round_trip(pool: PgPool) {
         .method("POST")
         .uri("/citizen/data")
         .header("content-type", "application/json")
-        .body(Body::from(json!({ "did": TEST_DID, "scopes": ["ird:kiwisaver"] }).to_string()))
+        .body(Body::from(
+            json!({ "did": TEST_DID, "scopes": ["ird:kiwisaver"] }).to_string(),
+        ))
         .unwrap();
     let resp = app.clone().oneshot(data).await.unwrap();
     assert_eq!(resp.status(), StatusCode::OK);

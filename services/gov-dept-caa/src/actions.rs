@@ -1,5 +1,5 @@
 use axum::Json;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 use uuid::Uuid;
 
@@ -14,7 +14,9 @@ pub async fn execute(
     ai_level: Option<&str>,
 ) -> Result<Json<Value>, CaaError> {
     let result = match action_type {
-        "request-licence-replacement" => requestLicenceReplacement(pool, citizen_id, parameters).await,
+        "request-licence-replacement" => {
+            requestLicenceReplacement(pool, citizen_id, parameters).await
+        }
         _ => Err(CaaError::InvalidAction(format!(
             "Unknown action: {action_type}"
         ))),

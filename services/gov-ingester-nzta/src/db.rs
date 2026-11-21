@@ -76,11 +76,7 @@ pub async fn upsert_vehicle(
     Ok(row.inserted.unwrap_or(false))
 }
 
-pub async fn upsert_ruc(
-    pool: &PgPool,
-    citizen_id: Uuid,
-    e: &RucEntity,
-) -> sqlx::Result<bool> {
+pub async fn upsert_ruc(pool: &PgPool, citizen_id: Uuid, e: &RucEntity) -> sqlx::Result<bool> {
     let row = sqlx::query!(
         r#"INSERT INTO ruc_records (citizen_id, vehicle_rego, licence_type, expiry_date, units_remaining)
            VALUES ($1, $2, $3, $4, $5)

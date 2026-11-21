@@ -16,7 +16,10 @@ pub struct CarePlacementsRow {
     pub region: String,
 }
 
-pub async fn fetch_care_placements(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<CarePlacementsRow>> {
+pub async fn fetch_care_placements(
+    pool: &PgPool,
+    citizen_id: Uuid,
+) -> sqlx::Result<Vec<CarePlacementsRow>> {
     sqlx::query_as!(
         CarePlacementsRow,
         "SELECT id, placement_type, start_date, region FROM oranga_care_placements WHERE citizen_id = $1 ORDER BY created_at DESC",
@@ -34,7 +37,10 @@ pub struct SupportServicesRow {
     pub next_review: chrono::NaiveDate,
 }
 
-pub async fn fetch_support_services(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<SupportServicesRow>> {
+pub async fn fetch_support_services(
+    pool: &PgPool,
+    citizen_id: Uuid,
+) -> sqlx::Result<Vec<SupportServicesRow>> {
     sqlx::query_as!(
         SupportServicesRow,
         "SELECT id, service, status, next_review FROM oranga_support_services WHERE citizen_id = $1 ORDER BY created_at DESC",

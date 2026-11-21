@@ -16,7 +16,10 @@ pub struct ProcurementsRow {
     pub status: String,
 }
 
-pub async fn fetch_procurements(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<ProcurementsRow>> {
+pub async fn fetch_procurements(
+    pool: &PgPool,
+    citizen_id: Uuid,
+) -> sqlx::Result<Vec<ProcurementsRow>> {
     sqlx::query_as!(
         ProcurementsRow,
         "SELECT id, programme, value, status FROM defence_procurements WHERE citizen_id = $1 ORDER BY created_at DESC",

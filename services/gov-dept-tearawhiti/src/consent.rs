@@ -46,7 +46,9 @@ pub fn verify_access(
     issuer_key: Option<&VerifyingKey>,
 ) -> Result<(), TearawhitiError> {
     if !evaluate_allow(input) {
-        return Err(TearawhitiError::ScopeNotGranted(denied_scopes(input).join(",")));
+        return Err(TearawhitiError::ScopeNotGranted(
+            denied_scopes(input).join(","),
+        ));
     }
 
     if let Some(key) = issuer_key {
@@ -61,7 +63,9 @@ pub fn verify_access(
             })
         });
         if !all_signed {
-            return Err(TearawhitiError::ScopeNotGranted("grant signature invalid".into()));
+            return Err(TearawhitiError::ScopeNotGranted(
+                "grant signature invalid".into(),
+            ));
         }
     }
 

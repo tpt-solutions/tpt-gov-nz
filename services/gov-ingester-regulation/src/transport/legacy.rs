@@ -2,11 +2,7 @@ use std::path::PathBuf;
 
 use async_trait::async_trait;
 
-use crate::{
-    error::IngestError,
-    raw::RawRegulationBatch,
-    transport::IngesterTransport,
-};
+use crate::{error::IngestError, raw::RawRegulationBatch, transport::IngesterTransport};
 
 /// Connection details for the real Ministry for Regulation legacy system integration.
 #[derive(Debug, Clone)]

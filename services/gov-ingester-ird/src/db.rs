@@ -148,11 +148,7 @@ pub async fn upsert_kiwisaver(
     Ok(row.inserted.unwrap_or(false))
 }
 
-pub async fn upsert_wff(
-    pool: &PgPool,
-    citizen_id: Uuid,
-    e: &WffEntity,
-) -> sqlx::Result<bool> {
+pub async fn upsert_wff(pool: &PgPool, citizen_id: Uuid, e: &WffEntity) -> sqlx::Result<bool> {
     let row = sqlx::query!(
         r#"INSERT INTO wff_entitlements
               (citizen_id, eligible, number_of_dependant_children, income_threshold,
