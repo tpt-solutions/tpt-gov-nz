@@ -2,7 +2,7 @@
   "name": "@tpt/portal-staff",
   "version": "0.1.0",
   "description": "Case-worker / staff portal for tpt-gov-nz",
-  "license": "Apache-2.0",
+  "license": "MIT OR Apache-2.0",
   "private": true,
   "scripts": {
     "dev": "next dev",

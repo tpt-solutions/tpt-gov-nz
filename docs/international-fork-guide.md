@@ -13,7 +13,7 @@ consent machinery stays intact.
 
 ## 2. Pre-fork checklist
 
-- [ ] Confirm open-source licence compatibility. The reference is **Apache-2.0**.
+- [ ] Confirm open-source licence compatibility. The reference is **MIT OR Apache-2.0** (dual).
       Keep `LICENSE` and attribution when forking.
 - [ ] Choose a project name and country code (used in `TPT__GOV__*` config and
       container prefixes).

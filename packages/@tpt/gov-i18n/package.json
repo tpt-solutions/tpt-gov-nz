@@ -2,7 +2,7 @@
   "name": "@tpt/gov-i18n",
   "version": "0.1.0",
   "description": "i18n strings for tpt-gov-nz (en-NZ + te reo Māori opt-in)",
-  "license": "Apache-2.0",
+  "license": "MIT OR Apache-2.0",
   "type": "module",
   "exports": { ".": "./src/index.ts" },
   "scripts": { "typecheck": "tsc --noEmit", "test": "vitest run" },

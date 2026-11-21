@@ -2,7 +2,7 @@
   "name": "@tpt/gov-ai-client",
   "version": "0.1.0",
   "description": "Provider-agnostic AI client for tpt-gov-nz (OpenRouter, Ollama)",
-  "license": "Apache-2.0",
+  "license": "MIT OR Apache-2.0",
   "type": "module",
   "exports": { ".": "./src/index.ts" },
   "scripts": { "typecheck": "tsc --noEmit", "test": "vitest run" },
