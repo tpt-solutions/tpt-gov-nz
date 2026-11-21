@@ -67,14 +67,218 @@ export const PORTAL_CONFIG = {
 
 export const DEMO_DID = "did:gov:nz:demo-alex-tane";
 
-export type DeptId = "ird" | "winz" | "moh" | "dia" | "nzta" | "acc" | "moj" | "police" | "hud" | "nzqa" | "msd" | "mbie" | "linz" | "statsnz" | "corrections" | "customs" | "mpi" | "doc" | "tpk" | "nzsis" | "gcsb" | "nzdf" | "defence" | "mfat" | "mch" | "tec" | "ero" | "moe" | "fenz" | "maritime" | "caa" | "mot" | "eqc" | "mfe" | "retirement" | "worksafe" | "regulation" | "tearawhiti" | "ethnic" | "pacific" | "women" | "oranga" | "sfo" | "crownlaw" | "publicservice" | "dpmc" | "nzsis" | "gcsb" | "nzdf" | "defence" | "mfat" | "mch" | "tec" | "ero" | "moe" | "fenz" | "maritime" | "caa" | "mot" | "eqc" | "mfe" | "retirement" | "worksafe" | "regulation" | "tearawhiti" | "ethnic" | "pacific" | "women" | "oranga" | "sfo" | "crownlaw" | "publicservice" | "dpmc" | "treasury";
+export type DeptId =
+  | "ird"
+  | "winz"
+  | "moh"
+  | "dia"
+  | "nzta"
+  | "acc"
+  | "moj"
+  | "police"
+  | "hud"
+  | "nzqa"
+  | "msd"
+  | "mbie"
+  | "linz"
+  | "statsnz"
+  | "corrections"
+  | "customs"
+  | "mpi"
+  | "doc"
+  | "tpk"
+  | "nzsis"
+  | "gcsb"
+  | "nzdf"
+  | "defence"
+  | "mfat"
+  | "mch"
+  | "tec"
+  | "ero"
+  | "moe"
+  | "fenz"
+  | "maritime"
+  | "caa"
+  | "mot"
+  | "eqc"
+  | "mfe"
+  | "retirement"
+  | "worksafe"
+  | "regulation"
+  | "tearawhiti"
+  | "ethnic"
+  | "pacific"
+  | "women"
+  | "oranga"
+  | "sfo"
+  | "crownlaw"
+  | "publicservice"
+  | "dpmc"
+  | "treasury";
 
 export interface DeptMeta {
   id: DeptId;
   name: string;
   shortName: string;
   description: string;
-  scopes: string[  {
+  scopes: string[];
+  href: string;
+}
+
+export const DEPARTMENTS: DeptMeta[] = [
+  {
+    id: "ird",
+    name: "Inland Revenue",
+    shortName: "IRD",
+    description: "Income tax, GST, KiwiSaver and Working for Families.",
+    scopes: ["ird:income", "ird:tax-summary", "ird:gst", "ird:kiwisaver", "ird:wff"],
+    href: "/dept/ird",
+  },
+  {
+    id: "winz",
+    name: "Work and Income",
+    shortName: "WINZ",
+    description: "Benefits, payments and appointments.",
+    scopes: ["winz:benefit-status", "winz:payments"],
+    href: "/dept/winz",
+  },
+  {
+    id: "moh",
+    name: "Ministry of Health",
+    shortName: "MOH",
+    description: "GP enrolment, prescriptions, appointments and vaccinations.",
+    scopes: ["moh:nhi", "moh:prescriptions", "moh:appointments"],
+    href: "/dept/moh",
+  },
+  {
+    id: "dia",
+    name: "Department of Internal Affairs",
+    shortName: "DIA",
+    description: "Passports, citizenship and official documents.",
+    scopes: ["dia:passport", "dia:birth-certificate"],
+    href: "/dept/dia",
+  },
+  {
+    id: "nzta",
+    name: "Waka Kotahi NZ Transport Agency",
+    shortName: "NZTA",
+    description: "Driver licence, vehicles and road user charges.",
+    scopes: ["nzta:driver-licence", "nzta:vehicles", "nzta:ruc"],
+    href: "/dept/nzta",
+  },
+  {
+    id: "acc",
+    name: "Accident Compensation Corporation",
+    shortName: "ACC",
+    description: "Injury claims, entitlements and rehabilitation.",
+    scopes: ["acc:claims", "acc:entitlements", "acc:rehabilitation"],
+    href: "/dept/acc",
+  },
+  {
+    id: "moj",
+    name: "Ministry of Justice",
+    shortName: "MOJ",
+    description: "Fines, Disputes Tribunal claims, court records and name changes.",
+    scopes: ["moj:fines", "moj:disputes", "moj:court-records"],
+    href: "/dept/moj",
+  },
+  {
+    id: "police",
+    name: "New Zealand Police",
+    shortName: "Police",
+    description: "Infringements and reports.",
+    scopes: ["police:infringements", "police:reports"],
+    href: "/dept/police",
+  },
+  {
+    id: "hud",
+    name: "Ministry of Housing and Urban Development / Kāinga Ora",
+    shortName: "Housing",
+    description: "Housing applications, tenancy and maintenance requests.",
+    scopes: ["hud:applications", "hud:tenancy", "hud:maintenance"],
+    href: "/dept/hud",
+  },
+  {
+    id: "nzqa",
+    name: "Ministry of Education / NZQA",
+    shortName: "NZQA",
+    description: "Qualifications, transcripts and the New Zealand Record of Achievement.",
+    scopes: ["nzqa:qualifications", "nzqa:transcripts"],
+    href: "/dept/nzqa",
+  },
+  {
+    id: "msd",
+    name: "Ministry of Social Development",
+    shortName: "MSD",
+    description: "StudyLink student loans and allowances, and cross-service case history.",
+    scopes: ["msd:studylink", "msd:case-history"],
+    href: "/dept/msd",
+  },
+  {
+    id: "mbie",
+    name: "Ministry of Business, Innovation and Employment",
+    shortName: "MBIE",
+    description: "Business registrations and company director lookup.",
+    scopes: ["mbie:business", "mbie:directorships"],
+    href: "/dept/mbie",
+  },
+  {
+    id: "linz",
+    name: "Toitū Te Whenua Land Information New Zealand",
+    shortName: "LINZ",
+    description: "Property titles and land ownership records.",
+    scopes: ["linz:titles", "linz:ownership"],
+    href: "/dept/linz",
+  },
+  {
+    id: "statsnz",
+    name: "Statistics New Zealand",
+    shortName: "Stats NZ",
+    description: "Census data, official statistics and your data profile.",
+    scopes: ["statsnz:census", "statsnz:profile"],
+    href: "/dept/statsnz",
+  },
+  {
+    id: "corrections",
+    name: "Department of Corrections",
+    shortName: "Corrections",
+    description: "Probation status and case information.",
+    scopes: ["corrections:probation", "corrections:case"],
+    href: "/dept/corrections",
+  },
+  {
+    id: "customs",
+    name: "New Zealand Customs Service",
+    shortName: "Customs",
+    description: "Traveller declarations and arrival information.",
+    scopes: ["customs:travel", "customs:declarations"],
+    href: "/dept/customs",
+  },
+  {
+    id: "mpi",
+    name: "Ministry for Primary Industries",
+    shortName: "MPI",
+    description: "Food and business registrations and certifications.",
+    scopes: ["mpi:registrations", "mpi:certifications"],
+    href: "/dept/mpi",
+  },
+  {
+    id: "doc",
+    name: "Department of Conservation",
+    shortName: "DOC",
+    description: "Conservation permits and concessions.",
+    scopes: ["doc:permits", "doc:concessions"],
+    href: "/dept/doc",
+  },
+  {
+    id: "tpk",
+    name: "Te Puni Kōkiri",
+    shortName: "TPK",
+    description: "Māori development programmes and funding.",
+    scopes: ["tpk:programmes", "tpk:funding"],
+    href: "/dept/tpk",
+  },
+  {
     id: "treasury",
     name: "The Treasury",
     shortName: "Treasury",
@@ -297,162 +501,5 @@ export interface DeptMeta {
     description: "National security intelligence and counter-intelligence.",
     scopes: ["nzsis:mandates", "nzsis:threats"],
     href: "/dept/nzsis",
-  },
-];
-  href: string;
-}
-
-export const DEPARTMENTS: DeptMeta[] = [
-  {
-    id: "ird",
-    name: "Inland Revenue",
-    shortName: "IRD",
-    description: "Income tax, GST, KiwiSaver and Working for Families.",
-    scopes: ["ird:income", "ird:tax-summary", "ird:gst", "ird:kiwisaver", "ird:wff"],
-    href: "/dept/ird",
-  },
-  {
-    id: "winz",
-    name: "Work and Income",
-    shortName: "WINZ",
-    description: "Benefits, payments and appointments.",
-    scopes: ["winz:benefit-status", "winz:payments"],
-    href: "/dept/winz",
-  },
-  {
-    id: "moh",
-    name: "Ministry of Health",
-    shortName: "MOH",
-    description: "GP enrolment, prescriptions, appointments and vaccinations.",
-    scopes: ["moh:nhi", "moh:prescriptions", "moh:appointments"],
-    href: "/dept/moh",
-  },
-  {
-    id: "dia",
-    name: "Department of Internal Affairs",
-    shortName: "DIA",
-    description: "Passports, citizenship and official documents.",
-    scopes: ["dia:passport", "dia:birth-certificate"],
-    href: "/dept/dia",
-  },
-  {
-    id: "nzta",
-    name: "Waka Kotahi NZ Transport Agency",
-    shortName: "NZTA",
-    description: "Driver licence, vehicles and road user charges.",
-    scopes: ["nzta:driver-licence", "nzta:vehicles", "nzta:ruc"],
-    href: "/dept/nzta",
-  },
-  {
-    id: "acc",
-    name: "Accident Compensation Corporation",
-    shortName: "ACC",
-    description: "Injury claims, entitlements and rehabilitation.",
-    scopes: ["acc:claims", "acc:entitlements", "acc:rehabilitation"],
-    href: "/dept/acc",
-  },
-  {
-    id: "moj",
-    name: "Ministry of Justice",
-    shortName: "MOJ",
-    description: "Fines, Disputes Tribunal claims, court records and name changes.",
-    scopes: ["moj:fines", "moj:disputes", "moj:court-records"],
-    href: "/dept/moj",
-  },
-  {
-    id: "police",
-    name: "New Zealand Police",
-    shortName: "Police",
-    description: "Infringements and reports.",
-    scopes: ["police:infringements", "police:reports"],
-    href: "/dept/police",
-  },
-  {
-    id: "hud",
-    name: "Ministry of Housing and Urban Development / Kāinga Ora",
-    shortName: "Housing",
-    description: "Housing applications, tenancy and maintenance requests.",
-    scopes: ["hud:applications", "hud:tenancy", "hud:maintenance"],
-    href: "/dept/hud",
-  },
-  {
-    id: "nzqa",
-    name: "Ministry of Education / NZQA",
-    shortName: "NZQA",
-    description: "Qualifications, transcripts and the New Zealand Record of Achievement.",
-    scopes: ["nzqa:qualifications", "nzqa:transcripts"],
-    href: "/dept/nzqa",
-  },
-  {
-    id: "msd",
-    name: "Ministry of Social Development",
-    shortName: "MSD",
-    description: "StudyLink student loans and allowances, and cross-service case history.",
-    scopes: ["msd:studylink", "msd:case-history"],
-    href: "/dept/msd",
-  },
-  {
-    id: "mbie",
-    name: "Ministry of Business, Innovation and Employment",
-    shortName: "MBIE",
-    description: "Business registrations and company director lookup.",
-    scopes: ["mbie:business", "mbie:directorships"],
-    href: "/dept/mbie",
-  },
-  {
-    id: "linz",
-    name: "Toitū Te Whenua Land Information New Zealand",
-    shortName: "LINZ",
-    description: "Property titles and land ownership records.",
-    scopes: ["linz:titles", "linz:ownership"],
-    href: "/dept/linz",
-  },
-  {
-    id: "statsnz",
-    name: "Statistics New Zealand",
-    shortName: "Stats NZ",
-    description: "Census data, official statistics and your data profile.",
-    scopes: ["statsnz:census", "statsnz:profile"],
-    href: "/dept/statsnz",
-  },
-  {
-    id: "corrections",
-    name: "Department of Corrections",
-    shortName: "Corrections",
-    description: "Probation status and case information.",
-    scopes: ["corrections:probation", "corrections:case"],
-    href: "/dept/corrections",
-  },
-  {
-    id: "customs",
-    name: "New Zealand Customs Service",
-    shortName: "Customs",
-    description: "Traveller declarations and arrival information.",
-    scopes: ["customs:travel", "customs:declarations"],
-    href: "/dept/customs",
-  },
-  {
-    id: "mpi",
-    name: "Ministry for Primary Industries",
-    shortName: "MPI",
-    description: "Food and business registrations and certifications.",
-    scopes: ["mpi:registrations", "mpi:certifications"],
-    href: "/dept/mpi",
-  },
-  {
-    id: "doc",
-    name: "Department of Conservation",
-    shortName: "DOC",
-    description: "Conservation permits and concessions.",
-    scopes: ["doc:permits", "doc:concessions"],
-    href: "/dept/doc",
-  },
-  {
-    id: "tpk",
-    name: "Te Puni Kōkiri",
-    shortName: "TPK",
-    description: "Māori development programmes and funding.",
-    scopes: ["tpk:programmes", "tpk:funding"],
-    href: "/dept/tpk",
   },
 ];

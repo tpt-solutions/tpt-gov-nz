@@ -12,13 +12,12 @@ import type {
   MSDDataBundle,
   MBIEDataBundle,
   LINZDataBundle,
-  STATSNZDataBundle,
+  StatsNZDataBundle,
   CORRECTIONSDataBundle,
   CUSTOMSDataBundle,
   MPIDataBundle,
   DOCDataBundle,
   TPKDataBundle,
-} from "@tpt/gov-schema";
   NzsisDataBundle,
   GcsbDataBundle,
   NzdfDataBundle,
@@ -47,6 +46,7 @@ import type {
   PublicserviceDataBundle,
   DpmcDataBundle,
   TreasuryDataBundle,
+} from "@tpt/gov-schema";
 
 export type ScenarioId = "standard" | "beneficiary" | "new-parent";
 
@@ -94,7 +94,7 @@ export interface DemoData {
   msd: MSDDataBundle;
   mbie: MBIEDataBundle;
   linz: LINZDataBundle;
-  statsnz: STATSNZDataBundle;
+  statsnz: StatsNZDataBundle;
   corrections: CORRECTIONSDataBundle;
   customs: CUSTOMSDataBundle;
   mpi: MPIDataBundle;
@@ -889,13 +889,13 @@ const linzNewParent: LINZDataBundle = {
   ],
 };
 
-const statsnzStandard: STATSNZDataBundle = {
+const statsnzStandard: StatsNZDataBundle = {
   statsId: "STATS-100001",
   census: [{ censusYear: 2023, dwellingType: "House", householdSize: 3, region: "Wellington" }],
   profile: { dataSummary: "2023 Census respondent. Standard data profile on file.", recordCount: 1, lastUpdated: "2023-11-01" },
 };
-const statsnzBeneficiary: STATSNZDataBundle = statsnzStandard;
-const statsnzNewParent: STATSNZDataBundle = statsnzStandard;
+const statsnzBeneficiary: StatsNZDataBundle = statsnzStandard;
+const statsnzNewParent: StatsNZDataBundle = statsnzStandard;
 
 const correctionsStandard: CORRECTIONSDataBundle = {
   correctionsId: "COR-100001",
@@ -1669,3 +1669,4 @@ export function getDemoData(scenario: ScenarioId): DemoData {
 
 /** Default bundle (standard) used when a scenario-specific lookup is not needed. */
 export const DEFAULT_DEMO_DATA: DemoData = getDemoData("standard");
+
