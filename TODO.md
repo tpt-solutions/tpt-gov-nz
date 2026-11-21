@@ -801,3 +801,18 @@ Source: full platform review. Direction: **hybrid** — Rust owns correctness-cr
 - [ ] Pilot split: extract IRD, then WINZ, MOH, DIA; validate versioning and CI across repos
 - [ ] Script generation of the remaining dept repos from the template; move portals and deploy config to their own repos
 - [ ] Governance per repo: `CODEOWNERS` per agency, `SECURITY.md`, ADRs, release/branch policy, contribution guide for agency teams
+
+### Capability-based security (design BEFORE the v1.0 contract freeze)
+> Adopt the capability *model* from `tpt-archon`, not the crate: Archon's `Capability` (`tpt-archon-bridge/src/capability.rs`) is in-process only (private constructor, `Rc<RefCell>`, no signature/serialisation/attenuation), and Archon is not production-ready. Several P0 items above (`requesting_dept_id` bypass, unenforced JWT scopes, per-request issuer key, ambient DB access) are ambient-authority problems that capabilities remove.
+- [ ] ADR: capability token format — evaluate Biscuit / UCAN / macaroons vs extending `DataGrantCredential`; decide and record
+- [ ] Evolve `DataGrantCredential` (`crates/gov-identity-core/src/credential.rs`) into a signed, holder-bound capability: resource (dept/dataset/fields), rights, caveats (expiry, purpose, audience, max uses), proof-of-possession of the holder key
+- [ ] Delegation by attenuation only (a derived token can narrow, never widen); verify the full chain
+- [ ] Short TTL + revocation list; enforce revocation at every dept node
+- [ ] Dept nodes accept only capabilities (no ambient authority); per-scope DB roles + Postgres row-level security; gateway/portals hold no data credentials
+- [ ] Single shared verification path (`consent::verify_access` with the persistent issuer key) used by all dept services/generator template
+- [ ] Sandbox ingesters with `tpt-linux-sandbox` (Landlock/seccomp: network only to the legacy source, write only to the dept DB)
+- [ ] Run plugins / AI tools in `tpt-wasm` with an explicit capability host; use `tpt-privd` for privileged operations
+- [ ] `gov-ai-client` receives a read-only, purpose-bound, attenuated capability — never the raw grant
+- [ ] Audit: every capability use writes a signed `AuditLogEntry` including the delegation chain
+- [ ] Conformance tests: forged, widened-by-delegation, wrong-holder, expired and revoked capabilities all rejected
+- [ ] (Later) Evaluate `tpt-archon` as an optional capability-checked dept datastore once it is production-ready (WAL concurrency, pg wire completeness, machine-checked proofs)
