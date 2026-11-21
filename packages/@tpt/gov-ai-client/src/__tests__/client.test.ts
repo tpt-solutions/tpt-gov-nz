@@ -83,7 +83,7 @@ describe("GovAiClient", () => {
       expect(result.provider).toBe("openrouter");
 
       // Verify the fetch was called with redacted content
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const body = JSON.parse(mockFetch.mock.calls[0]![1]!.body);
       const userMsg = body.messages.find((m: { role: string }) => m.role === "user");
       expect(userMsg.content).toContain("[NHI-REDACTED]");
       expect(userMsg.content).not.toContain("ABC1234");
@@ -108,7 +108,7 @@ describe("GovAiClient", () => {
         { deptId: "ird", content: "Tax year 2024 data" },
       ]);
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const body = JSON.parse(mockFetch.mock.calls[0]![1]!.body);
       const systemMsg = body.messages.find((m: { role: string }) => m.role === "system");
       expect(systemMsg.content).toContain("[IRD]");
       expect(systemMsg.content).toContain("Tax year 2024 data");

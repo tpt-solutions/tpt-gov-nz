@@ -28,7 +28,7 @@ export class SchemaRegistryClient {
     private readonly registryKey?: string,
   ) {}
 
-  private headers(): HeadersInit {
+  private headers(): Record<string, string> {
     const h: Record<string, string> = { "content-type": "application/json" };
     if (this.registryKey) h["x-registry-key"] = this.registryKey;
     return h;
@@ -40,7 +40,7 @@ export class SchemaRegistryClient {
       headers: this.headers(),
     });
     if (!res.ok) throw new Error(`schema registry list failed: ${res.status}`);
-    return res.json();
+    return (await res.json()) as SchemaRow[];
   }
 
   /** Fetch the latest version of a named schema. */
@@ -50,7 +50,7 @@ export class SchemaRegistryClient {
       { headers: this.headers() },
     );
     if (!res.ok) throw new Error(`schema not found: ${name}`);
-    return res.json();
+    return (await res.json()) as SchemaRow;
   }
 
   /** Register (upsert) a schema version. Requires the registry key. */
@@ -65,7 +65,7 @@ export class SchemaRegistryClient {
       body: JSON.stringify({ name, version, content }),
     });
     if (!res.ok) throw new Error(`schema register failed: ${res.status}`);
-    return res.json();
+    return (await res.json()) as SchemaRow;
   }
 
   /** Validate a payload against a schema (latest version if `version` omitted). */
@@ -80,6 +80,6 @@ export class SchemaRegistryClient {
       body: JSON.stringify({ name, version, payload }),
     });
     if (!res.ok) throw new Error(`schema validate failed: ${res.status}`);
-    return res.json();
+    return (await res.json()) as ValidateResult;
   }
 }

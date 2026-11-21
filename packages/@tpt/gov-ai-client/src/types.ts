@@ -13,7 +13,7 @@ export interface ChatResponse {
   content: string;
   model: string;
   provider: string;
-  tokensUsed?: number;
+  tokensUsed?: number | undefined;
 }
 
 export interface AiProvider {
