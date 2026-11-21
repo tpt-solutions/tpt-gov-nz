@@ -19,13 +19,13 @@
 //! the Fiat–Shamir heuristic. They are demo-grade, not audited.
 
 use anyhow::Result;
+use curve25519_dalek::constants::RISTRETTO_BASEPOINT_POINT;
 use curve25519_dalek::ristretto::RistrettoPoint;
 use curve25519_dalek::scalar::Scalar;
-use rand::RngCore;
 use sha2::{Digest, Sha256, Sha512};
 
 fn g() -> RistrettoPoint {
-    RistrettoPoint::generator()
+    RISTRETTO_BASEPOINT_POINT
 }
 
 fn h() -> RistrettoPoint {

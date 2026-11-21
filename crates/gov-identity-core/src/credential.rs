@@ -138,6 +138,7 @@ impl DataGrantCredential {
 }
 
 /// The identity server's keypair — used to issue and sign credentials.
+#[derive(Clone)]
 pub struct CredentialIssuer {
     signing_key: SigningKey,
     pub did: GovDid,
@@ -149,6 +150,36 @@ impl CredentialIssuer {
         let signing_key = SigningKey::generate(&mut OsRng);
         let did = GovDid::from_verifying_key(&signing_key.verifying_key());
         Self { signing_key, did }
+    }
+
+    /// Restore an issuer from a base64-encoded 32-byte Ed25519 seed.
+    ///
+    /// This is how the identity server loads its persistent issuer key from
+    /// configuration (`TPT__GOV__ISSUER_KEY`) or its database, so credentials
+    /// remain verifiable across restarts.
+    pub fn from_secret_b64(encoded: &str) -> Result<Self, IdentityError> {
+        use base64::Engine;
+        let bytes = base64::engine::general_purpose::STANDARD
+            .decode(encoded.trim())
+            .map_err(|e| IdentityError::Crypto(format!("invalid issuer key base64: {e}")))?;
+        let arr: [u8; 32] = bytes
+            .try_into()
+            .map_err(|_| IdentityError::Crypto("issuer key must be 32 bytes".into()))?;
+        let signing_key = SigningKey::from_bytes(&arr);
+        let did = GovDid::from_verifying_key(&signing_key.verifying_key());
+        Ok(Self { signing_key, did })
+    }
+
+    /// Base64-encoded 32-byte seed for persisting the issuer key.
+    pub fn secret_key_b64(&self) -> String {
+        use base64::Engine;
+        base64::engine::general_purpose::STANDARD.encode(self.signing_key.to_bytes())
+    }
+
+    /// Base64-encoded Ed25519 public key, published for verifiers.
+    pub fn public_key_b64(&self) -> String {
+        use base64::Engine;
+        base64::engine::general_purpose::STANDARD.encode(self.signing_key.verifying_key().as_bytes())
     }
 
     pub fn verifying_key(&self) -> VerifyingKey {
@@ -278,5 +309,25 @@ mod tests {
         );
 
         assert!(dgc.verify_signature(&wrong_issuer.verifying_key()).is_err());
+    }
+
+    #[test]
+    fn issuer_key_survives_round_trip() {
+        let issuer = CredentialIssuer::generate();
+        let restored = CredentialIssuer::from_secret_b64(&issuer.secret_key_b64()).unwrap();
+
+        assert_eq!(issuer.did, restored.did);
+        assert_eq!(issuer.public_key_b64(), restored.public_key_b64());
+
+        // A credential signed by the original verifies against the restored key.
+        let citizen = GovDid::parse("did:gov:nz:citizen003").unwrap();
+        let dgc = issuer.issue_data_grant(citizen, "winz", "ird", vec!["ird:income".into()], 3600);
+        assert!(dgc.verify_signature(&restored.verifying_key()).is_ok());
+    }
+
+    #[test]
+    fn issuer_key_rejects_bad_input() {
+        assert!(CredentialIssuer::from_secret_b64("not base64!").is_err());
+        assert!(CredentialIssuer::from_secret_b64("AAAA").is_err());
     }
 }
