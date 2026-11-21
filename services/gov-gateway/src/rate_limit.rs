@@ -1,9 +1,14 @@
-//! Per-department rate limiting middleware.
+//! Per-caller rate limiting middleware.
 //!
-//! Uses a simple fixed-window counter keyed by department id. Each department
-//! gets an independent budget so a burst against one dept does not starve the
-//! others. Configure with `TPT__GOV__RATE_LIMIT_RPM` (requests per minute,
-//! default 120).
+//! Uses a fixed-window counter keyed by the authenticated caller (the JWT
+//! `sub`, i.e. the citizen DID). Each caller gets an independent budget so a
+//! burst from one citizen cannot starve everyone else.
+//!
+//! Configure with:
+//! - `TPT__GOV__RATE_LIMIT_RPM` — requests per minute per caller (default 120)
+//! - `TPT__GOV__RATE_LIMIT_MAX_CALLERS` — maximum distinct callers tracked
+//!   (default 10 000). The map is bounded to avoid unbounded memory growth from
+//!   many distinct (possibly forged) caller ids.
 
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
@@ -18,7 +23,7 @@ use axum::{
 };
 use serde_json::json;
 
-use crate::routes::extract_dept_id;
+use crate::auth::Claims;
 use crate::state::AppState;
 
 struct Window {
@@ -32,14 +37,20 @@ pub struct RateLimiter {
     windows: Arc<Mutex<HashMap<String, Window>>>,
     max_requests: u32,
     window: Duration,
+    max_callers: usize,
 }
 
 impl RateLimiter {
     pub fn new(max_requests: u32, window: Duration) -> Self {
+        Self::with_max_callers(max_requests, window, 10_000)
+    }
+
+    pub fn with_max_callers(max_requests: u32, window: Duration, max_callers: usize) -> Self {
         Self {
             windows: Arc::new(Mutex::new(HashMap::new())),
             max_requests,
             window,
+            max_callers: max_callers.max(1),
         }
     }
 
@@ -48,17 +59,56 @@ impl RateLimiter {
             .ok()
             .and_then(|v| v.parse().ok())
             .unwrap_or(120);
-        Self::new(max_requests, Duration::from_secs(60))
+        let max_callers = std::env::var("TPT__GOV__RATE_LIMIT_MAX_CALLERS")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(10_000);
+        Self::with_max_callers(max_requests, Duration::from_secs(60), max_callers)
     }
 
-    /// Record a request for `dept_id`.
+    /// Lock the window map, recovering from a poisoned mutex.
+    ///
+    /// A panic while holding the lock cannot leave the counters in a
+    /// memory-unsafe state; recovering keeps the gateway serving instead of
+    /// panicking on every subsequent request.
+    fn lock(&self) -> std::sync::MutexGuard<'_, HashMap<String, Window>> {
+        self.windows
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+    }
+
+    /// Drop expired windows, then evict the window closest to expiry if the map
+    /// is still at capacity. Keeps memory bounded without a background task.
+    fn make_room(windows: &mut HashMap<String, Window>, now: Instant, max_callers: usize) {
+        if windows.len() < max_callers {
+            return;
+        }
+        windows.retain(|_, w| now < w.reset_at);
+        if windows.len() < max_callers {
+            return;
+        }
+        if let Some(key) = windows
+            .iter()
+            .min_by_key(|(_, w)| w.reset_at)
+            .map(|(k, _)| k.clone())
+        {
+            windows.remove(&key);
+        }
+    }
+
+    /// Record a request for `caller`.
     ///
     /// Returns `Ok(remaining)` when allowed, or `Err(retry_after_secs)` when the
-    /// department's window budget is exhausted.
-    pub fn check(&self, dept_id: &str) -> Result<u32, u64> {
+    /// caller's window budget is exhausted.
+    pub fn check(&self, caller: &str) -> Result<u32, u64> {
         let now = Instant::now();
-        let mut windows = self.windows.lock().unwrap();
-        let w = windows.entry(dept_id.to_string()).or_insert_with(|| Window {
+        let mut windows = self.lock();
+
+        if !windows.contains_key(caller) {
+            Self::make_room(&mut windows, now, self.max_callers);
+        }
+
+        let w = windows.entry(caller.to_string()).or_insert_with(|| Window {
             count: 0,
             reset_at: now + self.window,
         });
@@ -76,15 +126,25 @@ impl RateLimiter {
             Ok(self.max_requests - w.count)
         }
     }
+
+    /// Number of callers currently tracked (for tests / metrics).
+    pub fn tracked_callers(&self) -> usize {
+        self.lock().len()
+    }
 }
 
-/// Axum middleware applying per-department rate limits to proxy routes.
+/// Axum middleware applying per-caller rate limits to protected routes.
 pub async fn rate_limit(State(app): State<AppState>, req: Request, next: Next) -> Response {
-    let Some(dept_id) = extract_dept_id(req.uri().path()) else {
-        return next.run(req).await;
-    };
+    // JWT auth runs before this middleware, so an authenticated caller id is
+    // always present. Fall back to a single shared bucket rather than trusting
+    // the (spoofable) `x-forwarded-for` header.
+    let caller = req
+        .extensions()
+        .get::<Claims>()
+        .map(|c| c.sub.clone())
+        .unwrap_or_else(|| "unauthenticated".to_string());
 
-    match app.rate_limiter.check(&dept_id) {
+    match app.rate_limiter.check(&caller) {
         Ok(remaining) => {
             let mut resp = next.run(req).await;
             if let Ok(val) = remaining.to_string().parse() {
@@ -93,13 +153,12 @@ pub async fn rate_limit(State(app): State<AppState>, req: Request, next: Next) -
             resp
         }
         Err(retry_after) => {
-            tracing::warn!(dept = %dept_id, retry_after, "department rate limit exceeded");
+            tracing::warn!(caller = %caller, retry_after, "caller rate limit exceeded");
             (
                 StatusCode::TOO_MANY_REQUESTS,
                 [("retry-after", retry_after.to_string())],
                 Json(json!({
                     "error": "rate_limited",
-                    "dept": dept_id,
                     "retry_after": retry_after,
                 })),
             )
@@ -115,27 +174,36 @@ mod tests {
     #[test]
     fn allows_up_to_limit_then_blocks() {
         let limiter = RateLimiter::new(3, Duration::from_secs(60));
-        assert!(limiter.check("ird").is_ok());
-        assert!(limiter.check("ird").is_ok());
-        assert!(limiter.check("ird").is_ok());
-        assert!(limiter.check("ird").is_err());
+        assert!(limiter.check("did:gov:nz:a").is_ok());
+        assert!(limiter.check("did:gov:nz:a").is_ok());
+        assert!(limiter.check("did:gov:nz:a").is_ok());
+        assert!(limiter.check("did:gov:nz:a").is_err());
     }
 
     #[test]
-    fn departments_have_independent_budgets() {
+    fn callers_have_independent_budgets() {
         let limiter = RateLimiter::new(1, Duration::from_secs(60));
-        assert!(limiter.check("ird").is_ok());
-        assert!(limiter.check("ird").is_err());
-        // winz still has its full budget.
-        assert!(limiter.check("winz").is_ok());
+        assert!(limiter.check("did:gov:nz:a").is_ok());
+        assert!(limiter.check("did:gov:nz:a").is_err());
+        // Another caller still has their full budget.
+        assert!(limiter.check("did:gov:nz:b").is_ok());
     }
 
     #[test]
     fn window_resets_after_expiry() {
         let limiter = RateLimiter::new(1, Duration::from_millis(10));
-        assert!(limiter.check("ird").is_ok());
-        assert!(limiter.check("ird").is_err());
+        assert!(limiter.check("did:gov:nz:a").is_ok());
+        assert!(limiter.check("did:gov:nz:a").is_err());
         std::thread::sleep(Duration::from_millis(15));
-        assert!(limiter.check("ird").is_ok());
+        assert!(limiter.check("did:gov:nz:a").is_ok());
+    }
+
+    #[test]
+    fn map_is_bounded() {
+        let limiter = RateLimiter::with_max_callers(10, Duration::from_secs(60), 3);
+        for i in 0..20 {
+            let _ = limiter.check(&format!("caller-{i}"));
+        }
+        assert!(limiter.tracked_callers() <= 3);
     }
 }

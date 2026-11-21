@@ -2,11 +2,12 @@
 //!
 //! Validates a `Bearer` token on protected routes using HS256 and the shared
 //! secret in `TPT__GOV__JWT_SECRET`. On success the decoded [`Claims`] are
-//! inserted into request extensions so downstream handlers can read the
-//! citizen DID and granted scopes.
+//! inserted into request extensions so downstream handlers and middleware can
+//! read the citizen DID and granted scopes.
 //!
-//! For Phase 1 local development, if `TPT__GOV__JWT_SECRET` is unset the
-//! middleware logs a warning and allows requests through unauthenticated.
+//! The gateway **fails closed**: it refuses to start when `TPT__GOV__JWT_SECRET`
+//! is unset or too short. There is deliberately no "auth disabled" mode — local
+//! development sets the secret in `.env` (see `.env.example`).
 
 use axum::{
     extract::{Request, State},
@@ -21,6 +22,9 @@ use serde_json::json;
 
 use crate::state::AppState;
 
+/// Minimum accepted HMAC secret length.
+const MIN_SECRET_LEN: usize = 16;
+
 /// Claims carried in a citizen access token.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Claims {
@@ -33,66 +37,62 @@ pub struct Claims {
     pub scopes: Vec<String>,
 }
 
+impl Claims {
+    /// True when this token grants at least one scope for `dept_id`.
+    pub fn permits_dept(&self, dept_id: &str) -> bool {
+        let prefix = format!("{dept_id}:");
+        self.scopes.iter().any(|s| s.starts_with(&prefix))
+    }
+}
+
 /// JWT verification configuration.
 pub struct JwtConfig {
-    decoding: Option<DecodingKey>,
+    decoding: DecodingKey,
     validation: Validation,
-    enabled: bool,
 }
 
 impl JwtConfig {
     /// Build from environment.
     ///
-    /// - `TPT__GOV__JWT_SECRET` — HMAC secret (enables enforcement when set).
+    /// - `TPT__GOV__JWT_SECRET` — required HMAC secret.
     /// - `TPT__GOV__JWT_AUDIENCE` — optional expected audience claim.
-    pub fn from_env() -> Self {
-        match std::env::var("TPT__GOV__JWT_SECRET") {
-            Ok(secret) if !secret.is_empty() => {
-                let mut validation = Validation::new(Algorithm::HS256);
-                validation.validate_exp = true;
-                if let Ok(aud) = std::env::var("TPT__GOV__JWT_AUDIENCE") {
-                    if !aud.is_empty() {
-                        validation.set_audience(&[aud]);
-                    }
-                }
-                Self {
-                    decoding: Some(DecodingKey::from_secret(secret.as_bytes())),
-                    validation,
-                    enabled: true,
-                }
-            }
-            _ => {
-                tracing::warn!(
-                    "TPT__GOV__JWT_SECRET not set — JWT auth disabled (dev mode; all requests allowed)"
-                );
-                Self {
-                    decoding: None,
-                    validation: Validation::new(Algorithm::HS256),
-                    enabled: false,
-                }
+    ///
+    /// Returns an error (so the process refuses to start) when the secret is
+    /// missing or shorter than [`MIN_SECRET_LEN`] bytes.
+    pub fn from_env() -> anyhow::Result<Self> {
+        let secret = std::env::var("TPT__GOV__JWT_SECRET").map_err(|_| {
+            anyhow::anyhow!(
+                "TPT__GOV__JWT_SECRET is required — the gateway will not start with \
+                 authentication disabled (set it in .env; see .env.example)"
+            )
+        })?;
+        if secret.len() < MIN_SECRET_LEN {
+            anyhow::bail!(
+                "TPT__GOV__JWT_SECRET must be at least {MIN_SECRET_LEN} characters"
+            );
+        }
+
+        let mut validation = Validation::new(Algorithm::HS256);
+        validation.validate_exp = true;
+        if let Ok(aud) = std::env::var("TPT__GOV__JWT_AUDIENCE") {
+            if !aud.is_empty() {
+                validation.set_audience(&[aud]);
             }
         }
-    }
 
-    pub fn enabled(&self) -> bool {
-        self.enabled
+        Ok(Self {
+            decoding: DecodingKey::from_secret(secret.as_bytes()),
+            validation,
+        })
     }
 
     fn decode_token(&self, token: &str) -> Result<Claims, jsonwebtoken::errors::Error> {
-        let key = self
-            .decoding
-            .as_ref()
-            .expect("decode_token called while JWT auth disabled");
-        Ok(decode::<Claims>(token, key, &self.validation)?.claims)
+        Ok(decode::<Claims>(token, &self.decoding, &self.validation)?.claims)
     }
 }
 
 /// Axum middleware enforcing JWT auth on protected routes.
 pub async fn jwt_auth(State(app): State<AppState>, mut req: Request, next: Next) -> Response {
-    if !app.jwt.enabled() {
-        return next.run(req).await;
-    }
-
     let token = req
         .headers()
         .get(header::AUTHORIZATION)
@@ -110,13 +110,19 @@ pub async fn jwt_auth(State(app): State<AppState>, mut req: Request, next: Next)
             req.extensions_mut().insert(claims);
             next.run(req).await
         }
-        Err(e) => unauthorized(&format!("invalid token: {e}")),
+        Err(e) => {
+            // Log the detailed reason; never echo token-parsing internals to the
+            // caller (they can aid token forgery attempts).
+            tracing::warn!(error = %e, "rejected invalid bearer token");
+            unauthorized("invalid or expired bearer token")
+        }
     }
 }
 
 fn unauthorized(message: &str) -> Response {
     (
         StatusCode::UNAUTHORIZED,
+        [(header::WWW_AUTHENTICATE, "Bearer")],
         Json(json!({ "error": "unauthorized", "message": message })),
     )
         .into_response()
@@ -131,9 +137,8 @@ mod tests {
         let mut validation = Validation::new(Algorithm::HS256);
         validation.validate_exp = true;
         JwtConfig {
-            decoding: Some(DecodingKey::from_secret(secret.as_bytes())),
+            decoding: DecodingKey::from_secret(secret.as_bytes()),
             validation,
-            enabled: true,
         }
     }
 
@@ -177,5 +182,19 @@ mod tests {
         let exp = (chrono::Utc::now().timestamp() - 300) as usize;
         let token = make_token("test-secret", exp, vec![]);
         assert!(cfg.decode_token(&token).is_err());
+    }
+
+    #[test]
+    fn scope_check_is_per_department() {
+        let claims = Claims {
+            sub: "did:gov:nz:citizen001".into(),
+            exp: 0,
+            scopes: vec!["ird:income".into(), "winz:benefit-status".into()],
+        };
+        assert!(claims.permits_dept("ird"));
+        assert!(claims.permits_dept("winz"));
+        assert!(!claims.permits_dept("moh"));
+        // A scope for a different dept must not leak across.
+        assert!(!claims.permits_dept("ir"));
     }
 }

@@ -78,12 +78,19 @@ impl CircuitBreakerRegistry {
         Self::new(failure_threshold, Duration::from_secs(cooldown_secs))
     }
 
+    /// Lock the breaker map, recovering from a poisoned mutex.
+    fn lock(&self) -> std::sync::MutexGuard<'_, HashMap<String, Breaker>> {
+        self.breakers
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+    }
+
     /// Returns `true` if a request to `dept_id` should be allowed through.
     ///
     /// Transitions an expired `Open` breaker to `HalfOpen` to permit one trial.
     pub fn allow(&self, dept_id: &str) -> bool {
         let now = Instant::now();
-        let mut breakers = self.breakers.lock().unwrap();
+        let mut breakers = self.lock();
         let b = breakers.entry(dept_id.to_string()).or_default();
 
         match b.state {
@@ -105,7 +112,7 @@ impl CircuitBreakerRegistry {
 
     /// Record a successful downstream response, closing the breaker.
     pub fn record_success(&self, dept_id: &str) {
-        let mut breakers = self.breakers.lock().unwrap();
+        let mut breakers = self.lock();
         let b = breakers.entry(dept_id.to_string()).or_default();
         b.state = BreakerState::Closed;
         b.failures = 0;
@@ -115,7 +122,7 @@ impl CircuitBreakerRegistry {
     /// Record a failed downstream response, possibly opening the breaker.
     pub fn record_failure(&self, dept_id: &str) {
         let now = Instant::now();
-        let mut breakers = self.breakers.lock().unwrap();
+        let mut breakers = self.lock();
         let b = breakers.entry(dept_id.to_string()).or_default();
 
         match b.state {
