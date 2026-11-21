@@ -16,24 +16,21 @@ pub fn validate(schema: &Value, payload: &Value) -> Result<(), String> {
 
     if let Some(required) = schema.get("required").and_then(|v| v.as_array()) {
         for r in required {
-            if let Some(key) = r.as_str() {
-                if !obj.contains_key(key) {
-                    return Err(format!("missing required property: {key}"));
-                }
+            if let Some(key) = r.as_str()
+                && !obj.contains_key(key)
+            {
+                return Err(format!("missing required property: {key}"));
             }
         }
     }
 
     if let Some(props) = schema.get("properties").and_then(|v| v.as_object()) {
         for (key, expected) in props {
-            if let Some(actual) = obj.get(key) {
-                if let Some(t) = expected.get("type").and_then(|v| v.as_str()) {
-                    if !matches_type(t, actual) {
-                        return Err(format!(
-                            "property '{key}' has wrong type, expected {t}"
-                        ));
-                    }
-                }
+            if let Some(actual) = obj.get(key)
+                && let Some(t) = expected.get("type").and_then(|v| v.as_str())
+                && !matches_type(t, actual)
+            {
+                return Err(format!("property '{key}' has wrong type, expected {t}"));
             }
         }
     }

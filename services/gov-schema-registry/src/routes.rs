@@ -1,8 +1,8 @@
 use axum::{
+    Json,
     extract::{Path, State},
     http::HeaderMap,
     http::StatusCode,
-    Json,
 };
 use serde_json::Value;
 use tower_http::trace::TraceLayer;
@@ -17,7 +17,9 @@ pub async fn health() -> &'static str {
     "ok"
 }
 
-pub async fn list_schemas(State(pool): State<sqlx::PgPool>) -> Result<Json<Vec<SchemaRow>>, RegistryError> {
+pub async fn list_schemas(
+    State(pool): State<sqlx::PgPool>,
+) -> Result<Json<Vec<SchemaRow>>, RegistryError> {
     Ok(Json(db::list_latest(&pool).await?))
 }
 
