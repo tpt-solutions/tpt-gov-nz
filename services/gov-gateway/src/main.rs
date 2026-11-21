@@ -1,10 +1,12 @@
 use axum::{
+    extract::DefaultBodyLimit,
     middleware,
     routing::{any, get, post},
     Router,
 };
 use std::net::SocketAddr;
 use std::sync::Arc;
+use std::time::Duration;
 use tower_http::trace::TraceLayer;
 use tracing::info;
 
@@ -16,6 +18,11 @@ mod state;
 mod telemetry;
 
 use state::AppState;
+
+/// Default maximum proxied request/response body size (1 MiB).
+const DEFAULT_MAX_BODY_BYTES: usize = 1024 * 1024;
+/// Default upstream request timeout (seconds).
+const DEFAULT_UPSTREAM_TIMEOUT_SECS: u64 = 10;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -36,12 +43,32 @@ async fn main() -> anyhow::Result<()> {
         info!("mTLS enabled for upstream department calls");
     }
 
+    let identity_url = std::env::var("TPT__GOV__IDENTITY_SERVER_URL")
+        .unwrap_or_else(|_| "http://localhost:8081".into());
+    let upstream_timeout = Duration::from_secs(
+        std::env::var("TPT__GOV__UPSTREAM_TIMEOUT_SECS")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(DEFAULT_UPSTREAM_TIMEOUT_SECS),
+    );
+    let max_body_bytes = std::env::var("TPT__GOV__MAX_BODY_BYTES")
+        .ok()
+        .and_then(|v| v.parse().ok())
+        .unwrap_or(DEFAULT_MAX_BODY_BYTES);
+
+    // Fails closed: refuses to start without a valid JWT secret.
+    let jwt = auth::JwtConfig::from_env()?;
+
     let app_state = AppState {
         registry: routes::DeptRegistry::from_env(),
         rate_limiter: rate_limit::RateLimiter::from_env(),
         breakers: circuit_breaker::CircuitBreakerRegistry::from_env(),
-        jwt: Arc::new(auth::JwtConfig::from_env()),
+        jwt: Arc::new(jwt),
         mtls,
+        http: AppState::build_http_client(),
+        identity_url,
+        upstream_timeout,
+        max_body_bytes,
     };
 
     // Protected API surface. Middleware executes outermost-first:
@@ -49,6 +76,7 @@ async fn main() -> anyhow::Result<()> {
     let protected = Router::new()
         .route("/v1/citizen/resolve", post(routes::citizen_resolve))
         .route("/v1/dept/{dept_id}/{*path}", any(routes::proxy_dept))
+        .layer(DefaultBodyLimit::max(max_body_bytes))
         .layer(middleware::from_fn_with_state(
             app_state.clone(),
             circuit_breaker::circuit_breaker,
