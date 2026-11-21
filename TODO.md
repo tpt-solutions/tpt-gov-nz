@@ -698,6 +698,106 @@ Each: dept service → ingester → portal pages → staff view → federation �
 - [x] `packages/@tpt/gov-ui` — shared design system (TypeScript / React)
 - [x] `packages/@tpt/gov-i18n` — i18n strings (en-NZ + te reo Māori opt-in)
 - [x] CI pipeline (`.github/workflows/ci.yml`) — TS (lint/typecheck/test) + Rust (fmt, clippy, build, unit tests) jobs. Rust integration tests (needing a DB) excluded from CI — run locally via `cargo test --workspace`
-- [x] `LICENSE` — Apache 2.0
+- [x] `LICENSE-MIT` + `LICENSE-APACHE` — dual MIT OR Apache-2.0
 - [x] `README.md` — overview, quick start, architecture diagram
 - [x] `CONTRIBUTING.md` — how to add a new department (Stages 1–6)
+
+---
+
+## Platform Review Roadmap (2026-11) — hybrid direction
+
+Source: full platform review. Direction: **hybrid** — Rust owns correctness-critical logic (auth, sessions, consent, audit, schemas); Next.js stays a thin UI layer. Items marked *(verify)* were found by reading code only and need confirming before fixing.
+
+### P0 — Security & correctness (before any pilot)
+
+**Rust**
+- [ ] Persistent identity-server issuer key (`gov-identity-server/src/routes.rs` `issue_grant` currently calls `CredentialIssuer::generate()` per request); expose public key endpoint
+- [ ] Dept services verify `DataGrantCredential` signatures — pass the issuer key to `consent::verify_access` (currently `None` in `gov-dept-node/src/routes.rs`, `gov-dept-ird/src/routes.rs`; fix in generator template and regenerate all dept services)
+- [ ] Enforce revocation in dept services (`revoked_at` ignored; `grant.is_valid()` unused); verify signature and scope on the same grant
+- [ ] Remove `requesting_dept_id` self-assertion bypass (`is_direct_access`); gateway sets caller identity from JWT, JWT `sub` must equal `req.did`, enforce `Claims.scopes`
+- [ ] Authenticate identity-server endpoints (`register_did`, `issue_grant`, `revoke_grant`, `list_grants`); make DID registration first-write-wins (no key overwrite); validate dept ids, scopes, `expires_in_seconds` bounds
+- [ ] Axum 0.8 route syntax in `gov-identity-server/src/main.rs` (`:did`/`:id` → `{did}`/`{id}`) *(verify with `cargo run`)*
+- [ ] `gov-dept-node/src/main.rs` — REST routes unreachable because `fed_node.start()` blocks; run federation and HTTP concurrently
+- [ ] Audit: fail request when audit write fails; append-only table (revoke UPDATE/DELETE + hash chain); produce signed `AuditLogEntry`; IRD read audit; real `citizen_did` on actions
+- [ ] Federation: envelope replay protection (`message_id` dedup, timestamp freshness, `to_dept_id` check), persistent node keys, resolve `consent_grant_ids`, QUIC client auth (mTLS), per-peer rate limit
+- [ ] Gateway: fail closed when `TPT__GOV__JWT_SECRET` unset; forward Authorization; shared `reqwest::Client`; upstream timeouts and body limits; real `citizen_resolve`; per-caller rate limit; bound the rate-limit map; replace mutex `.unwrap()` (circuit breaker, rate limiter); don't echo JWT error text
+
+**TypeScript / portals** (largely superseded by the Rust auth/BFF service below, but fix the quick wins now)
+- [ ] `portal-citizen/app/lib/data-access.ts:25-26` syntax error and `STATSNZDataBundle` vs `StatsNZDataBundle` export mismatch (breaks typecheck) *(verify)*
+- [ ] Citizen login: bind public key to DID (`app/api/auth/verify/route.ts`); stop overwriting registered keys
+- [ ] Staff portal: verify JWT in middleware and in every dept page/server action via one shared guard (currently cookie-presence only)
+- [ ] RealMe: fail closed without `REALME_IDP_CERT`; remove/guard `REALME_SKIP_VERIFY`; staff allow-list/roles; SubjectConfirmationData (Recipient, NotOnOrAfter, InResponseTo required), Response Issuer, `SessionIndex` from `AuthnStatement`; harden xmldom (no DOCTYPE/entities); persistent replay store; signed SLO / CSRF-safe logout; validate `relayState`
+- [ ] Remove hard-coded fallback session secrets (both portals); throw at startup in production
+- [ ] Demo login server actions must check demo mode server-side; constant-time staff password compare + rate limit
+- [ ] AI: `/api/ai` use session `grantedScopes`, bound input, guard `req.json()`, redact context chunks (medical/WINZ data), don't leak upstream errors; authenticate + rate-limit `portal-policy` AI actions; align `AI_*` vs `TPT__GOV__AI_*` env names and defaults
+
+### Hybrid architecture
+- [ ] Rust auth/BFF service (new, or folded into `gov-gateway`): sessions/JWT, DID-to-key binding, RealMe SAML validation, consent + audit; portals call it via one shared guard
+- [ ] Schemas from Rust: `serde` + `schemars`/`utoipa` → JSON Schema/OpenAPI → generated TS types/clients for `@tpt/gov-schema` consumers
+- [ ] Collapse 48 near-identical dept services into one config-driven generic dept node + per-dept data modules; generator emits config + data modules
+- [ ] (Deferred) full-Rust UI trial on `portal-open-data` only
+
+### P1 — Gaps & drift
+- [ ] Remove stale workspace refs: `pnpm-workspace.yaml` (`services/gov-ai`, `services/gov-analytics`, `packages/adapters/*`), `portal-citizen/tsconfig.json` `@tpt/adapter-ird` alias, `ird/ai-context.ts` comment; reconcile `CLAUDE.md` / `CONTRIBUTING.md` / `TODO.md` (adapter model vs native modules); fix Windows path in `docs/international-fork-guide.md:28`
+- [ ] Staff registry: add `hud`, `moj`, `police`; dedupe `StaffDeptId`; extend `StaffBundle` beyond 16 depts
+- [ ] Zod-validate client input in ~47 dept `actions.ts`; unify demo flag with `PORTAL_CONFIG`
+- [ ] Replace local-JSON case notes (`apps/portal-staff/app/lib/case-notes.ts`) with audited DB storage
+- [ ] Tests: identity server; HTTP-level forged/unsigned/revoked grant rejection; direct-access bypass; portal auth/JWT/consent/AI route; OpenRouter/Ollama providers; staff middleware; RealMe fail-open path
+- [ ] ESLint config; per-package tsconfigs for `gov-ai-client`, `gov-i18n`; apps extend `tsconfig.base.json`; `test` script for citizen portal
+- [ ] Security headers: drop `unsafe-inline`, add `frame-ancestors`, `connect-src`, HSTS; cookie `secure` not tied to `NODE_ENV` alone
+- [ ] Accessibility: skip link and `<nav aria-label>` in staff portal; focus trap/Escape/`aria-live` in `AiChatWidget`; RealMe button contrast (≥4.5:1); reduce inline styles
+- [ ] te reo Māori: extend i18n beyond 9 files; staff + policy portal i18n; server-rendered `lang`
+
+### P2 — Adoption accelerators
+- [ ] Public department generator: rename `scripts/gen-phase3-*.mjs`, `pnpm new:dept <id> --spec dept.yaml`, `--dry-run`, compile check, workspace patching, docs
+- [ ] `examples/` + `templates/`: minimal dept, sample Rego consent policy, `DataGrantCredential` flow, "agency in a box" compose
+- [ ] Root `Makefile`/`justfile` (`demo`, `stack`, `seed`, `test`, `new-dept`) + `pnpm doctor`; group `.env.example` required/optional; env validator
+- [ ] Prebuilt portal images (multi-stage Dockerfiles, GHCR); Helm/Kustomize; secrets-management guide; NZ hosting runbook
+- [ ] `demo-full`: one persona across all depts showing federation, OPA consent denial, audit trail; hosted demo + guided tour
+- [ ] Unified seed/reset command and shared fictional persona fixtures (only 4 SQL files in `docker/init/`)
+- [ ] OpenAPI per service (`utoipa`), merged at gateway; generated TS client; contract tests
+- [ ] Repo hygiene: `SECURITY.md`, `CODE_OF_CONDUCT.md`, `GOVERNANCE.md`, `CHANGELOG.md`, `NOTICE`, issue/PR templates, `CODEOWNERS`, Dependabot; clean `history/` and `.mimocode`
+- [ ] NZ compliance pack `docs/compliance/`: NZISM, Privacy Act 2020 IPPs + PIA template + breach runbook, Māori data sovereignty (Te Mana Raraunga/CARE), Algorithmic Charter statement, data residency + classification, threat model, SBOM; label controls implemented/scaffold/planned (fix overstated ISO 27001 doc)
+
+### P3 — Automation / CI / observability
+- [ ] CI: run `pnpm lint` + `pnpm build`; Postgres service container + Rust integration tests; `opa test`/`opa check` on `policies/*.rego`; `cargo audit`/`cargo-deny`, `pnpm audit`, CodeQL, gitleaks; `docker/demo.yml` smoke test; generator drift check; Playwright e2e (login, consent, forged cookie, unsigned SAML); Linux + Windows matrix
+- [ ] Observability: readiness vs liveness (gateway reports downstream health), `/metrics` Prometheus, cross-dept trace propagation, Grafana dashboard + alerts, audit-log export for SIEM
+
+### P4 — Innovation
+- [ ] Citizen "who looked at my data" timeline with plain-language reasons
+- [ ] Consent receipts + one-tap cross-dept revoke, expiry nudges
+- [ ] Policy simulation in CI: replay Rego changes on synthetic data, diff allow/deny
+- [ ] Verifiable audit anchoring (periodic Merkle root to a public log)
+- [ ] Life-event journeys (new baby, job loss, moving) with a single consent
+- [ ] Synthetic-persona generator for demos/load tests; agency readiness score from `pnpm doctor`
+- [ ] Tikanga-aware consent / iwi-controlled nodes (links to existing Māori data sovereignty item)
+
+---
+
+## Multi-Repo Platform Split (2026-11)
+
+> Direction: platform core repo + `tpt-gov-dept-template` + one repo per department. **Finish and freeze the core in this monorepo first; split only once the exit criteria below are met.** A monorepo can't restrict read access per department, blurs ownership, and can't hold classified agencies (NZSIS, GCSB, Defence), so it is a temporary workspace, not the end state.
+
+### Core-done exit criteria (trigger for splitting)
+- [ ] `gov-schema`, federation envelope and `DataGrantCredential` format frozen at v1.0 with semver + `CHANGELOG.md` (additive-only within a major)
+- [ ] Identity server production-ready (persistent issuer key + rotation, authenticated endpoints, migrations) — see P0 items above
+- [ ] Gateway, mTLS/QUIC, immutable audit trail and OPA consent enforcement complete and tested — see P0 items above
+- [ ] Core crates and `@tpt/*` packages publishable to a registry (crates.io/private registry, npm); no path deps from departments
+- [ ] Runtime department registry: manifest per dept (id, endpoints, scopes, UI module URL); portal has no compile-time imports of `app/dept/<id>/`
+- [ ] Conformance suite (`conformance/`): signed envelopes, consent VC verify + revocation, scope enforcement, audit written on both sides, replay rejection
+- [ ] One dept (IRD) passes the conformance suite using only published platform versions
+
+### Repo layout (target)
+- [ ] `tpt-gov-platform` — crates, gov-schema, gov-ai-client, gov-ui, gov-i18n, gateway, identity server, schema registry, shared OPA policies, conformance suite
+- [ ] `tpt-gov-dept-template` — GitHub template repo built from `gov-dept-node` + one ingester (node, ingester, OPA policy, schema, CI, portal UI module)
+- [ ] `tpt-dept-<id>` — one repo per department, generated from the template, pins platform versions (private/air-gapped option for security agencies)
+- [ ] `tpt-gov-portals` — citizen / staff / policy / open-data portals, discover dept UI at runtime
+- [ ] `tpt-gov-deploy` — Helm/Terraform/Compose, environment config, release trains
+
+### Migration steps
+- [ ] Decouple portal from dept code (registry-driven loading, module federation or schema-driven renderer)
+- [ ] Collapse near-identical dept services into the config-driven template (links to "Collapse 48 near-identical dept services" above)
+- [ ] Add semver, release automation and a compatibility matrix for platform packages
+- [ ] Pilot split: extract IRD, then WINZ, MOH, DIA; validate versioning and CI across repos
+- [ ] Script generation of the remaining dept repos from the template; move portals and deploy config to their own repos
+- [ ] Governance per repo: `CODEOWNERS` per agency, `SECURITY.md`, ADRs, release/branch policy, contribution guide for agency teams

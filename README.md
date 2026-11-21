@@ -104,4 +104,9 @@ docker/              phase1.yml (full stack), demo.yml (citizen demo)
 
 ## License
 
-[Apache 2.0](./LICENSE).
+Dual-licensed under either of
+
+- [MIT license](./LICENSE-MIT)
+- [Apache License, Version 2.0](./LICENSE-APACHE)
+
+at your option.

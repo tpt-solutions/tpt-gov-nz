@@ -1,7 +1,31 @@
 # Contributing
 
-Thanks for your interest in **tpt-gov-nz**. This guide explains how the codebase is
-organised and how to add a new government department end-to-end.
+Thanks for your interest in **tpt-gov-nz**.
+
+## Contributions are issues only
+
+This project accepts contributions **as GitHub issues only**. We do not accept pull
+requests — any PR opened will be closed without review. Please use issues to:
+
+- report bugs (include steps to reproduce, expected vs. actual behaviour),
+- request features or new department coverage,
+- raise security, privacy or consent concerns (for vulnerabilities, do not include
+  exploit details or any real personal information in a public issue),
+- suggest documentation or i18n (`en-NZ` / te reo Māori) improvements.
+
+The maintainers implement accepted changes themselves.
+
+## Licence
+
+tpt-gov-nz is dual-licensed under either the [MIT license](./LICENSE-MIT) or the
+[Apache License, Version 2.0](./LICENSE-APACHE), at your option. Unless you state
+otherwise, any material you submit in an issue for inclusion in the project is
+provided under these same terms, without any additional terms or conditions.
+
+## Codebase guide
+
+The rest of this document explains how the codebase is organised and how a new
+government department is added end-to-end (useful context when writing an issue).
 
 ## Ways of working
 
@@ -85,7 +109,9 @@ Pick a `dept_id` (e.g. `nzta`). Then:
 - Every cross-department access needs an explicit, signed, auditable grant.
 - The AI assistant only ever receives consented, PII-redacted context.
 
-## Before opening a PR
+## Running checks locally
+
+Useful for reproducing a bug before filing an issue:
 
 ```bash
 pnpm install
