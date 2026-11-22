@@ -746,7 +746,7 @@ Source: full platform review. Direction: **hybrid** — Rust owns correctness-cr
 - [ ] (Deferred) full-Rust UI trial on `portal-open-data` only
 
 ### P1 — Gaps & drift
-- [ ] Remove stale workspace refs: `pnpm-workspace.yaml` (`services/gov-ai`, `services/gov-analytics`, `packages/adapters/*`), `portal-citizen/tsconfig.json` `@tpt/adapter-ird` alias, `ird/ai-context.ts` comment; reconcile `CLAUDE.md` / `CONTRIBUTING.md` / `TODO.md` (adapter model vs native modules); fix Windows path in `docs/international-fork-guide.md:28` *(partial: workspace, tsconfig alias, comment and Windows path fixed; `CLAUDE.md` still describes the `DeptAdapter` model and `CONTRIBUTING.md` still needs reconciling)*
+- [x] Remove stale workspace refs: `pnpm-workspace.yaml` (`services/gov-ai`, `services/gov-analytics`, `packages/adapters/*`), `portal-citizen/tsconfig.json` `@tpt/adapter-ird` alias, `ird/ai-context.ts` comment; reconcile `CLAUDE.md` / `CONTRIBUTING.md` / `TODO.md` (adapter model vs native modules); fix Windows path in `docs/international-fork-guide.md:28`. *(Done: `CLAUDE.md` and `README.md` now describe native department services. `CONTRIBUTING.md` already did.)*
 - [x] Staff registry: add `hud`, `moj`, `police`; dedupe `StaffDeptId` *(done in `apps/portal-staff/app/lib/config.ts`; `StaffBundle` extension beyond 16 depts still open)*
 - [ ] Zod-validate client input in ~47 dept `actions.ts`; unify demo flag with `PORTAL_CONFIG`
 - [ ] Replace local-JSON case notes (`apps/portal-staff/app/lib/case-notes.ts`) with audited DB storage

@@ -88,9 +88,8 @@ packages/
   @tpt/gov-schema/   shared TypeScript contracts (DID, scopes, grants, AI, dept bundles)
   @tpt/gov-ai-client/ provider-agnostic AI client + PII redactor
   @tpt/gov-i18n/     i18n strings (en-NZ + te reo Māori opt-in)
-  adapters/@tpt/adapter-ird/  legacy adapter (being phased out; IRD only)
-crates/              gov-identity-core, gov-federation-core, gov-federation-node
-services/            gov-gateway, gov-identity-server, gov-dept-*, gov-ingester-*, gov-ai
+crates/              gov-consent, gov-identity-core, gov-federation-core, gov-federation-node
+services/            gov-gateway, gov-identity-server, gov-dept-*, gov-ingester-*
 policies/            OPA (.rego) consent policies, one per department
 docker/              phase1.yml (full stack), demo.yml (citizen demo)
 ```
