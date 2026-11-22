@@ -720,7 +720,8 @@ Source: full platform review. Direction: **hybrid** — Rust owns correctness-cr
   - Domain tables missing from migrations created in `092_domain_tables.sql` for 27 services, with the seed moved to `094_seed_dev.sql`.
   - Duplicate migration files removed in `gov-dept-moj` (`002_fines.sql`, `003_disputes.sql`, `004_court_records.sql`; the `_moj_` variants match the row types).
   - `Decimal::to_f64` replaced with a string parse in `gov-dept-msd` (no trait import needed).
-  - *Still open: the generator (`scripts/gen-phase3-*.mjs`) would reproduce these bugs on regeneration, so fix it before regenerating any service. `sqlx` offline caches were not regenerated.*
+  - The generator (`scripts/gen-phase3-*.mjs`) now emits the same fixes: placeholder mapping, no `Some()` around `Option` fetches, entity migrations written, and cross-department consent enforcement with `gov-consent`. Verified by regenerating `crownlaw` (list entities) and `eqc` (single-record entity) into a scratch worktree, formatting, migrating a fresh database and running `cargo check` on each with no manual edits.
+  - *Still open: regenerating a whole department also rewrites portal, ingester, policy and schema files that have drifted from the generator, about 50 files for crownlaw. Do not regenerate a department in place until those templates are reconciled. `sqlx` offline caches were not regenerated.*
 - [ ] Remove `requesting_dept_id` self-assertion bypass (`is_direct_access`); gateway sets caller identity from JWT, JWT `sub` must equal `req.did`, enforce `Claims.scopes`
 - [x] Authenticate identity-server endpoints (`register_did`, `issue_grant`, `revoke_grant`, `list_grants`); make DID registration first-write-wins (no key overwrite); validate dept ids, scopes, `expires_in_seconds` bounds
 - [x] Axum 0.8 route syntax in `gov-identity-server/src/main.rs` (`:did`/`:id` → `{did}`/`{id}`) *(verify with `cargo run`)*
