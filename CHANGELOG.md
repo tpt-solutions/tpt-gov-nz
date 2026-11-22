@@ -34,7 +34,14 @@ been tagged yet.
   `services/gov-analytics`, `packages/adapters`) from the pnpm workspace and the
   citizen portal's TypeScript paths.
 
+### Fixed (department services)
+
+- All 47 department services with migrations compile against a Postgres database.
+  Placeholder field accesses in `routes.rs` now map to row fields, missing domain
+  tables are created by a new migration, and duplicate migrations in `gov-dept-moj`
+  are removed.
+
 ### Known issues
 
-- 39 department services do not compile yet, because of placeholder `c.c` field
-  accesses in their `routes.rs` and `sqlx` query macros that need a database.
+- The service generator still produces the placeholder and migration bugs fixed
+  above. Fix it before regenerating any department service.
