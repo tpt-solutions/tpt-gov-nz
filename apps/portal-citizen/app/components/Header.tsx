@@ -10,7 +10,6 @@ import type { ScenarioId } from "@/app/lib/mock-data";
 export default function Header({
   did,
   demo,
-  scenario,
 }: {
   did: string | null;
   demo: boolean;

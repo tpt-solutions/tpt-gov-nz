@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { inflateRawSync, deflateRawSync } from "node:zlib";
+import { inflateRawSync } from "node:zlib";
 import { describe, it, expect, beforeAll } from "vitest";
 import { SignedXml } from "xml-crypto";
 import {

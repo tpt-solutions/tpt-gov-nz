@@ -1,4 +1,3 @@
-import type { IRDDataBundle } from "@tpt/gov-schema";
 
 export interface WffEligibilityInput {
   dependantChildren: number;

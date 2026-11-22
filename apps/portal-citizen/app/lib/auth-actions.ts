@@ -3,7 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createSessionToken, setSessionCookie, clearSessionCookie } from "./session";
-import { PORTAL_CONFIG, DEPARTMENTS, DEMO_DID, type DeptId } from "./config";
+import { PORTAL_CONFIG, DEPARTMENTS, DEMO_DID } from "./config";
 import { isDemoMode, setDemoScenario } from "./demo";
 import type { ScenarioId } from "./mock-data";
 import { randomToken } from "./jwt";

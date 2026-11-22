@@ -28,7 +28,6 @@ const SAML_NS = "urn:oasis:names:tc:SAML:2.0:assertion";
 const SAMLP_NS = "urn:oasis:names:tc:SAML:2.0:protocol";
 const DS_NS = "http://www.w3.org/2000/09/xmldsig#";
 const POST_BINDING = "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST";
-const REDIRECT_BINDING = "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect";
 const SIG_ALGO = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
 
 export interface RealmeConfig {
@@ -100,7 +99,6 @@ export function generateSpMetadata(): string {
     /-----BEGIN CERTIFICATE-----|-----END CERTIFICATE-----|\s+/g,
     "",
   );
-  const now = new Date().toISOString();
   return `<?xml version="1.0" encoding="UTF-8"?>
 <md:EntityDescriptor xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata" entityID="${cfg.spEntityId}">
   <md:SPSSODescriptor AuthnRequestsSigned="true" WantAssertionsSigned="true" protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">

@@ -17,7 +17,6 @@ export default async function CustomsOverviewPage() {
     );
   }
 
-  const frequentTraveller = data.travel?.frequentTraveller ?? false;
   const openDeclarations =
     data.declarations?.filter((d) => d.status !== "cleared" && d.status !== "referred") ?? [];
 
