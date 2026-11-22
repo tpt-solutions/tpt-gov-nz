@@ -8,6 +8,7 @@ import {
   clearStaffSessionCookie,
 } from "./session";
 import { randomToken } from "./jwt";
+import { clearFailures, isLocked, recordFailure } from "./login-limiter";
 
 /** Compare secrets in constant time (hashing first so lengths never leak). */
 function passwordMatches(given: string, expected: string): boolean {
@@ -45,11 +46,18 @@ export async function loginStaffDemo() {
 export async function loginStaff(formData: FormData) {
   const staffId = String(formData.get("staffId") ?? "").trim();
   const password = String(formData.get("password") ?? "");
+  const limiterKey = staffId.toLowerCase() || "anonymous";
+
+  if (isLocked(limiterKey)) {
+    redirect("/login?error=locked");
+  }
 
   const expected = process.env.STAFF_PASSWORD;
   if (!expected || !staffId || !passwordMatches(password, expected)) {
+    recordFailure(limiterKey);
     redirect("/login?error=invalid");
   }
+  clearFailures(limiterKey);
 
   const token = createStaffSessionToken({
     staffId,

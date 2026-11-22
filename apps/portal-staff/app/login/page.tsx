@@ -40,6 +40,11 @@ function StaffLoginForm() {
               Invalid staff ID or password.
             </p>
           )}
+          {error === "locked" && (
+            <p style={{ color: "#b00020" }} role="alert">
+              Too many failed attempts. Try again in 15 minutes.
+            </p>
+          )}
           <form action={loginStaff} style={{ display: "grid", gap: "0.5rem" }}>
             <label htmlFor="staffId">Staff ID</label>
             <input
