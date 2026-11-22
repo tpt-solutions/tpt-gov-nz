@@ -36,3 +36,9 @@ apps/portal-staff/.data/
 # Generated mTLS certificates (run scripts/gen-mtls-certs.sh)
 scripts/mtls-certs/
 
+# sqlx offline query caches (regenerate with scripts/sqlx-prepare-all.ps1)
+.sqlx/
+
+# Backup files
+*.bak
+

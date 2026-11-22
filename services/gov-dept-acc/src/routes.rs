@@ -90,7 +90,7 @@ pub async fn fetch_data(
     };
 
     let entitlements = if has_scope("acc:entitlements") {
-        Some(db::fetch_entitlement(&pool, citizen.id).await?)
+        db::fetch_entitlement(&pool, citizen.id).await?
     } else {
         None
     };
