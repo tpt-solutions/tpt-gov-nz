@@ -757,7 +757,7 @@ Source: full platform review. Direction: **hybrid** — Rust owns correctness-cr
 - [ ] `demo-full`: one persona across all depts showing federation, OPA consent denial, audit trail; hosted demo + guided tour
 - [ ] Unified seed/reset command and shared fictional persona fixtures (only 4 SQL files in `docker/init/`)
 - [ ] OpenAPI per service (`utoipa`), merged at gateway; generated TS client; contract tests
-- [ ] Repo hygiene: `SECURITY.md`, `CODE_OF_CONDUCT.md`, `GOVERNANCE.md`, `CHANGELOG.md`, `NOTICE`, issue/PR templates, `CODEOWNERS`, Dependabot; clean `history/` and `.mimocode`
+- [x] Repo hygiene: `SECURITY.md`, `CODE_OF_CONDUCT.md`, `GOVERNANCE.md`, `CHANGELOG.md`, `NOTICE`, issue templates, `CODEOWNERS`, Dependabot; removed tracked `history/` and `.mimocode/`. *No PR template: the project accepts issues only (see `CONTRIBUTING.md`). `CODEOWNERS` assigns `@PhillipC05`; confirm the maintainer handle.*
 - [ ] NZ compliance pack `docs/compliance/`: NZISM, Privacy Act 2020 IPPs + PIA template + breach runbook, Māori data sovereignty (Te Mana Raraunga/CARE), Algorithmic Charter statement, data residency + classification, threat model, SBOM; label controls implemented/scaffold/planned (fix overstated ISO 27001 doc)
 
 ### P3 — Automation / CI / observability
