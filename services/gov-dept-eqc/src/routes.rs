@@ -72,9 +72,9 @@ pub async fn fetch_data(
         };
 
         match opa::evaluate(&input).await {
-            Some(true) => {}
+            Some(true) => consent::enforce_signed_and_unrevoked(&input).await?,
             Some(false) => return Err(EqcError::ScopeNotGranted(req.scopes.join(","))),
-            None => consent::verify_access(&input, None)?,
+            None => consent::enforce_signed_and_unrevoked(&input).await?,
         }
     }
 

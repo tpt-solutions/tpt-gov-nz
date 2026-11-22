@@ -140,3 +140,20 @@ mod tests {
         assert!(!evaluate_allow(&input));
     }
 }
+
+/// Enforce cross-department grant checks: verify each grant's Ed25519 signature
+/// against the identity server's issuer key (scope/expiry/party checks included),
+/// then confirm none of the presented grants has been revoked. Fails closed.
+pub async fn enforce_signed_and_unrevoked(input: &ConsentInput<'_>) -> Result<(), MaritimeError> {
+    let key = gov_consent::issuer_key_from_env()
+        .map_err(|e| MaritimeError::ScopeNotGranted(format!("issuer key unavailable: {e}")))?;
+    verify_access(input, Some(&key))?;
+    let ids: Vec<_> = input.consent_grants.iter().map(|g| g.id).collect();
+    let revocation = gov_consent::RevocationClient::from_env()
+        .map_err(|e| MaritimeError::ScopeNotGranted(format!("revocation check unavailable: {e}")))?;
+    revocation
+        .ensure_active(&ids)
+        .await
+        .map_err(|e| MaritimeError::ScopeNotGranted(format!("consent grant revoked or unknown: {e}")))?;
+    Ok(())
+}

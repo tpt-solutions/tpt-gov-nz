@@ -1,4 +1,8 @@
-use axum::{Json, extract::State, http::{StatusCode, HeaderMap}};
+use axum::{
+    Json,
+    extract::State,
+    http::{HeaderMap, StatusCode},
+};
 use serde::Deserialize;
 use sqlx::PgPool;
 
@@ -41,10 +45,7 @@ fn extract_requesting_dept(
 }
 
 /// Write audit entry with fail-closed behavior. Returns error if audit write fails.
-async fn audit(
-    state: &AppState,
-    event: AuditEvent,
-) -> Result<(), StatusCode> {
+async fn audit(state: &AppState, event: AuditEvent) -> Result<(), StatusCode> {
     log_access(&state.pool, &event, Some(&state.audit_keypair))
         .await
         .map(|_| ())
@@ -114,11 +115,35 @@ pub async fn fetch_data(
             consent_grants: &req.consent_grants,
         };
 
-        let allowed = match crate::opa::evaluate(&input).await {
-            Some(true) => true,
-            Some(false) => false,
-            None => consent::verify_access(&input, &dept_id, None).is_ok(),
+        // Signature and revocation are enforced unconditionally. OPA (when
+        // configured) can only further restrict the decision, never widen it,
+        // so an OPA "allow" cannot bypass grant verification.
+        let opa_decision = crate::opa::evaluate(&input).await;
+        let signed_and_covered = match gov_consent::issuer_key_from_env() {
+            Ok(key) => consent::verify_access(&input, &dept_id, Some(&key)).is_ok(),
+            Err(e) => {
+                tracing::error!(error = %e, "issuer public key unavailable — denying cross-dept request");
+                false
+            }
         };
+        let mut allowed = signed_and_covered && opa_decision != Some(false);
+        if allowed {
+            let grant_ids: Vec<uuid::Uuid> = req.consent_grants.iter().map(|g| g.id).collect();
+            let revocation_ok = match gov_consent::RevocationClient::from_env() {
+                Ok(client) => match client.ensure_active(&grant_ids).await {
+                    Ok(()) => true,
+                    Err(e) => {
+                        tracing::warn!(error = %e, "consent grant revoked, unknown or identity server unreachable");
+                        false
+                    }
+                },
+                Err(e) => {
+                    tracing::error!(error = %e, "revocation client unavailable — denying cross-dept request");
+                    false
+                }
+            };
+            allowed = revocation_ok;
+        }
 
         audit(
             &state,
