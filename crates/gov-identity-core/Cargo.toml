@@ -4,6 +4,10 @@ description = "Verifiable Credentials, DID, and identity logic for tpt-gov-nz"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+readme = "README.md"
+repository.workspace = true
+keywords = ["did", "verifiable-creds", "identity", "ed25519", "self-sovereign"]
+categories = ["authentication", "cryptography"]
 
 [dependencies]
 serde = { workspace = true }

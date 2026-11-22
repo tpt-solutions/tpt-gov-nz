@@ -4,6 +4,10 @@ description = "QUIC-based federation protocol node for tpt-gov-nz"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+readme = "README.md"
+repository.workspace = true
+keywords = ["federation", "quic", "peer-to-peer", "replay-protection", "rate-limit"]
+categories = ["network-programming", "web-programming::http-server"]
 
 [dependencies]
 gov-consent = { path = "../gov-consent" }

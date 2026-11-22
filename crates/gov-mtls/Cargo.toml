@@ -4,6 +4,10 @@ description = "Mutual TLS configuration + client/server helpers for tpt-gov-nz i
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+readme = "README.md"
+repository.workspace = true
+keywords = ["mtls", "mutual-tls", "tls", "rustls", "certificates"]
+categories = ["network-programming", "cryptography"]
 
 [dependencies]
 rustls = { workspace = true }

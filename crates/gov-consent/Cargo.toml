@@ -4,6 +4,10 @@ description = "Shared consent-grant verification helpers for tpt-gov-nz departme
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+readme = "README.md"
+repository.workspace = true
+keywords = ["consent", "verifiable-creds", "ed25519", "government", "privacy"]
+categories = ["authentication", "cryptography"]
 
 [dependencies]
 gov-identity-core = { path = "../gov-identity-core" }

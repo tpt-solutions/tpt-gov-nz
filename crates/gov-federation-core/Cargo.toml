@@ -4,6 +4,10 @@ description = "Core types and protocol definitions for the tpt-gov-nz federation
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+readme = "README.md"
+repository.workspace = true
+keywords = ["federation", "protocol", "ed25519", "envelope", "audit"]
+categories = ["cryptography", "network-programming"]
 
 [dependencies]
 serde = { workspace = true }
