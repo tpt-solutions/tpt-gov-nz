@@ -1,6 +1,7 @@
 use axum::{
     Json,
     extract::{Path, State},
+    http::HeaderMap,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
@@ -63,15 +64,26 @@ pub struct DataRequest {
 
 /// Departments that may access citizen data without presenting a federation
 /// consent grant (the citizen themselves, and authorised case workers).
-fn is_direct_access(requesting_dept_id: &Option<String>) -> bool {
-    match requesting_dept_id.as_deref() {
+fn is_direct_access(requesting_dept_id: Option<&str>) -> bool {
+    match requesting_dept_id {
         None | Some("citizen") | Some("staff") => true,
         Some(_) => false,
     }
 }
 
+/// Extract requesting_dept_id from headers (set by gateway).
+/// Falls back to request body for backwards compatibility during transition.
+fn extract_requesting_dept(headers: &HeaderMap, body_req: &Option<String>) -> Option<String> {
+    headers
+        .get("x-requesting-dept-id")
+        .and_then(|v| v.to_str().ok())
+        .map(|s| s.to_string())
+        .or_else(|| body_req.clone())
+}
+
 pub async fn fetch_data(
     State(pool): State<PgPool>,
+    headers: HeaderMap,
     Json(req): Json<DataRequest>,
 ) -> Result<Json<Value>, IrdError> {
     let citizen = db::resolve_by_did(&pool, &req.did)
@@ -80,9 +92,11 @@ pub async fn fetch_data(
 
     // Consent gate: cross-department requests must present valid consent grants
     // covering every requested scope (verified via OPA when available, else locally).
-    if !is_direct_access(&req.requesting_dept_id) {
+    // requesting_dept_id comes from gateway-set header, not request body.
+    let requesting_dept = extract_requesting_dept(&headers, &req.requesting_dept_id);
+    if !is_direct_access(requesting_dept.as_deref()) {
         let input = consent::ConsentInput {
-            requesting_dept_id: req.requesting_dept_id.as_deref().unwrap_or("unknown"),
+            requesting_dept_id: requesting_dept.as_deref().unwrap_or("unknown"),
             citizen_did: &citizen.did,
             requested_scopes: &req.scopes,
             consent_grants: &req.consent_grants,
@@ -91,7 +105,7 @@ pub async fn fetch_data(
         match opa::evaluate(&input).await {
             Some(true) => {}
             Some(false) => return Err(IrdError::ScopeNotGranted(req.scopes.join(","))),
-            None => consent::verify_access(&input, None)?,
+            None => consent::verify_access(&input).await?,
         }
     }
 

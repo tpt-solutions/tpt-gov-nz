@@ -11,17 +11,137 @@
 //!   registered public key, dispatches to the node's handler, signs the
 //!   response envelope, and returns it as JSON.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::future::Future;
 use std::pin::Pin;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
+use std::time::{Duration, Instant};
 
 use axum::{Json, Router, extract::State, http::StatusCode, routing::post};
 use ed25519_dalek::VerifyingKey;
+use gov_consent::RevocationClient;
 use gov_federation_core::{FederationEnvelope, FederationError, NodeKeypair};
 use tracing::{debug, warn};
 
 use crate::config::PeerConfig;
+
+/// Maximum allowed clock skew for envelope timestamps (seconds).
+pub const MAX_TIMESTAMP_SKEW_SECS: i64 = 60;
+
+/// Size of the replay window (how many recent message IDs to track).
+pub const REPLAY_WINDOW_SIZE: usize = 10_000;
+
+/// Default rate limit for federation transport (requests per minute per peer).
+pub const DEFAULT_FEDERATION_RATE_LIMIT_RPM: u32 = 60;
+
+/// Maximum number of peers tracked by the federation rate limiter.
+pub const DEFAULT_FEDERATION_RATE_LIMIT_MAX_PEERS: usize = 100;
+
+/// Replay protection state for deduplicating message IDs.
+pub struct ReplayProtection {
+    seen: HashSet<uuid::Uuid>,
+    max_size: usize,
+}
+
+impl ReplayProtection {
+    pub fn new(max_size: usize) -> Self {
+        Self {
+            seen: HashSet::with_capacity(max_size),
+            max_size,
+        }
+    }
+
+    /// Check if a message ID has been seen. If not, add it and return Ok(()).
+    /// If already seen, return an error.
+    pub fn check_and_insert(&mut self, msg_id: uuid::Uuid) -> Result<(), String> {
+        if self.seen.contains(&msg_id) {
+            return Err("replay detected: duplicate message_id".into());
+        }
+        if self.seen.len() >= self.max_size {
+            let to_remove: Vec<_> = self.seen.iter().take(self.max_size / 2).cloned().collect();
+            for id in to_remove {
+                self.seen.remove(&id);
+            }
+        }
+        self.seen.insert(msg_id);
+        Ok(())
+    }
+}
+
+/// Federation rate limiter for per-peer rate limiting.
+pub struct FederationRateLimiter {
+    windows: Arc<Mutex<HashMap<String, Window>>>,
+    max_requests: u32,
+    window: Duration,
+    max_peers: usize,
+}
+
+pub struct Window {
+    count: u32,
+    reset_at: Instant,
+}
+
+impl FederationRateLimiter {
+    pub fn new(max_requests: u32, window: Duration, max_peers: usize) -> Self {
+        Self {
+            windows: Arc::new(Mutex::new(HashMap::new())),
+            max_requests,
+            window,
+            max_peers: max_peers.max(1),
+        }
+    }
+
+    fn lock(&self) -> std::sync::MutexGuard<'_, HashMap<String, Window>> {
+        self.windows
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+    }
+
+    fn make_room(windows: &mut HashMap<String, Window>, now: Instant, max_peers: usize) {
+        if windows.len() < max_peers {
+            return;
+        }
+        windows.retain(|_, w| now < w.reset_at);
+        if windows.len() < max_peers {
+            return;
+        }
+        if let Some(key) = windows
+            .iter()
+            .min_by_key(|(_, w)| w.reset_at)
+            .map(|(k, _)| k.clone())
+        {
+            windows.remove(&key);
+        }
+    }
+
+    /// Check if a request from `peer_id` is allowed.
+    /// Returns `Ok(remaining)` when allowed, or `Err(retry_after_secs)` when rate limited.
+    pub fn check(&self, peer_id: &str) -> Result<u32, u64> {
+        let now = Instant::now();
+        let mut windows = self.lock();
+        Self::make_room(&mut windows, now, self.max_peers);
+
+        let w = windows
+            .entry(peer_id.to_string())
+            .or_insert_with(|| Window {
+                count: 0,
+                reset_at: now + self.window,
+            });
+
+        if now >= w.reset_at {
+            w.count = 0;
+            w.reset_at = now + self.window;
+        }
+
+        if w.count >= self.max_requests {
+            let retry = w.reset_at.saturating_duration_since(now).as_secs() + 1;
+            Err(retry)
+        } else {
+            w.count += 1;
+            Ok(self.max_requests - w.count)
+        }
+    }
+}
 
 /// Path where a node accepts inbound federation envelopes over the mock transport.
 pub const ENVELOPE_PATH: &str = "/federation/v1/envelope";
@@ -60,10 +180,29 @@ pub struct InboundState {
     /// Peers indexed by `dept_id`, used to verify inbound sender signatures.
     pub peers: Arc<HashMap<String, PeerConfig>>,
     pub handler: EnvelopeHandler,
+    /// Replay protection for message ID deduplication.
+    pub replay_protection: Arc<tokio::sync::Mutex<ReplayProtection>>,
+    /// Per-peer rate limiter for federation transport.
+    pub federation_rate_limiter: Arc<FederationRateLimiter>,
+    /// Revocation client for consent grant ID verification (optional for testing).
+    pub revocation_client: Option<Arc<RevocationClient>>,
 }
 
 /// Build the axum router exposing the inbound envelope endpoint.
 pub fn router(state: InboundState) -> Router {
+    // Ensure replay protection is initialized in the state
+    let state = InboundState {
+        replay_protection: Arc::new(tokio::sync::Mutex::new(ReplayProtection::new(REPLAY_WINDOW_SIZE))),
+        federation_rate_limiter: Arc::new(FederationRateLimiter::new(
+            DEFAULT_FEDERATION_RATE_LIMIT_RPM,
+            Duration::from_secs(60),
+            DEFAULT_FEDERATION_RATE_LIMIT_MAX_PEERS,
+        )),
+        revocation_client: state.revocation_client.or_else(|| {
+            RevocationClient::from_env().ok().map(Arc::new)
+        }),
+        ..state
+    };
     Router::new()
         .route(ENVELOPE_PATH, post(receive_envelope))
         .with_state(state)
@@ -221,6 +360,18 @@ mod tests {
             keypair: server_kp.clone(),
             peers: Arc::new(server_peers),
             handler: echo_handler(),
+            replay_protection: Arc::new(tokio::sync::Mutex::new(ReplayProtection::new(REPLAY_WINDOW_SIZE))),
+            federation_rate_limiter: Arc::new(FederationRateLimiter::new(
+                DEFAULT_FEDERATION_RATE_LIMIT_RPM,
+                Duration::from_secs(60),
+                DEFAULT_FEDERATION_RATE_LIMIT_MAX_PEERS,
+            )),
+            revocation_client: Some(Arc::new(RevocationClient::new(
+                "http://127.0.0.1:1",
+                "test-key",
+                Duration::from_secs(5),
+                Duration::from_secs(60),
+            ).unwrap())),
         };
         let addr = spawn_server(state).await;
 
@@ -253,6 +404,18 @@ mod tests {
             keypair: server_kp.clone(),
             peers: Arc::new(HashMap::new()),
             handler: echo_handler(),
+            replay_protection: Arc::new(tokio::sync::Mutex::new(ReplayProtection::new(REPLAY_WINDOW_SIZE))),
+            federation_rate_limiter: Arc::new(FederationRateLimiter::new(
+                DEFAULT_FEDERATION_RATE_LIMIT_RPM,
+                Duration::from_secs(60),
+                DEFAULT_FEDERATION_RATE_LIMIT_MAX_PEERS,
+            )),
+            revocation_client: Some(Arc::new(RevocationClient::new(
+                "http://127.0.0.1:1",
+                "test-key",
+                Duration::from_secs(5),
+                Duration::from_secs(60),
+            ).unwrap())),
         };
         let addr = spawn_server(state).await;
 
@@ -292,6 +455,18 @@ mod tests {
             keypair: server_kp.clone(),
             peers: Arc::new(server_peers),
             handler: echo_handler(),
+            replay_protection: Arc::new(tokio::sync::Mutex::new(ReplayProtection::new(REPLAY_WINDOW_SIZE))),
+            federation_rate_limiter: Arc::new(FederationRateLimiter::new(
+                DEFAULT_FEDERATION_RATE_LIMIT_RPM,
+                Duration::from_secs(60),
+                DEFAULT_FEDERATION_RATE_LIMIT_MAX_PEERS,
+            )),
+            revocation_client: Some(Arc::new(RevocationClient::new(
+                "http://127.0.0.1:1",
+                "test-key",
+                Duration::from_secs(5),
+                Duration::from_secs(60),
+            ).unwrap())),
         };
         let addr = spawn_server(state).await;
 

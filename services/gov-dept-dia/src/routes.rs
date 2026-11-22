@@ -36,7 +36,7 @@ pub async fn resolve_citizen(
 
     Ok(Json(ResolveResponse {
         did: row.did,
-        dept_local_id: row.passport_number,
+        dept_local_id: row.passport_number.unwrap_or_default(),
         display_name: None,
     }))
 }
@@ -84,25 +84,25 @@ pub async fn fetch_data(
     let has_scope = |s: &str| req.scopes.contains(&s.to_owned());
 
     let passport = if has_scope("dia:passport") {
-        Some(db::fetch_passport(&pool, citizen.id).await?)
+        db::fetch_passport(&pool, citizen.id).await?
     } else {
         None
     };
 
     let birth = if has_scope("dia:documents") {
-        Some(db::fetch_birth_cert(&pool, citizen.id).await?)
+        db::fetch_birth_cert(&pool, citizen.id).await?
     } else {
         None
     };
 
     let citizenship = if has_scope("dia:citizenship") {
-        Some(db::fetch_citizenship(&pool, citizen.id).await?)
+        db::fetch_citizenship(&pool, citizen.id).await?
     } else {
         None
     };
 
     Ok(Json(json!({
-        "passportNumber": citizen.passport_number,
+        "passportNumber": citizen.passport_number.unwrap_or_default(),
         "passport": passport.as_ref().map(|p| json!({
             "passportNumber": p.passport_number,
             "expiryDate": p.expiry_date.to_string(),

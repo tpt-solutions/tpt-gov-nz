@@ -27,11 +27,14 @@ tracing-subscriber = { workspace = true }
 anyhow = { workspace = true }
 dotenvy = { workspace = true }
 reqwest = { version = "0.12", optional = true }
+sha2 = { workspace = true }
 
 [features]
 # Enables the OPA sidecar client in `src/opa.rs`. Off by default; the local
 # `src/consent.rs` evaluation is used as the fallback.
 opa = ["dep:reqwest"]
+# Enables QUIC transport in the federation node.
+quic = ["gov-federation-node/quic"]
 
 [dev-dependencies]
 tokio = { workspace = true }

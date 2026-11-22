@@ -1,12 +1,16 @@
 use std::collections::HashMap;
 #[cfg(feature = "quic")]
 use std::net::SocketAddr;
+use std::path::PathBuf;
 use std::sync::Arc;
+use std::time::Duration;
 #[cfg(feature = "quic")]
 use std::sync::OnceLock;
 
 use crate::config::{FederationNodeConfig, PeerConfig};
-use crate::transport::{self, EnvelopeHandler, HttpMockTransport, InboundState};
+use crate::registry::NodeRegistry;
+use crate::transport::{self, EnvelopeHandler, HttpMockTransport, InboundState, FederationRateLimiter, REPLAY_WINDOW_SIZE, DEFAULT_FEDERATION_RATE_LIMIT_RPM, DEFAULT_FEDERATION_RATE_LIMIT_MAX_PEERS};
+use gov_consent::RevocationClient;
 use gov_federation_core::{
     FederationEnvelope, FederationError, FederationMessageType, NodeKeypair,
 };
@@ -79,6 +83,13 @@ impl FederationNode {
             keypair: self.keypair.clone(),
             peers: self.peers.clone(),
             handler: self.handler.clone(),
+            replay_protection: Arc::new(tokio::sync::Mutex::new(crate::transport::ReplayProtection::new(REPLAY_WINDOW_SIZE))),
+            federation_rate_limiter: Arc::new(FederationRateLimiter::new(
+                DEFAULT_FEDERATION_RATE_LIMIT_RPM,
+                Duration::from_secs(60),
+                DEFAULT_FEDERATION_RATE_LIMIT_MAX_PEERS,
+            )),
+            revocation_client: Some(Arc::new(RevocationClient::from_env()?)),
         };
         let app = transport::router(state);
 
@@ -128,6 +139,13 @@ impl FederationNode {
             keypair: self.keypair.clone(),
             peers: self.peers.clone(),
             handler: self.handler.clone(),
+            replay_protection: Arc::new(tokio::sync::Mutex::new(crate::transport::ReplayProtection::new(REPLAY_WINDOW_SIZE))),
+            federation_rate_limiter: Arc::new(FederationRateLimiter::new(
+                DEFAULT_FEDERATION_RATE_LIMIT_RPM,
+                Duration::from_secs(60),
+                DEFAULT_FEDERATION_RATE_LIMIT_MAX_PEERS,
+            )),
+            revocation_client: Some(Arc::new(RevocationClient::from_env()?)),
         };
 
         tokio::spawn(async move {
@@ -161,7 +179,7 @@ impl FederationNode {
             .quic_server_cert
             .get()
             .ok_or_else(|| anyhow::anyhow!("QUIC server not started on this node"))?;
-        let transport = crate::quic::QuicTransport::new(cert_der)?;
+        let transport = crate::quic::QuicTransport::new(cert_der.to_vec())?;
         Ok(transport
             .send(quic_addr, &peer.public_key_b64, envelope)
             .await?)

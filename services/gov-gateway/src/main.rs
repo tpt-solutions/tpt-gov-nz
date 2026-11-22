@@ -10,13 +10,17 @@ use std::time::Duration;
 use tower_http::trace::TraceLayer;
 use tracing::info;
 
+use anyhow::Context;
+
 mod auth;
 mod circuit_breaker;
+mod consent;
 mod rate_limit;
 mod routes;
 mod state;
 mod telemetry;
 
+use consent::consent_middleware;
 use state::AppState;
 
 /// Default maximum proxied request/response body size (1 MiB).
@@ -59,11 +63,17 @@ async fn main() -> anyhow::Result<()> {
     // Fails closed: refuses to start without a valid JWT secret.
     let jwt = auth::JwtConfig::from_env()?;
 
+    // Initialize consent configuration (OPA policies, grant verification, revocation).
+    let consent = Arc::new(consent::ConsentConfig::from_env()
+        .await
+        .context("building consent configuration")?);
+
     let app_state = AppState {
         registry: routes::DeptRegistry::from_env(),
         rate_limiter: rate_limit::RateLimiter::from_env(),
         breakers: circuit_breaker::CircuitBreakerRegistry::from_env(),
         jwt: Arc::new(jwt),
+        consent,
         mtls,
         http: AppState::build_http_client(),
         identity_url,
@@ -72,7 +82,7 @@ async fn main() -> anyhow::Result<()> {
     };
 
     // Protected API surface. Middleware executes outermost-first:
-    //   JWT auth -> rate limit -> circuit breaker -> handler
+    //   JWT auth -> rate limit -> circuit breaker -> consent -> handler
     let protected = Router::new()
         .route("/v1/citizen/resolve", post(routes::citizen_resolve))
         .route("/v1/dept/{dept_id}/{*path}", any(routes::proxy_dept))
@@ -84,6 +94,10 @@ async fn main() -> anyhow::Result<()> {
         .layer(middleware::from_fn_with_state(
             app_state.clone(),
             rate_limit::rate_limit,
+        ))
+        .layer(middleware::from_fn_with_state(
+            app_state.clone(),
+            consent_middleware,
         ))
         .layer(middleware::from_fn_with_state(
             app_state.clone(),

@@ -5,13 +5,13 @@ use uuid::Uuid;
 pub struct CitizenRow {
     pub id: Uuid,
     pub did: String,
-    pub passport_number: String,
+    pub passport_number: Option<String>,
 }
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct PassportRow {
     pub id: Uuid,
-    pub passport_number: String,
+    pub passport_number: Option<String>,
     pub expiry_date: chrono::NaiveDate,
     pub renewable: bool,
 }

@@ -90,7 +90,7 @@ pub async fn fetch_data(
     let has_scope = |s: &str| req.scopes.contains(&s.to_owned());
 
     let gp = if has_scope("moh:gp") {
-        Some(db::fetch_gp_enrolment(&pool, citizen.id).await?)
+        db::fetch_gp_enrolment(&pool, citizen.id).await?
     } else {
         None
     };

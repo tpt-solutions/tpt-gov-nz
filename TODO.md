@@ -711,19 +711,19 @@ Source: full platform review. Direction: **hybrid** — Rust owns correctness-cr
 ### P0 — Security & correctness (before any pilot)
 
 **Rust**
-- [ ] Persistent identity-server issuer key (`gov-identity-server/src/routes.rs` `issue_grant` currently calls `CredentialIssuer::generate()` per request); expose public key endpoint
-- [ ] Dept services verify `DataGrantCredential` signatures — pass the issuer key to `consent::verify_access` (currently `None` in `gov-dept-node/src/routes.rs`, `gov-dept-ird/src/routes.rs`; fix in generator template and regenerate all dept services)
-- [ ] Enforce revocation in dept services (`revoked_at` ignored; `grant.is_valid()` unused); verify signature and scope on the same grant
+- [x] Persistent identity-server issuer key (`gov-identity-server/src/routes.rs` `issue_grant` currently calls `CredentialIssuer::generate()` per request); expose public key endpoint
+- [ ] Dept services verify `DataGrantCredential` signatures — pass the issuer key to `consent::verify_access` (currently `None` in `gov-dept-node/src/routes.rs`, `gov-dept-ird/src/routes.rs`; fix in generator template and regenerate all dept services) *(partial: `gov-consent::verify_grant` wired into `gov-dept-ird` + gateway; `gov-dept-node` and the other ~45 dept services still pass `None`)*
+- [ ] Enforce revocation in dept services (`revoked_at` ignored; `grant.is_valid()` unused); verify signature and scope on the same grant *(partial: revocation checked via `gov-consent` in IRD/gateway; other dept services not yet)*
 - [ ] Remove `requesting_dept_id` self-assertion bypass (`is_direct_access`); gateway sets caller identity from JWT, JWT `sub` must equal `req.did`, enforce `Claims.scopes`
-- [ ] Authenticate identity-server endpoints (`register_did`, `issue_grant`, `revoke_grant`, `list_grants`); make DID registration first-write-wins (no key overwrite); validate dept ids, scopes, `expires_in_seconds` bounds
-- [ ] Axum 0.8 route syntax in `gov-identity-server/src/main.rs` (`:did`/`:id` → `{did}`/`{id}`) *(verify with `cargo run`)*
-- [ ] `gov-dept-node/src/main.rs` — REST routes unreachable because `fed_node.start()` blocks; run federation and HTTP concurrently
-- [ ] Audit: fail request when audit write fails; append-only table (revoke UPDATE/DELETE + hash chain); produce signed `AuditLogEntry`; IRD read audit; real `citizen_did` on actions
-- [ ] Federation: envelope replay protection (`message_id` dedup, timestamp freshness, `to_dept_id` check), persistent node keys, resolve `consent_grant_ids`, QUIC client auth (mTLS), per-peer rate limit
-- [ ] Gateway: fail closed when `TPT__GOV__JWT_SECRET` unset; forward Authorization; shared `reqwest::Client`; upstream timeouts and body limits; real `citizen_resolve`; per-caller rate limit; bound the rate-limit map; replace mutex `.unwrap()` (circuit breaker, rate limiter); don't echo JWT error text
+- [x] Authenticate identity-server endpoints (`register_did`, `issue_grant`, `revoke_grant`, `list_grants`); make DID registration first-write-wins (no key overwrite); validate dept ids, scopes, `expires_in_seconds` bounds
+- [x] Axum 0.8 route syntax in `gov-identity-server/src/main.rs` (`:did`/`:id` → `{did}`/`{id}`) *(verify with `cargo run`)*
+- [x] `gov-dept-node/src/main.rs` — REST routes unreachable because `fed_node.start()` blocks; run federation and HTTP concurrently
+- [ ] Audit: fail request when audit write fails; append-only table (revoke UPDATE/DELETE + hash chain); produce signed `AuditLogEntry`; IRD read audit; real `citizen_did` on actions *(partial: fail-closed write + hash chain + signed entry in `gov-dept-node`; IRD read audit, real action `citizen_did`, and UPDATE/DELETE revocation still open)*
+- [ ] Federation: envelope replay protection (`message_id` dedup, timestamp freshness, `to_dept_id` check), persistent node keys, resolve `consent_grant_ids`, QUIC client auth (mTLS), per-peer rate limit *(partial: replay/rate-limit/registry structs added but not wired into `receive_envelope`; timestamp/`to_dept_id` checks and QUIC mTLS still open)*
+- [x] Gateway: fail closed when `TPT__GOV__JWT_SECRET` unset; forward Authorization; shared `reqwest::Client`; upstream timeouts and body limits; real `citizen_resolve`; per-caller rate limit; bound the rate-limit map; replace mutex `.unwrap()` (circuit breaker, rate limiter); don't echo JWT error text
 
 **TypeScript / portals** (largely superseded by the Rust auth/BFF service below, but fix the quick wins now)
-- [ ] `portal-citizen/app/lib/data-access.ts:25-26` syntax error and `STATSNZDataBundle` vs `StatsNZDataBundle` export mismatch (breaks typecheck) *(verify)*
+- [x] `portal-citizen/app/lib/data-access.ts:25-26` syntax error and `STATSNZDataBundle` vs `StatsNZDataBundle` export mismatch (breaks typecheck) *(verify)*
 - [ ] Citizen login: bind public key to DID (`app/api/auth/verify/route.ts`); stop overwriting registered keys
 - [ ] Staff portal: verify JWT in middleware and in every dept page/server action via one shared guard (currently cookie-presence only)
 - [ ] RealMe: fail closed without `REALME_IDP_CERT`; remove/guard `REALME_SKIP_VERIFY`; staff allow-list/roles; SubjectConfirmationData (Recipient, NotOnOrAfter, InResponseTo required), Response Issuer, `SessionIndex` from `AuthnStatement`; harden xmldom (no DOCTYPE/entities); persistent replay store; signed SLO / CSRF-safe logout; validate `relayState`

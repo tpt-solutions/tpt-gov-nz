@@ -12,6 +12,7 @@ path = "src/main.rs"
 [dependencies]
 gov-federation-core = { path = "../../crates/gov-federation-core" }
 gov-identity-core = { path = "../../crates/gov-identity-core" }
+gov-consent = { path = "../../crates/gov-consent" }
 gov-mtls = { path = "../../crates/gov-mtls" }
 tokio = { workspace = true }
 axum = { workspace = true }
@@ -34,3 +35,6 @@ tracing-opentelemetry = "0.29"
 anyhow = { workspace = true }
 config = { workspace = true }
 dotenvy = { workspace = true }
+reqwest = { version = "0.12", features = ["json", "rustls-tls"] }
+opa-wasm = "0.3"
+ed25519-dalek = { workspace = true }

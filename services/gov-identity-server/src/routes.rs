@@ -4,8 +4,13 @@ use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
 };
+use base64::Engine;
+use ed25519_dalek::Verifier;
+use rand::RngCore;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use tracing::info;
+use uuid::Uuid;
 
 use crate::state::AppState;
 
@@ -57,6 +62,19 @@ impl IntoResponse for ApiError {
     }
 }
 
+impl From<gov_identity_core::IdentityError> for ApiError {
+    fn from(err: gov_identity_core::IdentityError) -> Self {
+        match err {
+            gov_identity_core::IdentityError::InvalidDid(msg) => Self::bad_request(msg),
+            gov_identity_core::IdentityError::InvalidSignature => Self::bad_request("invalid signature"),
+            gov_identity_core::IdentityError::Expired => Self::bad_request("credential expired"),
+            gov_identity_core::IdentityError::Revoked => Self::bad_request("credential revoked"),
+            gov_identity_core::IdentityError::Serialisation(e) => Self::internal(e),
+            gov_identity_core::IdentityError::Crypto(e) => Self::internal(e),
+        }
+    }
+}
+
 type ApiResult<T> = Result<T, ApiError>;
 
 // ── Health ────────────────────────────────────────────────────────────────────
@@ -89,6 +107,100 @@ pub async fn issuer_public_key(State(state): State<AppState>) -> Json<IssuerKeyR
     Json(IssuerKeyResponse {
         did: state.issuer.did.to_string(),
         public_key_b64: state.issuer.public_key_b64(),
+    })
+}
+
+// ── JWKS ────────────────────────────────────────────────────────────────────────
+
+#[derive(Serialize)]
+pub struct JwksResponse {
+    pub keys: Vec<Jwk>,
+}
+
+#[derive(Serialize)]
+pub struct Jwk {
+    pub kty: &'static str,
+    #[serde(rename = "use")]
+    pub r#use: &'static str,
+    pub kid: String,
+    pub alg: &'static str,
+    pub crv: &'static str,
+    pub x: String,
+    pub y: String,
+}
+
+/// Public endpoint: JSON Web Key Set for the identity server's current issuer key.
+pub async fn jwks(State(state): State<AppState>) -> Json<JwksResponse> {
+    let verifying_key = state.issuer.verifying_key();
+    let pk_bytes = verifying_key.as_bytes();
+    let x = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(&pk_bytes[0..16]);
+    let y = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(&pk_bytes[16..32]);
+
+    Json(JwksResponse {
+        keys: vec![Jwk {
+            kty: "OKP",
+            r#use: "sig",
+            kid: state.issuer.did.to_string(),
+            alg: "EdDSA",
+            crv: "Ed25519",
+            x,
+            y,
+        }],
+    })
+}
+
+// ── OIDC Discovery ──────────────────────────────────────────────────────────────
+
+#[derive(Serialize)]
+pub struct OidcDiscoveryResponse {
+    pub issuer: String,
+    pub jwks_uri: String,
+    pub authorization_endpoint: String,
+    pub token_endpoint: String,
+    pub userinfo_endpoint: String,
+    pub end_session_endpoint: String,
+    pub scopes_supported: Vec<String>,
+    pub response_types_supported: Vec<String>,
+    pub subject_types_supported: Vec<String>,
+    pub id_token_signing_alg_values_supported: Vec<String>,
+    pub token_endpoint_auth_methods_supported: Vec<String>,
+    pub claims_supported: Vec<String>,
+}
+
+/// Public endpoint: OpenID Connect Discovery document.
+pub async fn oidc_discovery(State(state): State<AppState>) -> Json<OidcDiscoveryResponse> {
+    let issuer = state.issuer.did.to_string();
+    let base_url = std::env::var("TPT__GOV__IDENTITY_PUBLIC_URL").unwrap_or_else(|_| {
+        format!(
+            "http://localhost:{}",
+            state
+                .issuer
+                .did
+                .to_string()
+                .split(':')
+                .last()
+                .unwrap_or("8081")
+        )
+    });
+
+    Json(OidcDiscoveryResponse {
+        issuer: issuer.clone(),
+        jwks_uri: format!("{base_url}/.well-known/jwks.json"),
+        authorization_endpoint: format!("{base_url}/v1/did/challenge"),
+        token_endpoint: format!("{base_url}/v1/did/register"),
+        userinfo_endpoint: format!("{base_url}/v1/did/{{did}}"),
+        end_session_endpoint: format!("{base_url}/v1/session/end"),
+        scopes_supported: vec![
+            "openid".into(),
+            "profile".into(),
+            "grants:read".into(),
+            "grants:write".into(),
+        ],
+        response_types_supported: vec!["code".into(), "id_token".into()],
+        subject_types_supported: vec!["public".into()],
+        id_token_signing_alg_values_supported: vec!["EdDSA".into()],
+        token_endpoint_auth_methods_supported: vec!["private_key_jwt".into()],
+        claims_supported: vec!["sub".into(), "did".into(), "grants".into()],
     })
 }
 
@@ -170,7 +282,213 @@ struct DidRow {
     created_at: chrono::DateTime<chrono::Utc>,
 }
 
-/// Register a citizen DID and its public key.
+// ── DID challenge-response registration ────────────────────────────────────────
+
+#[derive(Deserialize)]
+pub struct DidChallengeRequest {
+    pub did: String,
+    pub public_key_b64: String,
+}
+
+#[derive(Serialize)]
+pub struct DidChallengeResponse {
+    pub challenge: String,
+    pub challenge_id: String,
+    pub expires_at: String,
+}
+
+/// Step 1: Request a challenge for DID registration.
+/// The client must sign this challenge with their private key to prove possession.
+pub async fn did_challenge(
+    State(state): State<AppState>,
+    Json(req): Json<DidChallengeRequest>,
+) -> ApiResult<Json<DidChallengeResponse>> {
+    let did = validate_did(&req.did)?;
+    let verifying_key = decode_public_key(&req.public_key_b64)?;
+
+    // Verify the DID matches the public key fingerprint.
+    let expected = gov_identity_core::GovDid::from_verifying_key(&verifying_key);
+    if expected.as_str() != did.as_str() {
+        return Err(ApiError::bad_request(
+            "public key does not match DID fingerprint",
+        ));
+    }
+
+    // Generate a random challenge.
+    let mut challenge_bytes = [0u8; 32];
+    rand::rngs::OsRng.fill_bytes(&mut challenge_bytes);
+    let challenge = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(challenge_bytes);
+
+    // Store challenge in database with 5-minute TTL.
+    let challenge_id = Uuid::new_v4();
+    let expires_at = chrono::Utc::now() + chrono::Duration::minutes(5);
+
+    sqlx::query(
+        r#"
+        INSERT INTO did_challenges (id, did, public_key_b64, challenge, expires_at)
+        VALUES ($1, $2, $3, $4, $5)
+        "#,
+    )
+    .bind(challenge_id)
+    .bind(did.as_str())
+    .bind(req.public_key_b64.trim())
+    .bind(&challenge)
+    .bind(expires_at)
+    .execute(&state.pool)
+    .await
+    .map_err(ApiError::internal)?;
+
+    Ok(Json(DidChallengeResponse {
+        challenge,
+        challenge_id: challenge_id.to_string(),
+        expires_at: expires_at.to_rfc3339(),
+    }))
+}
+
+#[derive(Deserialize)]
+pub struct RegisterDidWithProofRequest {
+    pub challenge_id: String,
+    pub signature_b64: String,
+}
+
+#[derive(Serialize)]
+pub struct RegisterDidWithProofResponse {
+    pub did: String,
+    pub created_at: String,
+}
+
+/// Step 2: Complete DID registration by providing the challenge signature.
+/// This proves the client possesses the private key corresponding to the DID.
+pub async fn register_did_with_proof(
+    State(state): State<AppState>,
+    Json(req): Json<RegisterDidWithProofRequest>,
+) -> ApiResult<(StatusCode, Json<RegisterDidWithProofResponse>)> {
+    // Fetch and validate challenge.
+    #[derive(sqlx::FromRow)]
+    struct ChallengeRow {
+        _id: Uuid,
+        did: String,
+        public_key_b64: String,
+        challenge: String,
+        expires_at: chrono::DateTime<chrono::Utc>,
+    }
+
+    let challenge_id = Uuid::parse_str(&req.challenge_id)
+        .map_err(|_| ApiError::bad_request("invalid challenge_id"))?;
+
+    let row = sqlx::query_as::<_, ChallengeRow>(
+        "SELECT id, did, public_key_b64, challenge, expires_at FROM did_challenges WHERE id = $1",
+    )
+    .bind(challenge_id)
+    .fetch_optional(&state.pool)
+    .await
+    .map_err(ApiError::internal)?
+    .ok_or_else(|| ApiError::not_found("challenge not found or expired"))?;
+
+    // Check expiry.
+    if chrono::Utc::now() > row.expires_at {
+        // Clean up expired challenge.
+        sqlx::query("DELETE FROM did_challenges WHERE id = $1")
+            .bind(challenge_id)
+            .execute(&state.pool)
+            .await
+            .ok();
+        return Err(ApiError::bad_request("challenge expired"));
+    }
+
+    // Verify the signature over the challenge.
+    let verifying_key = decode_public_key(&row.public_key_b64)?;
+    let challenge_bytes = base64::engine::general_purpose::URL_SAFE_NO_PAD
+        .decode(&row.challenge)
+        .map_err(|_| ApiError::bad_request("invalid challenge encoding"))?;
+    let signature_bytes = base64::engine::general_purpose::STANDARD
+        .decode(&req.signature_b64)
+        .map_err(|_| ApiError::bad_request("invalid signature encoding"))?;
+
+    let signature = ed25519_dalek::Signature::from_bytes(
+        &signature_bytes
+            .try_into()
+            .map_err(|_| ApiError::bad_request("signature length invalid"))?,
+    );
+
+    verifying_key
+        .verify(&challenge_bytes, &signature)
+        .map_err(|_| ApiError::bad_request("invalid signature"))?;
+
+    // Challenge verified — register the DID and delete the challenge.
+    let did = gov_identity_core::GovDid::parse(&row.did)?;
+
+    let mut tx = state.pool.begin().await.map_err(ApiError::internal)?;
+
+    let inserted = sqlx::query_as::<_, DidRow>(
+        r#"INSERT INTO did_documents (did, public_key_b64)
+           VALUES ($1, $2)
+           ON CONFLICT (did) DO NOTHING
+           RETURNING did, public_key_b64, created_at"#,
+    )
+    .bind(did.as_str())
+    .bind(&row.public_key_b64)
+    .fetch_optional(&mut *tx)
+    .await
+    .map_err(ApiError::internal)?;
+
+    let result = if let Some(row) = inserted {
+        (StatusCode::CREATED, row)
+    } else {
+        // Already registered — verify it's the same key.
+        let existing = sqlx::query_as::<_, DidRow>(
+            "SELECT did, public_key_b64, created_at FROM did_documents WHERE did = $1",
+        )
+        .bind(did.as_str())
+        .fetch_optional(&mut *tx)
+        .await
+        .map_err(ApiError::internal)?
+        .ok_or_else(|| ApiError::internal("DID disappeared during registration"))?;
+
+        if existing.public_key_b64 != row.public_key_b64 {
+            return Err(ApiError::conflict(
+                "DID is already registered with a different public key",
+            ));
+        }
+        (StatusCode::OK, existing)
+    };
+
+    // Delete the used challenge.
+    sqlx::query("DELETE FROM did_challenges WHERE id = $1")
+        .bind(challenge_id)
+        .execute(&mut *tx)
+        .await
+        .map_err(ApiError::internal)?;
+
+    // Add to key history.
+    sqlx::query(
+        r#"
+        INSERT INTO did_key_history (did, public_key_b64, activated_at, is_current)
+        VALUES ($1, $2, $3, TRUE)
+        ON CONFLICT (did) WHERE is_current DO UPDATE SET
+            is_current = FALSE,
+            deactivated_at = $3
+        "#,
+    )
+    .bind(did.as_str())
+    .bind(&result.1.public_key_b64)
+    .bind(chrono::Utc::now())
+    .execute(&mut *tx)
+    .await
+    .map_err(ApiError::internal)?;
+
+    tx.commit().await.map_err(ApiError::internal)?;
+
+    Ok((
+        result.0,
+        Json(RegisterDidWithProofResponse {
+            did: result.1.did,
+            created_at: result.1.created_at.to_rfc3339(),
+        }),
+    ))
+}
+
+/// Register a citizen DID and its public key (legacy endpoint without challenge).
 ///
 /// Registration is **first-write-wins**: the key can never be overwritten. A
 /// repeat registration with the same key is idempotent; a different key is
@@ -382,17 +700,52 @@ pub async fn revoke_grant(
     State(state): State<AppState>,
     Path(id): Path<uuid::Uuid>,
 ) -> ApiResult<StatusCode> {
-    let result = sqlx::query(
-        "UPDATE data_grants SET revoked_at = NOW() WHERE id = $1 AND revoked_at IS NULL",
+    let now = chrono::Utc::now();
+
+    let mut tx = state.pool.begin().await.map_err(ApiError::internal)?;
+
+    // Get grant details before revoking (for revocation list).
+    #[derive(sqlx::FromRow)]
+    struct GrantForRevocation {
+        id: uuid::Uuid,
+        citizen_did: String,
+    }
+
+    let grant = sqlx::query_as::<_, GrantForRevocation>(
+        "SELECT id, citizen_did FROM data_grants WHERE id = $1 AND revoked_at IS NULL",
     )
     .bind(id)
-    .execute(&state.pool)
+    .fetch_optional(&mut *tx)
+    .await
+    .map_err(ApiError::internal)?
+    .ok_or_else(|| ApiError::not_found("grant not found or already revoked"))?;
+
+    // Mark grant as revoked.
+    sqlx::query(
+        "UPDATE data_grants SET revoked_at = $1 WHERE id = $2 AND revoked_at IS NULL",
+    )
+    .bind(now)
+    .bind(id)
+    .execute(&mut *tx)
     .await
     .map_err(ApiError::internal)?;
 
-    if result.rows_affected() == 0 {
-        return Err(ApiError::not_found("grant not found or already revoked"));
-    }
+    // Add to revocation list.
+    sqlx::query(
+        r#"
+        INSERT INTO revocation_list (grant_id, citizen_did, revoked_at, revoked_by, reason)
+        VALUES ($1, $2, $3, 'admin', 'Revoked by admin')
+        "#,
+    )
+    .bind(grant.id)
+    .bind(&grant.citizen_did)
+    .bind(now)
+    .execute(&mut *tx)
+    .await
+    .map_err(ApiError::internal)?;
+
+    tx.commit().await.map_err(ApiError::internal)?;
+
     Ok(StatusCode::NO_CONTENT)
 }
 
@@ -514,6 +867,358 @@ pub async fn list_grants(
         .collect();
 
     Ok(Json(grants))
+}
+
+// ── Admin API ───────────────────────────────────────────────────────────────────
+
+#[derive(Deserialize)]
+pub struct AdminListGrantsQuery {
+    pub citizen_did: Option<String>,
+    pub requesting_dept_id: Option<String>,
+    pub providing_dept_id: Option<String>,
+    pub include_revoked: Option<bool>,
+    pub limit: Option<i64>,
+    pub offset: Option<i64>,
+}
+
+#[derive(Serialize)]
+pub struct AdminGrantResponse {
+    pub id: String,
+    pub citizen_did: String,
+    pub requesting_dept_id: String,
+    pub providing_dept_id: String,
+    pub scopes: Vec<String>,
+    pub issued_at: String,
+    pub expires_at: String,
+    pub revoked_at: Option<String>,
+    pub signature: String,
+    pub issuer_did: String,
+}
+
+/// Admin endpoint: list all grants with optional filters.
+pub async fn admin_list_grants(
+    State(state): State<AppState>,
+    Query(q): Query<AdminListGrantsQuery>,
+) -> ApiResult<Json<Vec<AdminGrantResponse>>> {
+    let mut query = String::from(
+        r#"SELECT id, citizen_did, requesting_dept_id, providing_dept_id, scopes,
+                  issued_at, expires_at, revoked_at, signature
+           FROM data_grants"#,
+    );
+
+    let mut conditions = Vec::new();
+    let mut params: Vec<String> = Vec::new();
+
+    if let Some(citizen_did) = &q.citizen_did {
+        validate_did(citizen_did)?;
+        conditions.push(format!("citizen_did = ${}", params.len() + 1));
+        params.push(citizen_did.clone());
+    }
+    if let Some(requesting_dept_id) = &q.requesting_dept_id {
+        if !valid_dept_id(requesting_dept_id) {
+            return Err(ApiError::bad_request("invalid requesting_dept_id"));
+        }
+        conditions.push(format!("requesting_dept_id = ${}", params.len() + 1));
+        params.push(requesting_dept_id.clone());
+    }
+    if let Some(providing_dept_id) = &q.providing_dept_id {
+        if !valid_dept_id(providing_dept_id) {
+            return Err(ApiError::bad_request("invalid providing_dept_id"));
+        }
+        conditions.push(format!("providing_dept_id = ${}", params.len() + 1));
+        params.push(providing_dept_id.clone());
+    }
+    if !q.include_revoked.unwrap_or(false) {
+        conditions.push("revoked_at IS NULL".to_string());
+    }
+
+    if !conditions.is_empty() {
+        query.push_str(" WHERE ");
+        query.push_str(&conditions.join(" AND "));
+    }
+
+    query.push_str(" ORDER BY issued_at DESC");
+
+    if let Some(limit) = q.limit {
+        query.push_str(&format!(" LIMIT {limit}"));
+    }
+    if let Some(offset) = q.offset {
+        query.push_str(&format!(" OFFSET {offset}"));
+    }
+
+    #[derive(sqlx::FromRow)]
+    struct AdminGrantRow {
+        id: uuid::Uuid,
+        citizen_did: String,
+        requesting_dept_id: String,
+        providing_dept_id: String,
+        scopes: Vec<String>,
+        issued_at: chrono::DateTime<chrono::Utc>,
+        expires_at: chrono::DateTime<chrono::Utc>,
+        revoked_at: Option<chrono::DateTime<chrono::Utc>>,
+        signature: String,
+    }
+
+    let mut qb = sqlx::query_as::<_, AdminGrantRow>(&query);
+    for param in &params {
+        qb = qb.bind(param);
+    }
+
+    let rows = qb
+        .fetch_all(&state.pool)
+        .await
+        .map_err(ApiError::internal)?;
+
+    let issuer_did = state.issuer.did.to_string();
+    let grants = rows
+        .into_iter()
+        .map(|r| AdminGrantResponse {
+            id: r.id.to_string(),
+            citizen_did: r.citizen_did,
+            requesting_dept_id: r.requesting_dept_id,
+            providing_dept_id: r.providing_dept_id,
+            scopes: r.scopes,
+            issued_at: r.issued_at.to_rfc3339(),
+            expires_at: r.expires_at.to_rfc3339(),
+            revoked_at: r.revoked_at.map(|dt| dt.to_rfc3339()),
+            signature: r.signature,
+            issuer_did: issuer_did.clone(),
+        })
+        .collect();
+
+    Ok(Json(grants))
+}
+
+#[derive(Serialize)]
+pub struct AdminRevokeCitizenResponse {
+    pub revoked_count: u64,
+}
+
+/// Admin endpoint: revoke all grants for a citizen.
+pub async fn admin_revoke_citizen_grants(
+    State(state): State<AppState>,
+    Path(citizen_did): Path<String>,
+) -> ApiResult<Json<AdminRevokeCitizenResponse>> {
+    let did = validate_did(&citizen_did)?;
+    let now = chrono::Utc::now();
+
+    let mut tx = state.pool.begin().await.map_err(ApiError::internal)?;
+
+    // Get all active grants for this citizen.
+    #[derive(sqlx::FromRow)]
+    struct GrantForRevocation {
+        id: uuid::Uuid,
+        citizen_did: String,
+    }
+
+    let grants = sqlx::query_as::<_, GrantForRevocation>(
+        "SELECT id, citizen_did FROM data_grants WHERE citizen_did = $1 AND revoked_at IS NULL",
+    )
+    .bind(did.as_str())
+    .fetch_all(&mut *tx)
+    .await
+    .map_err(ApiError::internal)?;
+
+    for grant in &grants {
+        // Mark grant as revoked.
+        sqlx::query(
+            "UPDATE data_grants SET revoked_at = $1 WHERE id = $2",
+        )
+        .bind(now)
+        .bind(grant.id)
+        .execute(&mut *tx)
+        .await
+        .map_err(ApiError::internal)?;
+
+        // Add to revocation list.
+        sqlx::query(
+            r#"
+            INSERT INTO revocation_list (grant_id, citizen_did, revoked_at, revoked_by, reason)
+            VALUES ($1, $2, $3, 'admin', 'Bulk revoked by admin for citizen')
+            "#,
+        )
+        .bind(grant.id)
+        .bind(&grant.citizen_did)
+        .bind(now)
+        .execute(&mut *tx)
+        .await
+        .map_err(ApiError::internal)?;
+    }
+
+    let revoked_count = grants.len() as u64;
+    tx.commit().await.map_err(ApiError::internal)?;
+
+    info!(citizen_did = %did, revoked_count, "Admin revoked all grants for citizen");
+
+    Ok(Json(AdminRevokeCitizenResponse { revoked_count }))
+}
+
+#[derive(Deserialize)]
+pub struct RotateIssuerKeyRequest {
+    pub reason: Option<String>,
+}
+
+#[derive(Serialize)]
+pub struct RotateIssuerKeyResponse {
+    pub old_did: String,
+    pub new_did: String,
+    pub rotated_at: String,
+}
+
+/// Admin endpoint: rotate the issuer keypair.
+/// This generates a new keypair, stores it as the active issuer key,
+/// and logs the rotation. The old key is kept in the rotation log for
+/// verification of previously issued credentials.
+pub async fn admin_rotate_issuer_key(
+    State(state): State<AppState>,
+    Json(req): Json<RotateIssuerKeyRequest>,
+) -> ApiResult<Json<RotateIssuerKeyResponse>> {
+    let old_did = state.issuer.did.to_string();
+    let _old_key_b64 = state.issuer.secret_key_b64();
+
+    // Generate new issuer key.
+    let new_issuer = gov_identity_core::CredentialIssuer::generate();
+    let new_did = new_issuer.did.to_string();
+    let new_key_b64 = new_issuer.secret_key_b64();
+
+    // Update the issuer_keys table.
+    sqlx::query(
+        "UPDATE issuer_keys SET secret_key_b64 = $1 WHERE id = 1",
+    )
+    .bind(new_key_b64)
+    .execute(&state.pool)
+    .await
+    .map_err(ApiError::internal)?;
+
+    // Log the rotation.
+    let rotated_at = chrono::Utc::now();
+    sqlx::query(
+        r#"
+        INSERT INTO issuer_key_rotation_log (old_key_id, new_key_id, rotated_at, rotated_by, reason, old_did, new_did)
+        VALUES (1, 1, $1, 'admin', $2, $3, $4)
+        "#,
+    )
+    .bind(rotated_at)
+    .bind(req.reason.unwrap_or_else(|| "Manual rotation via admin API".into()))
+    .bind(&old_did)
+    .bind(&new_did)
+    .execute(&state.pool)
+    .await
+    .map_err(ApiError::internal)?;
+
+    // Update the in-memory issuer (requires Arc swap - in practice this would need
+    // a more sophisticated approach for production, but for now we log the rotation
+    // and the new key will be used on next restart).
+    // Note: In a production deployment with multiple instances, this would need
+    // a coordinated rotation (e.g., via consensus or a shared KMS).
+    tracing::warn!(
+        old_did = %old_did,
+        new_did = %new_did,
+        "Issuer key rotated — restart all identity server instances to pick up the new key"
+    );
+
+    // Emit rotation event for background tasks.
+    let _ = state.rotation_tx.send(crate::state::RotationEvent {
+        _old_did: old_did.clone(),
+        _new_did: new_did.clone(),
+        _rotated_at: rotated_at,
+    });
+
+    Ok(Json(RotateIssuerKeyResponse {
+        old_did,
+        new_did,
+        rotated_at: rotated_at.to_rfc3339(),
+    }))
+}
+
+#[derive(Serialize)]
+pub struct DeptHealthResponse {
+    pub dept_id: String,
+    pub grants_issued: i64,
+    pub grants_active: i64,
+    pub grants_revoked: i64,
+    pub last_grant_issued: Option<String>,
+}
+
+/// Admin endpoint: get health stats for all departments.
+pub async fn admin_dept_health(State(state): State<AppState>) -> ApiResult<Json<Vec<DeptHealthResponse>>> {
+    #[derive(sqlx::FromRow)]
+    struct DeptHealthRow {
+        dept_id: String,
+        grants_issued: i64,
+        grants_active: i64,
+        grants_revoked: i64,
+        last_grant_issued: Option<chrono::DateTime<chrono::Utc>>,
+    }
+
+    // Query requesting dept stats.
+    let requesting = sqlx::query_as::<_, DeptHealthRow>(
+        r#"
+        SELECT requesting_dept_id as dept_id,
+               COUNT(*) as grants_issued,
+               COUNT(*) FILTER (WHERE revoked_at IS NULL) as grants_active,
+               COUNT(*) FILTER (WHERE revoked_at IS NOT NULL) as grants_revoked,
+               MAX(issued_at) as last_grant_issued
+        FROM data_grants
+        GROUP BY requesting_dept_id
+        "#,
+    )
+    .fetch_all(&state.pool)
+    .await
+    .map_err(ApiError::internal)?;
+
+    // Query providing dept stats.
+    let providing = sqlx::query_as::<_, DeptHealthRow>(
+        r#"
+        SELECT providing_dept_id as dept_id,
+               COUNT(*) as grants_issued,
+               COUNT(*) FILTER (WHERE revoked_at IS NULL) as grants_active,
+               COUNT(*) FILTER (WHERE revoked_at IS NOT NULL) as grants_revoked,
+               MAX(issued_at) as last_grant_issued
+        FROM data_grants
+        GROUP BY providing_dept_id
+        "#,
+    )
+    .fetch_all(&state.pool)
+    .await
+    .map_err(ApiError::internal)?;
+
+    // Combine results.
+    use std::collections::HashMap;
+    let mut combined: HashMap<String, DeptHealthRow> = HashMap::new();
+
+    for row in requesting {
+        combined.insert(row.dept_id.clone(), row);
+    }
+
+    for row in providing {
+        combined
+            .entry(row.dept_id.clone())
+            .and_modify(|e| {
+                e.grants_issued += row.grants_issued;
+                e.grants_active += row.grants_active;
+                e.grants_revoked += row.grants_revoked;
+                match (row.last_grant_issued, e.last_grant_issued) {
+                    (Some(new), Some(old)) if new > old => e.last_grant_issued = row.last_grant_issued,
+                    (Some(_), None) => e.last_grant_issued = row.last_grant_issued,
+                    _ => {}
+                }
+            })
+            .or_insert(row);
+    }
+
+    let health: Vec<DeptHealthResponse> = combined
+        .into_values()
+        .map(|r| DeptHealthResponse {
+            dept_id: r.dept_id,
+            grants_issued: r.grants_issued,
+            grants_active: r.grants_active,
+            grants_revoked: r.grants_revoked,
+            last_grant_issued: r.last_grant_issued.map(|dt| dt.to_rfc3339()),
+        })
+        .collect();
+
+    Ok(Json(health))
 }
 
 #[cfg(test)]

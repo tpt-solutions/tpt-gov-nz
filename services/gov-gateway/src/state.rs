@@ -7,6 +7,7 @@ use hyper_util::client::legacy::{Client, connect::HttpConnector};
 
 use crate::auth::JwtConfig;
 use crate::circuit_breaker::CircuitBreakerRegistry;
+use crate::consent::ConsentConfig;
 use crate::rate_limit::RateLimiter;
 use crate::routes::DeptRegistry;
 
@@ -28,6 +29,9 @@ pub struct AppState {
     pub rate_limiter: RateLimiter,
     pub breakers: CircuitBreakerRegistry,
     pub jwt: Arc<JwtConfig>,
+    /// Consent verification configuration (OPA policies, grant verification, revocation).
+    /// Wrapped in Arc because ConsentConfig contains non-Clone types (reqwest client, mutex).
+    pub consent: Arc<ConsentConfig>,
     /// Optional mutual-TLS client used to reach internal department services.
     /// Built from `TPT__GOV__MTLS_*` env when present; `None` disables mTLS and
     /// uses plaintext HTTP (demo / untrusted networks only).

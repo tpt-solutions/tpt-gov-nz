@@ -173,20 +173,6 @@ services:
       dept-nzta:
         condition: service_healthy
 
-  gov-ingester-nzta:
-    build:
-      context: ..
-      dockerfile: services/gov-ingester-nzta/Dockerfile
-    environment:
-      DATABASE_URL: postgresql://nzta:nzta_dev_password@dept-nzta:5432/nzta
-      NZTA_TRANSPORT: mock
-      NZTA_MOCK_FIXTURE: /fixtures/nzta_batch.json
-      NZTA_RUN_ONCE: "true"
-      RUST_LOG: "gov_ingester_nzta=info,sqlx=warn"
-    depends_on:
-      dept-nzta:
-        condition: service_healthy
-
   # --- ACC (Accident Compensation Corporation) ---
 
   gov-dept-acc:
@@ -635,7 +621,6 @@ services:
       dept-tpk:
         condition: service_healthy
 
-  gov-gateway:
   dept-nzsis:
     image: postgres:17-alpine
     environment:
@@ -682,7 +667,6 @@ services:
       dept-nzsis:
         condition: service_healthy
 
-  gov-gateway:
   dept-gcsb:
     image: postgres:17-alpine
     environment:
@@ -729,7 +713,6 @@ services:
       dept-gcsb:
         condition: service_healthy
 
-  gov-gateway:
   dept-nzdf:
     image: postgres:17-alpine
     environment:
@@ -776,7 +759,6 @@ services:
       dept-nzdf:
         condition: service_healthy
 
-  gov-gateway:
   dept-defence:
     image: postgres:17-alpine
     environment:
@@ -823,7 +805,6 @@ services:
       dept-defence:
         condition: service_healthy
 
-  gov-gateway:
   dept-mfat:
     image: postgres:17-alpine
     environment:
@@ -870,7 +851,6 @@ services:
       dept-mfat:
         condition: service_healthy
 
-  gov-gateway:
   dept-mch:
     image: postgres:17-alpine
     environment:
@@ -917,7 +897,6 @@ services:
       dept-mch:
         condition: service_healthy
 
-  gov-gateway:
   dept-tec:
     image: postgres:17-alpine
     environment:
@@ -964,7 +943,6 @@ services:
       dept-tec:
         condition: service_healthy
 
-  gov-gateway:
   dept-ero:
     image: postgres:17-alpine
     environment:
@@ -1011,7 +989,6 @@ services:
       dept-ero:
         condition: service_healthy
 
-  gov-gateway:
   dept-moe:
     image: postgres:17-alpine
     environment:
@@ -1058,7 +1035,6 @@ services:
       dept-moe:
         condition: service_healthy
 
-  gov-gateway:
   dept-fenz:
     image: postgres:17-alpine
     environment:
@@ -1105,7 +1081,6 @@ services:
       dept-fenz:
         condition: service_healthy
 
-  gov-gateway:
   dept-maritime:
     image: postgres:17-alpine
     environment:
@@ -1152,7 +1127,6 @@ services:
       dept-maritime:
         condition: service_healthy
 
-  gov-gateway:
   dept-caa:
     image: postgres:17-alpine
     environment:
@@ -1199,7 +1173,6 @@ services:
       dept-caa:
         condition: service_healthy
 
-  gov-gateway:
   dept-mot:
     image: postgres:17-alpine
     environment:
@@ -1246,7 +1219,6 @@ services:
       dept-mot:
         condition: service_healthy
 
-  gov-gateway:
   dept-eqc:
     image: postgres:17-alpine
     environment:
@@ -1293,7 +1265,6 @@ services:
       dept-eqc:
         condition: service_healthy
 
-  gov-gateway:
   dept-mfe:
     image: postgres:17-alpine
     environment:
@@ -1340,7 +1311,6 @@ services:
       dept-mfe:
         condition: service_healthy
 
-  gov-gateway:
   dept-retirement:
     image: postgres:17-alpine
     environment:
@@ -1387,7 +1357,6 @@ services:
       dept-retirement:
         condition: service_healthy
 
-  gov-gateway:
   dept-worksafe:
     image: postgres:17-alpine
     environment:
@@ -1434,7 +1403,6 @@ services:
       dept-worksafe:
         condition: service_healthy
 
-  gov-gateway:
   dept-regulation:
     image: postgres:17-alpine
     environment:
@@ -1481,7 +1449,6 @@ services:
       dept-regulation:
         condition: service_healthy
 
-  gov-gateway:
   dept-tearawhiti:
     image: postgres:17-alpine
     environment:
@@ -1528,7 +1495,6 @@ services:
       dept-tearawhiti:
         condition: service_healthy
 
-  gov-gateway:
   dept-ethnic:
     image: postgres:17-alpine
     environment:
@@ -1575,7 +1541,6 @@ services:
       dept-ethnic:
         condition: service_healthy
 
-  gov-gateway:
   dept-pacific:
     image: postgres:17-alpine
     environment:
@@ -1622,7 +1587,6 @@ services:
       dept-pacific:
         condition: service_healthy
 
-  gov-gateway:
   dept-women:
     image: postgres:17-alpine
     environment:
@@ -1669,7 +1633,6 @@ services:
       dept-women:
         condition: service_healthy
 
-  gov-gateway:
   dept-oranga:
     image: postgres:17-alpine
     environment:
@@ -1716,7 +1679,6 @@ services:
       dept-oranga:
         condition: service_healthy
 
-  gov-gateway:
   dept-sfo:
     image: postgres:17-alpine
     environment:
@@ -1763,7 +1725,6 @@ services:
       dept-sfo:
         condition: service_healthy
 
-  gov-gateway:
   dept-crownlaw:
     image: postgres:17-alpine
     environment:
@@ -1810,7 +1771,6 @@ services:
       dept-crownlaw:
         condition: service_healthy
 
-  gov-gateway:
   dept-publicservice:
     image: postgres:17-alpine
     environment:
@@ -1857,7 +1817,6 @@ services:
       dept-publicservice:
         condition: service_healthy
 
-  gov-gateway:
   dept-dpmc:
     image: postgres:17-alpine
     environment:
@@ -1904,7 +1863,6 @@ services:
       dept-dpmc:
         condition: service_healthy
 
-  gov-gateway:
   dept-treasury:
     image: postgres:17-alpine
     environment:
@@ -2400,35 +2358,35 @@ volumes:
   customs-data:
   mpi-data:
   doc-data:
-  tpk-data:  nzsis-data:
-  tpk-data:  gcsb-data:
-  tpk-data:  nzdf-data:
-  tpk-data:  defence-data:
-  tpk-data:  mfat-data:
-  tpk-data:  mch-data:
-  tpk-data:  tec-data:
-  tpk-data:  ero-data:
-  tpk-data:  moe-data:
-  tpk-data:  fenz-data:
-  tpk-data:  maritime-data:
-  tpk-data:  caa-data:
-  tpk-data:  mot-data:
-  tpk-data:  eqc-data:
-  tpk-data:  mfe-data:
-  tpk-data:  retirement-data:
-  tpk-data:  worksafe-data:
-  tpk-data:  regulation-data:
-  tpk-data:  tearawhiti-data:
-  tpk-data:  ethnic-data:
-  tpk-data:  pacific-data:
-  tpk-data:  women-data:
-  tpk-data:  oranga-data:
-  tpk-data:  sfo-data:
-  tpk-data:  crownlaw-data:
-  tpk-data:  publicservice-data:
-  tpk-data:  dpmc-data:
-  tpk-data:  treasury-data:
   tpk-data:
+  nzsis-data:
+  gcsb-data:
+  nzdf-data:
+  defence-data:
+  mfat-data:
+  mch-data:
+  tec-data:
+  ero-data:
+  moe-data:
+  fenz-data:
+  maritime-data:
+  caa-data:
+  mot-data:
+  eqc-data:
+  mfe-data:
+  retirement-data:
+  worksafe-data:
+  regulation-data:
+  tearawhiti-data:
+  ethnic-data:
+  pacific-data:
+  women-data:
+  oranga-data:
+  sfo-data:
+  crownlaw-data:
+  publicservice-data:
+  dpmc-data:
+  treasury-data:
   identity-data:
   audit-data:
   schema-data:

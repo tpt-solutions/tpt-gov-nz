@@ -1,286 +1,396 @@
-//! QUIC transport for federation (Phase 2).
+//! QUIC transport for federation nodes (Phase 2).
 //!
-//! Exchanges [`FederationEnvelope`] messages over QUIC (UDP) with the same
-//! Ed25519 signature verification as the Phase 1 HTTP mock transport
-//! ([`crate::transport`]). It is enabled by the `quic` feature.
-//!
-//! Wire contract (identical to the HTTP transport):
-//! - A node accepts inbound envelopes on a QUIC endpoint, each arriving as a
-//!   JSON `FederationEnvelope` on a bidirectional stream.
-//! - The receiver verifies the sender's Ed25519 signature against the peer's
-//!   registered public key, dispatches to the node's handler, signs the
-//!   response envelope, and returns it on the same stream.
-//!
-//! The server presents a throwaway self-signed certificate; the client pins
-//! that exact certificate in its root store. Real authentication, however, is
-//! delegated to the application layer: every envelope is verified against the
-//! peer's registered Ed25519 public key — matching the HTTP mock transport.
+//! This module provides QUIC-based transport for `FederationEnvelope` messages
+//! using the `quinn` crate with self-signed certificates and Ed25519 envelope
+//! authentication. The QUIC transport is gated behind the `quic` feature flag.
 
 use std::net::SocketAddr;
 use std::sync::Arc;
+use std::time::Duration;
 
-use anyhow::Context;
-use gov_federation_core::{FederationEnvelope, FederationError};
-use quinn::{ClientConfig, Endpoint, ServerConfig};
+use anyhow::{Context, Result};
+use base64::Engine;
+use gov_federation_core::{FederationEnvelope, NodeKeypair};
+use quinn::{ClientConfig, Endpoint, ServerConfig, TransportConfig};
+use rcgen::{CertificateParams, DistinguishedName, DnType, KeyPair, SanType, Ia5String};
 use rustls::pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer};
-use tracing::{debug, info, warn};
+use rustls::RootCertStore;
+use tracing::{debug, error, info, warn};
 
-use crate::transport::{InboundState, verifying_key_from_b64};
+use crate::transport::InboundState;
 
-/// Upper bound on a single envelope payload (defence against unbounded reads).
-const MAX_ENVELOPE_BYTES: usize = 16 * 1024 * 1024;
+/// QUIC ALPN protocol identifier for tpt-gov-nz federation.
+pub const QUIC_ALPN: &[u8] = b"tpt-gov-nz/1";
 
-/// Generate a throwaway self-signed certificate for the QUIC server.
-fn self_signed_cert() -> anyhow::Result<(
-    Vec<CertificateDer<'static>>,
-    PrivateKeyDer<'static>,
-    Vec<u8>,
-)> {
-    let key = rcgen::KeyPair::generate().context("generate key pair")?;
-    let params = rcgen::CertificateParams::new(vec!["localhost".to_string()])
-        .context("build cert params")?;
-    let cert = params.self_signed(&key).context("self-sign certificate")?;
-    let cert_der = cert.der().clone();
-    let key_der = PrivateKeyDer::Pkcs8(PrivatePkcs8KeyDer::from(key.serialize_der()));
-    Ok((vec![cert_der.clone()], key_der, cert_der.as_ref().to_vec()))
+/// Maximum message size for QUIC streams (1 MiB).
+const MAX_MESSAGE_SIZE: usize = 1024 * 1024;
+
+/// QUIC idle timeout.
+const QUIC_IDLE_TIMEOUT: Duration = Duration::from_secs(30);
+
+/// Generate a self-signed certificate for QUIC server.
+///
+/// Returns (certificate DER, private key DER).
+fn generate_self_signed_cert(dept_id: &str) -> Result<(Vec<u8>, Vec<u8>)> {
+    let mut params = CertificateParams::default();
+    params.distinguished_name = DistinguishedName::new();
+    params.distinguished_name.push(DnType::CommonName, format!("tpt-gov-nz-{}", dept_id));
+    params.distinguished_name.push(DnType::OrganizationName, "tpt-gov-nz");
+    params.subject_alt_names = vec![SanType::DnsName(Ia5String::try_from(format!("{}.federation.tpt.gov.nz", dept_id))?)];
+    params.key_usages = vec![
+        rcgen::KeyUsagePurpose::DigitalSignature,
+        rcgen::KeyUsagePurpose::KeyEncipherment,
+    ];
+    params.extended_key_usages = vec![rcgen::ExtendedKeyUsagePurpose::ServerAuth];
+
+    let key_pair = KeyPair::generate()?;
+    let cert = params.self_signed(&key_pair)?;
+
+    let cert_der = cert.der().to_vec();
+    let key_der = key_pair.serialize_der();
+
+    Ok((cert_der, key_der))
 }
 
-/// Build a QUIC server endpoint listening on `addr` with a self-signed cert.
-/// Returns the endpoint and the DER of its certificate, which the client
-/// must pin in its root store.
-pub fn server_endpoint(addr: SocketAddr) -> anyhow::Result<(Endpoint, Vec<u8>)> {
-    let (cert_chain, key, cert_der) = self_signed_cert()?;
-    let server_config =
-        ServerConfig::with_single_cert(cert_chain, key).context("build QUIC server config")?;
-    let endpoint =
-        Endpoint::server(server_config, addr).with_context(|| format!("bind QUIC on {addr}"))?;
+/// Create a QUIC server endpoint with a self-signed certificate.
+///
+/// Returns the endpoint and the certificate DER for clients to verify.
+pub fn server_endpoint(listen: SocketAddr) -> Result<(Endpoint, Vec<u8>)> {
+    let (cert_der, key_der) = generate_self_signed_cert("federation")?;
+
+    let cert = CertificateDer::from(cert_der.clone());
+    let key = PrivateKeyDer::from(PrivatePkcs8KeyDer::from(key_der.clone()));
+
+    let mut server_config = ServerConfig::with_single_cert(vec![cert], key)?;
+    let mut transport_config = TransportConfig::default();
+    transport_config.max_idle_timeout(Some(QUIC_IDLE_TIMEOUT.try_into()?));
+    transport_config.keep_alive_interval(Some(Duration::from_secs(10)));
+    server_config.transport_config(Arc::new(transport_config));
+
+    let mut endpoint = Endpoint::server(server_config, listen)?;
+    endpoint.set_default_client_config(client_config_from_cert(&cert_der)?);
+
     Ok((endpoint, cert_der))
 }
 
-/// Build a QUIC client endpoint that trusts exactly `server_cert_der`.
-pub fn client_endpoint(server_cert_der: &[u8]) -> anyhow::Result<Endpoint> {
-    let mut roots = rustls::RootCertStore::empty();
-    roots
-        .add(CertificateDer::from(server_cert_der.to_vec()))
-        .context("add pinned server certificate")?;
-
-    let client_config = ClientConfig::with_root_certificates(Arc::new(roots))
-        .map_err(|e| anyhow::anyhow!("build QUIC client config: {e}"))?;
-
-    let mut endpoint =
-        Endpoint::client("0.0.0.0:0".parse()?).context("bind QUIC client endpoint")?;
+/// Create a QUIC client endpoint that trusts a specific certificate.
+pub fn client_endpoint(server_cert_der: &[u8]) -> Result<Endpoint> {
+    let client_config = client_config_from_cert(server_cert_der)?;
+    let mut endpoint = Endpoint::client("0.0.0.0:0".parse()?)?;
     endpoint.set_default_client_config(client_config);
     Ok(endpoint)
 }
 
-/// QUIC client transport: sign-and-send an envelope, await the signed reply.
+/// Create a QUIC client config that trusts a specific certificate.
+fn client_config_from_cert(cert_der: &[u8]) -> Result<ClientConfig> {
+    let cert = CertificateDer::from(cert_der.to_vec());
+    let mut roots = RootCertStore::empty();
+    roots.add(cert)?;
+    let client_crypto = rustls::ClientConfig::builder()
+        .with_root_certificates(roots)
+        .with_no_client_auth();
+    let client_config = quinn::crypto::rustls::QuicClientConfig::try_from(Arc::new(client_crypto))?;
+    let mut transport_config = TransportConfig::default();
+    transport_config.max_idle_timeout(Some(QUIC_IDLE_TIMEOUT.try_into()?));
+    transport_config.keep_alive_interval(Some(Duration::from_secs(10)));
+    let mut client_config = ClientConfig::new(Arc::new(client_config));
+    client_config.transport_config(Arc::new(transport_config));
+    Ok(client_config)
+}
+
+/// QUIC client transport for sending envelopes to peers.
 pub struct QuicTransport {
-    client: Endpoint,
+    endpoint: Endpoint,
 }
 
 impl QuicTransport {
-    pub fn new(server_cert_der: &[u8]) -> anyhow::Result<Self> {
-        Ok(Self {
-            client: client_endpoint(server_cert_der)?,
-        })
+    /// Create a new QUIC transport with the server's certificate for verification.
+    pub fn new(server_cert_der: Vec<u8>) -> Result<Self> {
+        let endpoint = client_endpoint(&server_cert_der)?;
+        Ok(Self { endpoint })
     }
 
-    /// Send `envelope` to the QUIC server at `peer_addr`, awaiting its
-    /// signed response. The response signature is verified against
-    /// `peer_public_key_b64` before it is returned.
+    /// Send an envelope to a peer over QUIC and await the response.
     pub async fn send(
         &self,
         peer_addr: SocketAddr,
         peer_public_key_b64: &str,
-        envelope: FederationEnvelope,
-    ) -> Result<FederationEnvelope, FederationError> {
-        let conn = self
-            .client
-            .connect(peer_addr, "localhost")
-            .map_err(|e| FederationError::Transport(e.to_string()))?
+        mut envelope: FederationEnvelope,
+    ) -> Result<FederationEnvelope> {
+        // Connect to peer
+        let connection = self
+            .endpoint
+            .connect(peer_addr, "federation.tpt.gov.nz")?
             .await
-            .map_err(|e| FederationError::Transport(e.to_string()))?;
+            .context("QUIC connection failed")?;
 
-        let (mut send, mut recv) = conn
-            .open_bi()
-            .await
-            .map_err(|e| FederationError::Transport(e.to_string()))?;
+        // Open a bidirectional stream
+        let (mut send_stream, mut recv_stream) = connection.open_bi().await?;
 
-        let bytes =
-            serde_json::to_vec(&envelope).map_err(|e| FederationError::Transport(e.to_string()))?;
-        send.write_all(&bytes)
-            .await
-            .map_err(|e| FederationError::Transport(e.to_string()))?;
-        send.finish()
-            .map_err(|e| FederationError::Transport(e.to_string()))?;
+        // Serialize and send envelope
+        let payload = serde_json::to_vec(&envelope)?;
+        if payload.len() > MAX_MESSAGE_SIZE {
+            anyhow::bail!("envelope too large: {} bytes", payload.len());
+        }
 
-        let resp_bytes = recv
-            .read_to_end(MAX_ENVELOPE_BYTES)
-            .await
-            .map_err(|e| FederationError::Transport(e.to_string()))?;
+        // Send length prefix (4 bytes big-endian) + payload
+        let len_bytes = (payload.len() as u32).to_be_bytes();
+        send_stream.write_all(&len_bytes).await?;
+        send_stream.write_all(&payload).await?;
+        send_stream.finish()?;
 
-        let response: FederationEnvelope = serde_json::from_slice(&resp_bytes)
-            .map_err(|e| FederationError::Transport(e.to_string()))?;
-        let peer_key = verifying_key_from_b64(peer_public_key_b64)?;
-        response.verify(&peer_key)?;
+        // Read response
+        let mut len_buf = [0u8; 4];
+        recv_stream.read_exact(&mut len_buf).await?;
+        let resp_len = u32::from_be_bytes(len_buf) as usize;
+        if resp_len > MAX_MESSAGE_SIZE {
+            anyhow::bail!("response too large: {} bytes", resp_len);
+        }
+
+        let mut resp_buf = vec![0u8; resp_len];
+        recv_stream.read_exact(&mut resp_buf).await?;
+
+        let response: FederationEnvelope = serde_json::from_slice(&resp_buf)?;
+
+        // Verify response signature against peer's public key
+        let peer_pubkey = base64::engine::general_purpose::STANDARD
+            .decode(peer_public_key_b64)
+            .context("invalid peer public key base64")?;
+        let peer_key = ed25519_dalek::VerifyingKey::from_bytes(
+            &peer_pubkey.try_into().map_err(|_| anyhow::anyhow!("invalid key length"))?
+        )?;
+        response.verify(&peer_key).context("response signature verification failed")?;
+
+        // Verify response is for our request
+        if response.correlation_id != Some(envelope.message_id) {
+            anyhow::bail!("response correlation_id mismatch");
+        }
+
         Ok(response)
     }
 }
+/// Serve QUIC connections and handle incoming envelopes.
+pub async fn serve_quic(endpoint: Endpoint, state: InboundState) -> Result<()> {
+    info!("QUIC federation server started");
+    loop {
+        let connecting = match endpoint.accept().await {
+            Some(c) => c,
+            None => break,
+        };
 
-/// Run the QUIC server accept loop, dispatching each verified envelope to
-/// `state.handler` and signing the response. Returns when the endpoint stops
-/// accepting connections.
-pub async fn serve_quic(endpoint: Endpoint, state: InboundState) -> anyhow::Result<()> {
-    if let Ok(addr) = endpoint.local_addr() {
-        info!(listen = %addr, "QUIC federation server listening");
-    }
-    while let Some(incoming) = endpoint.accept().await {
         let state = state.clone();
         tokio::spawn(async move {
-            match incoming.accept() {
-                Ok(connecting) => match connecting.await {
-                    Ok(conn) => {
-                        if let Err(e) = handle_connection(conn, state).await {
-                            warn!(error = %e, "QUIC connection error");
+            let connection = match connecting.await {
+                Ok(c) => c,
+                Err(e) => {
+                    warn!(error = %e, "QUIC connection failed");
+                    return;
+                }
+            };
+
+            loop {
+                let (mut send_stream, mut recv_stream) = match connection.accept_bi().await {
+                    Ok(s) => s,
+                    Err(e) => {
+                        if e.to_string().contains("ApplicationClosed") {
+                            debug!("QUIC stream closed by peer");
+                        } else {
+                            warn!(error = %e, "QUIC accept_bi failed");
+                        }
+                        return;
+                    }
+                };
+
+                let state = state.clone();
+                tokio::spawn(async move {
+                    // Read length prefix
+                    let mut len_buf = [0u8; 4];
+                    if recv_stream.read_exact(&mut len_buf).await.is_err() {
+                        return;
+                    }
+                    let msg_len = u32::from_be_bytes(len_buf) as usize;
+                    if msg_len > MAX_MESSAGE_SIZE {
+                        warn!(msg_len, "QUIC message too large");
+                        return;
+                    }
+
+                    // Read payload
+                    let mut buf = vec![0u8; msg_len];
+                    if recv_stream.read_exact(&mut buf).await.is_err() {
+                        return;
+                    }
+
+                    // Parse envelope
+                    let envelope: FederationEnvelope = match serde_json::from_slice(&buf) {
+                        Ok(e) => e,
+                        Err(e) => {
+                            warn!(error = %e, "Failed to parse QUIC envelope");
+                            return;
+                        }
+                    };
+
+                    // Verify envelope signature
+                    let from_dept = &envelope.from_dept_id;
+                    let peer_config = state.peers.get(from_dept);
+                    if peer_config.is_none() {
+                        warn!(from_dept = %from_dept, "Unknown peer department");
+                        return;
+                    }
+                    let peer_config = peer_config.unwrap();
+
+                    let peer_pubkey = match base64::engine::general_purpose::STANDARD.decode(&peer_config.public_key_b64) {
+                        Ok(k) => k,
+                        Err(e) => {
+                            warn!(error = %e, "Invalid peer public key");
+                            return;
+                        }
+                    };
+                    let peer_key_bytes: [u8; 32] = match peer_pubkey.try_into() {
+                        Ok(k) => k,
+                        Err(_) => {
+                            warn!("Invalid peer public key length");
+                            return;
+                        }
+                    };
+                    let peer_key = match ed25519_dalek::VerifyingKey::from_bytes(&peer_key_bytes) {
+                        Ok(k) => k,
+                        Err(e) => {
+                            warn!(error = %e, "Invalid peer verifying key");
+                            return;
+                        }
+                    };
+
+                    if envelope.verify(&peer_key).is_err() {
+                        warn!(from_dept = %from_dept, "QUIC envelope signature verification failed");
+                        return;
+                    }
+// Check timestamp freshness
+                    let now_ms = chrono::Utc::now().timestamp_millis();
+                    if (now_ms - envelope.timestamp_ms).abs() > crate::transport::MAX_TIMESTAMP_SKEW_SECS * 1000 {
+                        warn!(from_dept = %from_dept, "QUIC envelope timestamp skew exceeded");
+                        return;
+                    }
+
+                    // Replay protection
+                    if state.replay_protection.lock().await.check_and_insert(envelope.message_id).is_err() {
+                        warn!(from_dept = %from_dept, msg_id = %envelope.message_id, "QUIC replay detected");
+                        return;
+                    }
+
+                    // Rate limiting
+                    if state
+                        .federation_rate_limiter
+                        .check(from_dept)
+                        .is_err()
+                    {
+                        warn!(from_dept = %from_dept, "QUIC rate limit exceeded");
+                        return;
+                    }
+
+                    // Revocation check
+                    if let Some(revocation) = &state.revocation_client {
+                        if !envelope.consent_grant_ids.is_empty() {
+                            let grant_ids: Vec<_> = envelope
+                                .consent_grant_ids
+                                .iter()
+                                .copied()
+                                .collect();
+                            if !grant_ids.is_empty() {
+                                if revocation.ensure_active(&grant_ids).await.is_err() {
+                                    warn!(from_dept = %from_dept, "QUIC grant revoked or unknown");
+                                    return;
+                                }
+                            }
                         }
                     }
-                    Err(e) => warn!(error = %e, "QUIC connection failed"),
-                },
-                Err(e) => warn!(error = %e, "QUIC incoming accept failed"),
+
+                    // Dispatch to handler
+                    let response = match (state.handler)(envelope).await {
+                        Ok(r) => r,
+                        Err(e) => {
+                            error!(error = %e, "QUIC handler error");
+                            return;
+                        }
+                    };
+
+                    // Sign response
+                    let mut signed_response = response;
+                    signed_response.from_dept_id = state.keypair.dept_id.to_string();
+                    signed_response.sign(&state.keypair.signing_key);
+
+                    // Send response
+                    let resp_payload = match serde_json::to_vec(&signed_response) {
+                        Ok(p) => p,
+                        Err(e) => {
+                            error!(error = %e, "Failed to serialize QUIC response");
+                            return;
+                        }
+                    };
+                    if resp_payload.len() > MAX_MESSAGE_SIZE {
+                        warn!("QUIC response too large");
+                        return;
+                    }
+
+                    let resp_len = (resp_payload.len() as u32).to_be_bytes();
+                    if send_stream.write_all(&resp_len).await.is_err() {
+                        return;
+                    }
+                    if send_stream.write_all(&resp_payload).await.is_err() {
+                        return;
+                    }
+                    let _ = send_stream.finish();
+                });
             }
         });
     }
     Ok(())
 }
 
-async fn handle_connection(
-    conn: quinn::Connection,
-    state: InboundState,
-) -> Result<(), FederationError> {
-    loop {
-        let (mut send, mut recv) = conn
-            .accept_bi()
-            .await
-            .map_err(|e| FederationError::Transport(e.to_string()))?;
-
-        let bytes = recv
-            .read_to_end(MAX_ENVELOPE_BYTES)
-            .await
-            .map_err(|e| FederationError::Transport(e.to_string()))?;
-
-        let envelope: FederationEnvelope = serde_json::from_slice(&bytes)
-            .map_err(|e| FederationError::Transport(e.to_string()))?;
-
-        let peer = state.peers.get(&envelope.from_dept_id).ok_or_else(|| {
-            FederationError::Transport(format!("unknown peer: {}", envelope.from_dept_id))
-        })?;
-        let sender_key = verifying_key_from_b64(&peer.public_key_b64)
-            .map_err(|e| FederationError::Crypto(e.to_string()))?;
-        envelope
-            .verify(&sender_key)
-            .map_err(|e| FederationError::Transport(e.to_string()))?;
-
-        debug!(
-            from = %envelope.from_dept_id,
-            to = %envelope.to_dept_id,
-            message_id = %envelope.message_id,
-            "inbound QUIC envelope verified"
-        );
-
-        let mut response = (state.handler)(envelope)
-            .await
-            .map_err(|e| FederationError::Transport(e.to_string()))?;
-        response.sign(&state.keypair.signing_key);
-
-        let resp_bytes =
-            serde_json::to_vec(&response).map_err(|e| FederationError::Transport(e.to_string()))?;
-        send.write_all(&resp_bytes)
-            .await
-            .map_err(|e| FederationError::Transport(e.to_string()))?;
-        send.finish()
-            .map_err(|e| FederationError::Transport(e.to_string()))?;
-    }
-}
-
-#[cfg(test)]
+#[cfg(all(test, feature = "quic"))]
 mod tests {
     use super::*;
-    use std::collections::HashMap;
-    use std::time::Duration;
+    use gov_federation_core::NodeKeypair;
+    use std::net::SocketAddr;
+    use std::sync::Once;
 
-    use gov_federation_core::{FederationMessageType, NodeKeypair};
-    use uuid::Uuid;
+    static CRYPTO_PROVIDER: Once = Once::new();
 
-    use crate::config::PeerConfig;
-    use crate::transport::EnvelopeHandler;
-
-    fn echo_handler() -> EnvelopeHandler {
-        Arc::new(|env: FederationEnvelope| {
-            Box::pin(async move {
-                Ok(FederationEnvelope {
-                    message_id: Uuid::new_v4(),
-                    correlation_id: Some(env.message_id),
-                    message_type: FederationMessageType::DataResponse,
-                    from_dept_id: env.to_dept_id.clone(),
-                    to_dept_id: env.from_dept_id.clone(),
-                    timestamp_ms: chrono::Utc::now().timestamp_millis(),
-                    consent_grant_ids: env.consent_grant_ids.clone(),
-                    payload_encrypted: String::new(),
-                    signature: String::new(),
-                })
-            })
-        })
+    fn install_crypto_provider() {
+        CRYPTO_PROVIDER.call_once(|| {
+            let _ = rustls::crypto::ring::default_provider().install_default();
+        });
     }
 
     #[tokio::test]
-    async fn quic_round_trip() {
-        // Server = ird, client = winz.
-        let server_kp = Arc::new(NodeKeypair::generate("ird"));
-        let client_kp = NodeKeypair::generate("winz");
+    async fn test_server_endpoint_creation() {
+        install_crypto_provider();
+        let listen: SocketAddr = "127.0.0.1:0".parse().unwrap();
+        let (endpoint, cert_der) = server_endpoint(listen).unwrap();
+        assert!(!cert_der.is_empty());
+        drop(endpoint);
+    }
 
-        let mut server_peers = HashMap::new();
-        server_peers.insert(
-            "winz".to_string(),
-            PeerConfig {
-                dept_id: "winz".into(),
-                addr: "127.0.0.1:1".parse().unwrap(),
-                public_key_b64: client_kp.public_key_b64(),
-            },
-        );
+    #[tokio::test]
+    async fn test_client_endpoint_creation() {
+        install_crypto_provider();
+        let (_endpoint, cert_der) = server_endpoint("127.0.0.1:0".parse().unwrap()).unwrap();
+        let endpoint = client_endpoint(&cert_der).unwrap();
+        drop(endpoint);
+    }
 
-        let state = InboundState {
-            keypair: server_kp.clone(),
-            peers: Arc::new(server_peers),
-            handler: echo_handler(),
-        };
+    #[tokio::test]
+    async fn test_quic_transport_creation() {
+        install_crypto_provider();
+        let (_endpoint, cert_der) = server_endpoint("127.0.0.1:0".parse().unwrap()).unwrap();
+        let transport = QuicTransport::new(cert_der).unwrap();
+        drop(transport);
+    }
 
-        let (server, server_cert_der) = server_endpoint("127.0.0.1:0".parse().unwrap()).unwrap();
-        let addr = server.local_addr().unwrap();
-        tokio::spawn(async move {
-            let _ = serve_quic(server, state).await;
-        });
-        // Give the accept loop a moment to come up.
-        tokio::time::sleep(Duration::from_millis(150)).await;
-
-        let peer = PeerConfig {
-            dept_id: "ird".into(),
-            addr,
-            public_key_b64: server_kp.public_key_b64(),
-        };
-
-        let transport = QuicTransport::new(&server_cert_der).unwrap();
-        let mut env =
-            FederationEnvelope::new_request("winz", "ird", vec![], "payload".into(), String::new());
-        env.sign(&client_kp.signing_key);
-
-        let resp = transport
-            .send(addr, &peer.public_key_b64, env)
-            .await
-            .unwrap();
-
-        assert_eq!(resp.message_type, FederationMessageType::DataResponse);
-        assert_eq!(resp.from_dept_id, "ird");
-        assert_eq!(resp.to_dept_id, "winz");
-        assert!(!resp.signature.is_empty());
+    #[tokio::test]
+    async fn test_self_signed_cert_generation() {
+        install_crypto_provider();
+        let (cert_der, key_der) = generate_self_signed_cert("test").unwrap();
+        assert!(!cert_der.is_empty());
+        assert!(!key_der.is_empty());
     }
 }

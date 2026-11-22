@@ -10,9 +10,13 @@
 //!   `TPT__GOV__ISSUER_PUBLIC_KEY` (standard or URL-safe base64).
 //! - [`RevocationClient`] checks grant ids against the identity server's
 //!   `/v1/grants/status` endpoint, with a short-lived cache.
+//! - [`verify_grant`] verifies a grant's signature, expiry, and revocation status
+//!   in a single call.
 
 mod issuer;
 mod revocation;
+mod verify;
 
 pub use issuer::{decode_public_key, issuer_key_from_env};
 pub use revocation::RevocationClient;
+pub use verify::verify_grant;

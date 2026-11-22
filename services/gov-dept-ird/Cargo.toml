@@ -10,6 +10,7 @@ name = "gov-dept-ird"
 path = "src/main.rs"
 
 [dependencies]
+gov-consent = { path = "../../crates/gov-consent" }
 gov-federation-core = { path = "../../crates/gov-federation-core" }
 gov-federation-node = { path = "../../crates/gov-federation-node" }
 gov-identity-core = { path = "../../crates/gov-identity-core" }

@@ -226,6 +226,19 @@ async fn collect_limited(
         .map_err(|_| StatusCode::BAD_GATEWAY)
 }
 
+/// Extract the requesting department from the JWT scopes.
+/// The requesting department is the prefix of the first scope that matches the target department,
+/// or the prefix of the first scope if no specific match.
+fn extract_requesting_dept(claims: &Claims, target_dept: &str) -> Option<String> {
+    // First, try to find a scope for the target department
+    let target_prefix = format!("{}:", target_dept);
+    if let Some(scope) = claims.scopes.iter().find(|s| s.starts_with(&target_prefix)) {
+        return Some(target_dept.to_string());
+    }
+    // Fall back to the first scope's prefix
+    claims.scopes.first().and_then(|s| s.split(':').next().map(|p| p.to_string()))
+}
+
 pub async fn proxy_dept(
     State(app_state): State<AppState>,
     Extension(claims): Extension<Claims>,
@@ -244,6 +257,13 @@ pub async fn proxy_dept(
         return Err(StatusCode::FORBIDDEN);
     }
 
+    // Determine the requesting department from JWT scopes
+    let requesting_dept = extract_requesting_dept(&claims, &dept_id)
+        .ok_or_else(|| {
+            tracing::warn!(sub = %claims.sub, dept = %dept_id, "no scope found to determine requesting department");
+            StatusCode::FORBIDDEN
+        })?;
+
     let base_url = app_state
         .registry
         .get_url(&dept_id)
@@ -256,7 +276,8 @@ pub async fn proxy_dept(
         .method(method.clone())
         .uri(target_uri)
         .header("x-dept-id", &dept_id)
-        .header("x-citizen-did", &claims.sub);
+        .header("x-citizen-did", &claims.sub)
+        .header("x-requesting-dept-id", &requesting_dept);
     builder = forward_headers(builder, &headers);
 
     // Mutual TLS: when configured, present our client certificate and verify the

@@ -240,7 +240,7 @@ mod tests {
             eprintln!("mTLS fixtures missing; run scripts/gen-mtls-certs.sh — skipping");
             return;
         }
-        let srv = server_config(&server).expect("server config builds with client-cert auth");
+        server_config(&server).expect("server config builds with client-cert auth");
         client_config(&client).expect("client config builds");
     }
 

@@ -25,7 +25,7 @@ pub struct PaymentRow {
     pub benefit_type: String,
     pub payment_date: chrono::NaiveDate,
     pub amount: sqlx::types::Decimal,
-    pub method: String,
+    pub method: Option<String>,
 }
 
 #[derive(Debug, sqlx::FromRow)]
