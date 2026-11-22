@@ -14,7 +14,7 @@ jobs:
     name: TypeScript (lint, typecheck, test)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # No explicit version: pnpm/action-setup@v4 reads pnpm@9.15.4 from the
       # "packageManager" field in package.json. Declaring both causes the
       # "Multiple versions of pnpm specified" error.
@@ -33,7 +33,7 @@ jobs:
     name: Rust (build, unit tests)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
