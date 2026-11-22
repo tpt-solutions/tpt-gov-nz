@@ -90,9 +90,9 @@ pub async fn fetch_data(
         json!(
             rows.iter()
                 .map(|c| json!({
-                    "programme": c.c,
-                    "value": c.c,
-                    "status": c.c,
+                    "programme": c.programme,
+                    "value": c.value,
+                    "status": c.status,
                 }))
                 .collect::<Vec<_>>()
         )
@@ -108,9 +108,9 @@ pub async fn fetch_data(
         json!(
             rows.iter()
                 .map(|c| json!({
-                    "name": c.c,
-                    "location": c.c,
-                    "status": c.c,
+                    "name": c.name,
+                    "location": c.location,
+                    "status": c.status,
                 }))
                 .collect::<Vec<_>>()
         )

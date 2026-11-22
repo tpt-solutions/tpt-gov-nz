@@ -81,16 +81,16 @@ pub async fn fetch_data(
     let has_scope = |s: &str| req.scopes.contains(&s.to_owned());
 
     let fire_safety = if has_scope("fenz:fire-safety") {
-        Some(db::fetch_fire_safety(&pool, citizen.id).await?)
+        db::fetch_fire_safety(&pool, citizen.id).await?
     } else {
         None
     };
 
     let fire_safety_json = fire_safety.as_ref().map(|p| {
         json!({
-            "property": c.p,
-            "grade": c.p,
-            "lastInspection": c.p.to_string(),
+            "property": p.property,
+            "grade": p.grade,
+            "lastInspection": p.last_inspection.to_string(),
         })
     });
 
@@ -104,10 +104,10 @@ pub async fn fetch_data(
         json!(
             rows.iter()
                 .map(|c| json!({
-                    "reference": c.c,
-                    "incidentType": c.c,
-                    "incidentDate": c.c.to_string(),
-                    "status": c.c,
+                    "reference": c.reference,
+                    "incidentType": c.incident_type,
+                    "incidentDate": c.incident_date.to_string(),
+                    "status": c.status,
                 }))
                 .collect::<Vec<_>>()
         )

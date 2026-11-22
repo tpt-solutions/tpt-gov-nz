@@ -90,27 +90,27 @@ pub async fn fetch_data(
         json!(
             rows.iter()
                 .map(|c| json!({
-                    "fiscalYear": c.c,
-                    "portfolio": c.c,
-                    "appropriation": c.c,
-                    "amount": c.c,
+                    "fiscalYear": c.fiscal_year,
+                    "portfolio": c.portfolio,
+                    "appropriation": c.appropriation,
+                    "amount": c.amount,
                 }))
                 .collect::<Vec<_>>()
         )
     });
 
     let economic_outlook = if has_scope("treasury:economic-outlook") {
-        Some(db::fetch_economic_outlook(&pool, citizen.id).await?)
+        db::fetch_economic_outlook(&pool, citizen.id).await?
     } else {
         None
     };
 
     let economic_outlook_json = economic_outlook.as_ref().map(|p| {
         json!({
-            "forecastYear": c.p,
-            "gdpGrowthPct": c.p,
-            "inflationPct": c.p,
-            "netDebtPct": c.p,
+            "forecastYear": p.forecast_year,
+            "gdpGrowthPct": p.gdp_growth_pct,
+            "inflationPct": p.inflation_pct,
+            "netDebtPct": p.net_debt_pct,
         })
     });
 

@@ -90,10 +90,10 @@ pub async fn fetch_data(
         json!(
             rows.iter()
                 .map(|c| json!({
-                    "reference": c.c,
-                    "agency": c.c,
-                    "status": c.c,
-                    "issuedDate": c.c.to_string(),
+                    "reference": c.reference,
+                    "agency": c.agency,
+                    "status": c.status,
+                    "issuedDate": c.issued_date.to_string(),
                 }))
                 .collect::<Vec<_>>()
         )
@@ -109,9 +109,9 @@ pub async fn fetch_data(
         json!(
             rows.iter()
                 .map(|c| json!({
-                    "partner": c.c,
-                    "engagementType": c.c,
-                    "engagementDate": c.c.to_string(),
+                    "partner": c.partner,
+                    "engagementType": c.engagement_type,
+                    "engagementDate": c.engagement_date.to_string(),
                 }))
                 .collect::<Vec<_>>()
         )

@@ -81,16 +81,16 @@ pub async fn fetch_data(
     let has_scope = |s: &str| req.scopes.contains(&s.to_owned());
 
     let enrolment = if has_scope("moe:enrolment") {
-        Some(db::fetch_enrolment(&pool, citizen.id).await?)
+        db::fetch_enrolment(&pool, citizen.id).await?
     } else {
         None
     };
 
     let enrolment_json = enrolment.as_ref().map(|p| {
         json!({
-            "school": c.p,
-            "yearLevel": c.p,
-            "status": c.p,
+            "school": p.school,
+            "yearLevel": p.year_level,
+            "status": p.status,
         })
     });
 
@@ -104,9 +104,9 @@ pub async fn fetch_data(
         json!(
             rows.iter()
                 .map(|c| json!({
-                    "service": c.c,
-                    "status": c.c,
-                    "nextReview": c.c.to_string(),
+                    "service": c.service,
+                    "status": c.status,
+                    "nextReview": c.next_review.to_string(),
                 }))
                 .collect::<Vec<_>>()
         )

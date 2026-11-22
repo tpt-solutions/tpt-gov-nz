@@ -90,10 +90,10 @@ pub async fn fetch_data(
         json!(
             rows.iter()
                 .map(|c| json!({
-                    "school": c.c,
-                    "rating": c.c,
-                    "reviewDate": c.c.to_string(),
-                    "nextReview": c.c.to_string(),
+                    "school": c.school,
+                    "rating": c.rating,
+                    "reviewDate": c.review_date.to_string(),
+                    "nextReview": c.next_review.to_string(),
                 }))
                 .collect::<Vec<_>>()
         )
@@ -109,8 +109,8 @@ pub async fn fetch_data(
         json!(
             rows.iter()
                 .map(|c| json!({
-                    "title": c.c,
-                    "published": c.c.to_string(),
+                    "title": c.title,
+                    "published": c.published.to_string(),
                 }))
                 .collect::<Vec<_>>()
         )

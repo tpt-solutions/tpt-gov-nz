@@ -81,16 +81,16 @@ pub async fn fetch_data(
     let has_scope = |s: &str| req.scopes.contains(&s.to_owned());
 
     let retirement_plan = if has_scope("retirement:retirement-plan") {
-        Some(db::fetch_retirement_plan(&pool, citizen.id).await?)
+        db::fetch_retirement_plan(&pool, citizen.id).await?
     } else {
         None
     };
 
     let retirement_plan_json = retirement_plan.as_ref().map(|p| {
         json!({
-            "hasPlan": c.p,
-            "retirementAge": c.p,
-            "lastReview": c.p.to_string(),
+            "hasPlan": p.has_plan,
+            "retirementAge": p.retirement_age,
+            "lastReview": p.last_review.to_string(),
         })
     });
 
@@ -104,9 +104,9 @@ pub async fn fetch_data(
         json!(
             rows.iter()
                 .map(|c| json!({
-                    "topic": c.c,
-                    "summary": c.c,
-                    "published": c.c.to_string(),
+                    "topic": c.topic,
+                    "summary": c.summary,
+                    "published": c.published.to_string(),
                 }))
                 .collect::<Vec<_>>()
         )

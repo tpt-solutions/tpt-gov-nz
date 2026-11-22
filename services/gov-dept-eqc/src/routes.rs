@@ -90,26 +90,26 @@ pub async fn fetch_data(
         json!(
             rows.iter()
                 .map(|c| json!({
-                    "reference": c.c,
-                    "property": c.c,
-                    "status": c.c,
-                    "lodgedDate": c.c.to_string(),
+                    "reference": c.reference,
+                    "property": c.property,
+                    "status": c.status,
+                    "lodgedDate": c.lodged_date.to_string(),
                 }))
                 .collect::<Vec<_>>()
         )
     });
 
     let cover = if has_scope("eqc:cover") {
-        Some(db::fetch_cover(&pool, citizen.id).await?)
+        db::fetch_cover(&pool, citizen.id).await?
     } else {
         None
     };
 
     let cover_json = cover.as_ref().map(|p| {
         json!({
-            "property": c.p,
-            "sumInsured": c.p,
-            "validTo": c.p.to_string(),
+            "property": p.property,
+            "sumInsured": p.sum_insured,
+            "validTo": p.valid_to.to_string(),
         })
     });
 

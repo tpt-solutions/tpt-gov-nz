@@ -96,12 +96,12 @@ pub async fn fetch_data(
         row.map(|s| {
             json!({
                 "hasStudentLoan": s.has_student_loan,
-                "loanBalance": s.loan_balance.map(|d| d.to_f64().unwrap_or(0.0)),
+                "loanBalance": s.loan_balance.map(|d| d.to_string().parse::<f64>().unwrap_or(0.0)),
                 "repaymentPlan": s.repayment_plan,
                 "hasAllowance": s.has_allowance,
                 "allowanceType": s.allowance_type,
                 "nextPaymentDate": s.next_payment_date.map(|d| d.to_string()),
-                "weeklyAmount": s.weekly_amount.map(|d| d.to_f64().unwrap_or(0.0)),
+                "weeklyAmount": s.weekly_amount.map(|d| d.to_string().parse::<f64>().unwrap_or(0.0)),
             })
         })
     });

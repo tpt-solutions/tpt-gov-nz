@@ -87,7 +87,7 @@ pub async fn fetch_data(
     };
 
     let profile = if has_scope("statsnz:profile") {
-        Some(db::fetch_profile(&pool, citizen.id).await?)
+        db::fetch_profile(&pool, citizen.id).await?
     } else {
         None
     };
