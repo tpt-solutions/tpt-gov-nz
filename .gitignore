@@ -41,4 +41,10 @@ scripts/mtls-certs/
 
 # Backup files
 *.bak
+*.fixed
+
+# Local agent config and scratch scripts
+.kilo/
+fix_test.py
+fix_transport.py
 
