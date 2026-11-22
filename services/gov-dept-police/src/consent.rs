@@ -149,9 +149,8 @@ pub async fn enforce_signed_and_unrevoked(input: &ConsentInput<'_>) -> Result<()
     let ids: Vec<_> = input.consent_grants.iter().map(|g| g.id).collect();
     let revocation = gov_consent::RevocationClient::from_env()
         .map_err(|e| PoliceError::ScopeNotGranted(format!("revocation check unavailable: {e}")))?;
-    revocation
-        .ensure_active(&ids)
-        .await
-        .map_err(|e| PoliceError::ScopeNotGranted(format!("consent grant revoked or unknown: {e}")))?;
+    revocation.ensure_active(&ids).await.map_err(|e| {
+        PoliceError::ScopeNotGranted(format!("consent grant revoked or unknown: {e}"))
+    })?;
     Ok(())
 }

@@ -149,11 +149,11 @@ pub async fn enforce_signed_and_unrevoked(input: &ConsentInput<'_>) -> Result<()
         .map_err(|e| WorksafeError::ScopeNotGranted(format!("issuer key unavailable: {e}")))?;
     verify_access(input, Some(&key))?;
     let ids: Vec<_> = input.consent_grants.iter().map(|g| g.id).collect();
-    let revocation = gov_consent::RevocationClient::from_env()
-        .map_err(|e| WorksafeError::ScopeNotGranted(format!("revocation check unavailable: {e}")))?;
-    revocation
-        .ensure_active(&ids)
-        .await
-        .map_err(|e| WorksafeError::ScopeNotGranted(format!("consent grant revoked or unknown: {e}")))?;
+    let revocation = gov_consent::RevocationClient::from_env().map_err(|e| {
+        WorksafeError::ScopeNotGranted(format!("revocation check unavailable: {e}"))
+    })?;
+    revocation.ensure_active(&ids).await.map_err(|e| {
+        WorksafeError::ScopeNotGranted(format!("consent grant revoked or unknown: {e}"))
+    })?;
     Ok(())
 }
