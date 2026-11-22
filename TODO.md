@@ -712,8 +712,9 @@ Source: full platform review. Direction: **hybrid** — Rust owns correctness-cr
 
 **Rust**
 - [x] Persistent identity-server issuer key (`gov-identity-server/src/routes.rs` `issue_grant` currently calls `CredentialIssuer::generate()` per request); expose public key endpoint
-- [ ] Dept services verify `DataGrantCredential` signatures — pass the issuer key to `consent::verify_access` (currently `None` in `gov-dept-node/src/routes.rs`, `gov-dept-ird/src/routes.rs`; fix in generator template and regenerate all dept services) *(partial: `gov-consent::verify_grant` wired into `gov-dept-ird` + gateway; `gov-dept-node` and the other ~45 dept services still pass `None`)*
-- [ ] Enforce revocation in dept services (`revoked_at` ignored; `grant.is_valid()` unused); verify signature and scope on the same grant *(partial: revocation checked via `gov-consent` in IRD/gateway; other dept services not yet)*
+- [x] Dept services verify `DataGrantCredential` signatures — every dept service's `verify_access` path now loads the issuer key via `gov-consent` and fails closed (`enforce_signed_and_unrevoked` in each `consent.rs`; OPA can only restrict). Applied to the template and all 46 copies, plus `gov-dept-ird` and the gateway already wired. Config: `TPT__GOV__ISSUER_PUBLIC_KEY` + `TPT__GOV__IDENTITY_API_KEY` added to `docker/phase1.yml` and `.env.example`. *Caveat: 7 patched services type-check clean (acc, caa, corrections, dia, moh, nzta, winz); 39 others fail to compile for pre-existing reasons (see "Dept route compile errors" below), so their new code is unverified by the compiler.*
+- [x] Enforce revocation in dept services — same helper calls `RevocationClient::ensure_active` on every presented grant id (fail-closed); signature and scope checked on the same grant.
+- [ ] Dept route compile errors (pre-existing, found while patching): 27 dept services have `"key": c.c` placeholder field accesses in `routes.rs` (169 occurrences) that don't match the row structs, and most services' `sqlx::query!` macros need `DATABASE_URL`/offline cache. Fix the generator and regenerate, then `cargo check --workspace` with a database.
 - [ ] Remove `requesting_dept_id` self-assertion bypass (`is_direct_access`); gateway sets caller identity from JWT, JWT `sub` must equal `req.did`, enforce `Claims.scopes`
 - [x] Authenticate identity-server endpoints (`register_did`, `issue_grant`, `revoke_grant`, `list_grants`); make DID registration first-write-wins (no key overwrite); validate dept ids, scopes, `expires_in_seconds` bounds
 - [x] Axum 0.8 route syntax in `gov-identity-server/src/main.rs` (`:did`/`:id` → `{did}`/`{id}`) *(verify with `cargo run`)*
@@ -724,12 +725,12 @@ Source: full platform review. Direction: **hybrid** — Rust owns correctness-cr
 
 **TypeScript / portals** (largely superseded by the Rust auth/BFF service below, but fix the quick wins now)
 - [x] `portal-citizen/app/lib/data-access.ts:25-26` syntax error and `STATSNZDataBundle` vs `StatsNZDataBundle` export mismatch (breaks typecheck) *(verify)*
-- [ ] Citizen login: bind public key to DID (`app/api/auth/verify/route.ts`); stop overwriting registered keys
+- [x] Citizen login: bind public key to DID (`app/api/auth/verify/route.ts`) — DID must equal `did:gov:nz:` + the key's base64url (`didMatchesPublicKey`); the portal no longer makes an unauthenticated registration call (the legacy register route is not mounted and the challenge route needs the API key), so "stop overwriting keys" is enforced only by the identity server's first-write-wins rule. *Open: portal-side DID registration via a server-side challenge flow.*
 - [ ] Staff portal: verify JWT in middleware and in every dept page/server action via one shared guard (currently cookie-presence only)
 - [ ] RealMe: fail closed without `REALME_IDP_CERT`; remove/guard `REALME_SKIP_VERIFY`; staff allow-list/roles; SubjectConfirmationData (Recipient, NotOnOrAfter, InResponseTo required), Response Issuer, `SessionIndex` from `AuthnStatement`; harden xmldom (no DOCTYPE/entities); persistent replay store; signed SLO / CSRF-safe logout; validate `relayState`
-- [ ] Remove hard-coded fallback session secrets (both portals); throw at startup in production
-- [ ] Demo login server actions must check demo mode server-side; constant-time staff password compare + rate limit
-- [ ] AI: `/api/ai` use session `grantedScopes`, bound input, guard `req.json()`, redact context chunks (medical/WINZ data), don't leak upstream errors; authenticate + rate-limit `portal-policy` AI actions; align `AI_*` vs `TPT__GOV__AI_*` env names and defaults
+- [x] Remove hard-coded fallback session secrets (both portals); throw in production *(throws on first `sessionSecret` access, not at process start; dev fallback retained when `NODE_ENV !== "production"`)*
+- [x] Demo login server actions must check demo mode server-side (`loginDemo`, `setScenario`, `loginStaffDemo`); constant-time staff password compare. *Open: rate limit on staff login.*
+- [ ] AI: `/api/ai` use session `grantedScopes`, bound input, guard `req.json()`, redact context chunks (medical/WINZ data), don't leak upstream errors; authenticate + rate-limit `portal-policy` AI actions; align `AI_*` vs `TPT__GOV__AI_*` env names and defaults *(partial: `/api/ai` done — fetches only granted depts/scopes, 2000-char cap, JSON guard, context chunks redacted, upstream errors logged not returned. Open: `portal-policy` AI auth + rate limit, env-name alignment)*
 
 ### Hybrid architecture
 - [ ] Rust auth/BFF service (new, or folded into `gov-gateway`): sessions/JWT, DID-to-key binding, RealMe SAML validation, consent + audit; portals call it via one shared guard
@@ -738,8 +739,8 @@ Source: full platform review. Direction: **hybrid** — Rust owns correctness-cr
 - [ ] (Deferred) full-Rust UI trial on `portal-open-data` only
 
 ### P1 — Gaps & drift
-- [ ] Remove stale workspace refs: `pnpm-workspace.yaml` (`services/gov-ai`, `services/gov-analytics`, `packages/adapters/*`), `portal-citizen/tsconfig.json` `@tpt/adapter-ird` alias, `ird/ai-context.ts` comment; reconcile `CLAUDE.md` / `CONTRIBUTING.md` / `TODO.md` (adapter model vs native modules); fix Windows path in `docs/international-fork-guide.md:28`
-- [ ] Staff registry: add `hud`, `moj`, `police`; dedupe `StaffDeptId`; extend `StaffBundle` beyond 16 depts
+- [ ] Remove stale workspace refs: `pnpm-workspace.yaml` (`services/gov-ai`, `services/gov-analytics`, `packages/adapters/*`), `portal-citizen/tsconfig.json` `@tpt/adapter-ird` alias, `ird/ai-context.ts` comment; reconcile `CLAUDE.md` / `CONTRIBUTING.md` / `TODO.md` (adapter model vs native modules); fix Windows path in `docs/international-fork-guide.md:28` *(partial: workspace, tsconfig alias, comment and Windows path fixed; `CLAUDE.md` still describes the `DeptAdapter` model and `CONTRIBUTING.md` still needs reconciling)*
+- [x] Staff registry: add `hud`, `moj`, `police`; dedupe `StaffDeptId` *(done in `apps/portal-staff/app/lib/config.ts`; `StaffBundle` extension beyond 16 depts still open)*
 - [ ] Zod-validate client input in ~47 dept `actions.ts`; unify demo flag with `PORTAL_CONFIG`
 - [ ] Replace local-JSON case notes (`apps/portal-staff/app/lib/case-notes.ts`) with audited DB storage
 - [ ] Tests: identity server; HTTP-level forged/unsigned/revoked grant rejection; direct-access bypass; portal auth/JWT/consent/AI route; OpenRouter/Ollama providers; staff middleware; RealMe fail-open path
