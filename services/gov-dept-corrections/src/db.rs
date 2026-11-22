@@ -14,8 +14,8 @@ pub struct ProbationRow {
     pub citizen_id: Uuid,
     pub status: String,
     pub officer_name: String,
-    pub next_report_date: chrono::NaiveDate,
-    pub location: String,
+    pub next_report_date: Option<chrono::NaiveDate>,
+    pub location: Option<String>,
 }
 
 #[derive(Debug, sqlx::FromRow)]
@@ -26,7 +26,7 @@ pub struct CaseRow {
     pub sentence_type: String,
     pub start_date: chrono::NaiveDate,
     pub end_date: Option<chrono::NaiveDate>,
-    pub summary: String,
+    pub summary: Option<String>,
 }
 
 pub async fn resolve_by_did(pool: &PgPool, did: &str) -> sqlx::Result<Option<CitizenRow>> {

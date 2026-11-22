@@ -81,43 +81,41 @@ pub async fn fetch_data(
     let has_scope = |s: &str| req.scopes.contains(&s.to_owned());
 
     let probation = if has_scope("corrections:probation") {
-        Some(db::fetch_probation(&pool, citizen.id).await?)
+        db::fetch_probation(&pool, citizen.id).await?
     } else {
         None
     };
 
     let case = if has_scope("corrections:case") {
-        Some(db::fetch_cases(&pool, citizen.id).await?)
+        db::fetch_cases(&pool, citizen.id).await?
     } else {
-        None
+        Vec::new()
     };
 
-    let probation_json = probation.and_then(|p| p).map(|p| {
+    let probation_json = probation.map(|p| {
         json!({
             "status": p.status,
             "officerName": p.officer_name,
-            "nextReportDate": p.next_report_date.to_string(),
-            "location": p.location,
+            "nextReportDate": p.next_report_date.as_ref().map(|d| d.to_string()),
+            "location": p.location.as_ref().map(|s| s.to_string()),
         })
     });
 
-    let case_json = case.and_then(|rows| {
-        if rows.is_empty() {
-            None
-        } else {
-            Some(json!(
-                rows.iter()
-                    .map(|c| json!({
-                        "caseNumber": c.case_number,
-                        "sentenceType": c.sentence_type,
-                        "startDate": c.start_date.to_string(),
-                        "endDate": c.end_date.map(|d| d.to_string()),
-                        "summary": c.summary,
-                    }))
-                    .collect::<Vec<_>>()
-            ))
-        }
-    });
+    let case_json = if case.is_empty() {
+        None
+    } else {
+        Some(json!(
+            case.iter()
+                .map(|c| json!({
+                    "caseNumber": c.case_number,
+                    "sentenceType": c.sentence_type,
+                    "startDate": c.start_date.to_string(),
+                    "endDate": c.end_date.map(|d| d.to_string()),
+                    "summary": c.summary.as_ref().map(|s| s.to_string()),
+                }))
+                .collect::<Vec<_>>()
+        ))
+    };
 
     Ok(Json(json!({
         "correctionsId": citizen.corrections_id,

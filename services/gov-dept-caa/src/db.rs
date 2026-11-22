@@ -14,7 +14,7 @@ pub struct LicencesRow {
     pub licence_no: String,
     pub category: String,
     pub status: String,
-    pub expires: chrono::NaiveDate,
+    pub expires: Option<chrono::NaiveDate>,
 }
 
 pub async fn fetch_licences(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<LicencesRow>> {
