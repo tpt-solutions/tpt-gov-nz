@@ -49,6 +49,9 @@ export const STAFF_CONFIG = {
     publicservice: process.env.PUBLICSERVICE_SERVICE_URL ?? "http://localhost:8122",
     dpmc: process.env.DPMC_SERVICE_URL ?? "http://localhost:8121",
     treasury: process.env.TREASURY_SERVICE_URL ?? "http://localhost:8120",
+    hud: process.env.HUD_SERVICE_URL ?? "http://localhost:8098",
+    moj: process.env.MOJ_SERVICE_URL ?? "http://localhost:8096",
+    police: process.env.POLICE_SERVICE_URL ?? "http://localhost:8097",
   },
 
   sessionCookieName: "tpt_staff_session",
@@ -57,11 +60,16 @@ export const STAFF_CONFIG = {
   sessionTtlSeconds: 60 * 60 * 8,
 
   get sessionSecret(): string {
-    return process.env.TPT__GOV__SESSION_SECRET ?? "dev-insecure-session-secret-change-me";
+    const secret = process.env.TPT__GOV__SESSION_SECRET;
+    if (secret) return secret;
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("TPT__GOV__SESSION_SECRET must be set in production");
+    }
+    return "dev-insecure-session-secret-change-me";
   },
 } as const;
 
-export type StaffDeptId = "ird" | "winz" | "moh" | "dia" | "nzta" | "acc" | "nzqa" | "msd" | "mbie" | "linz" | "statsnz" | "corrections" | "customs" | "mpi" | "doc" | "tpk" | "nzsis" | "gcsb" | "nzdf" | "defence" | "mfat" | "mch" | "tec" | "ero" | "moe" | "fenz" | "maritime" | "caa" | "mot" | "eqc" | "mfe" | "retirement" | "worksafe" | "regulation" | "tearawhiti" | "ethnic" | "pacific" | "women" | "oranga" | "sfo" | "crownlaw" | "publicservice" | "dpmc" | "nzsis" | "gcsb" | "nzdf" | "defence" | "mfat" | "mch" | "tec" | "ero" | "moe" | "fenz" | "maritime" | "caa" | "mot" | "eqc" | "mfe" | "retirement" | "worksafe" | "regulation" | "tearawhiti" | "ethnic" | "pacific" | "women" | "oranga" | "sfo" | "crownlaw" | "publicservice" | "dpmc" | "treasury";
+export type StaffDeptId = "ird" | "winz" | "moh" | "dia" | "nzta" | "acc" | "nzqa" | "msd" | "mbie" | "linz" | "statsnz" | "corrections" | "customs" | "mpi" | "doc" | "tpk" | "nzsis" | "gcsb" | "nzdf" | "defence" | "mfat" | "mch" | "tec" | "ero" | "moe" | "fenz" | "maritime" | "caa" | "mot" | "eqc" | "mfe" | "retirement" | "worksafe" | "regulation" | "tearawhiti" | "ethnic" | "pacific" | "women" | "oranga" | "sfo" | "crownlaw" | "publicservice" | "dpmc" | "treasury" | "hud" | "moj" | "police";
 
 export interface StaffDeptMeta {
   id: StaffDeptId;
@@ -300,6 +308,30 @@ export const STAFF_DEPARTMENTS_FULL: StaffDeptMeta[] = [
 ];
 
 export const STAFF_DEPARTMENTS: StaffDeptMeta[] = [
+  {
+    id: "hud",
+    name: "Ministry of Housing and Urban Development",
+    shortName: "HUD",
+    description: "Social housing applications, tenancies and maintenance requests.",
+    scopes: ["hud:applications", "hud:tenancy", "hud:maintenance"],
+    href: "/dept/hud",
+  },
+  {
+    id: "moj",
+    name: "Ministry of Justice",
+    shortName: "MoJ",
+    description: "Fines, Disputes Tribunal, court records and name changes.",
+    scopes: ["moj:fines", "moj:disputes", "moj:court-records"],
+    href: "/dept/moj",
+  },
+  {
+    id: "police",
+    name: "New Zealand Police",
+    shortName: "Police",
+    description: "Traffic and infringement notices and police reports.",
+    scopes: ["police:infringements", "police:reports"],
+    href: "/dept/police",
+  },
   {
     id: "ird",
     name: "Inland Revenue",

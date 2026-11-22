@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { PiiRedactor } from "@tpt/gov-ai-client";
 import { getSession } from "@/app/lib/session";
 import { fetchDeptData } from "@/app/lib/data-access";
 import { DEPARTMENTS } from "@/app/lib/config";
@@ -6,6 +7,9 @@ import { buildAiContext } from "@/app/lib/ai-context";
 import { buildAiClient } from "@/app/ai/client";
 
 export const dynamic = "force-dynamic";
+
+const MAX_QUESTION_CHARS = 2000;
+const redactor = new PiiRedactor();
 
 const SYSTEM_PROMPT = `You are an assistant for the New Zealand government portal, helping citizens
 understand their government services. Use only the consented data provided. Be concise,
@@ -18,24 +22,46 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
-  const { question } = (await req.json()) as { question?: string };
-  if (!question || !question.trim()) {
+  let body: { question?: unknown };
+  try {
+    body = (await req.json()) as { question?: unknown };
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  const question = typeof body.question === "string" ? body.question.trim() : "";
+  if (!question) {
     return NextResponse.json({ error: "Empty question" }, { status: 400 });
   }
+  if (question.length > MAX_QUESTION_CHARS) {
+    return NextResponse.json(
+      { error: `Question must be ${MAX_QUESTION_CHARS} characters or fewer` },
+      { status: 400 },
+    );
+  }
+
+  // Only read data for the departments and scopes granted to this session. The AI
+  // must never see data the citizen has not consented to share.
+  const granted = new Set(session.grantedScopes);
+  const permitted = DEPARTMENTS.map((d) => ({
+    id: d.id,
+    scopes: d.scopes.filter((s) => granted.has(s)),
+  })).filter((d) => d.scopes.length > 0);
 
   const bundles: Record<string, unknown> = {};
   await Promise.all(
-    DEPARTMENTS.map(async (d) => {
+    permitted.map(async (d) => {
       bundles[d.id] = await fetchDeptData(d.id, d.scopes);
     }),
   );
 
+  // Redact identifiers from the context as well: the client only redacts the question.
   const context = buildAiContext({
     ird: bundles.ird as never,
     winz: bundles.winz as never,
     moh: bundles.moh as never,
     dia: bundles.dia as never,
-  });
+  }).map((chunk) => ({ ...chunk, content: redactor.redact(chunk.content) }));
 
   const client = buildAiClient();
   if (!client.isEnabled) {
@@ -49,8 +75,10 @@ export async function POST(req: Request) {
     const res = await client.chat(SYSTEM_PROMPT, question, context);
     return NextResponse.json({ answer: res.content, enabled: true });
   } catch (e) {
+    // Log the detail server-side; do not return upstream error text to the browser.
+    console.error("AI chat request failed", e);
     return NextResponse.json(
-      { answer: "Sorry, I could not reach the AI service just now.", enabled: true, error: String(e) },
+      { answer: "Sorry, I could not reach the AI service just now.", enabled: true },
       { status: 502 },
     );
   }

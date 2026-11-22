@@ -61,7 +61,12 @@ export const PORTAL_CONFIG = {
   sessionTtlSeconds: 60 * 60 * 8,
 
   get sessionSecret(): string {
-    return process.env.TPT__GOV__SESSION_SECRET ?? "dev-insecure-session-secret-change-me";
+    const secret = process.env.TPT__GOV__SESSION_SECRET;
+    if (secret) return secret;
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("TPT__GOV__SESSION_SECRET must be set in production");
+    }
+    return "dev-insecure-session-secret-change-me";
   },
 } as const;
 

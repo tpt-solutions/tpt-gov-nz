@@ -3,9 +3,8 @@ import type { AiContextChunk, IRDDataBundle } from "@tpt/gov-schema";
 /**
  * Build AI context chunks from an IRD data bundle.
  *
- * This used to live in the `@tpt/adapter-ird` package, but the adapter pattern
- * is being phased out — departments are called directly and AI context is built
- * inline at the portal (see TODO.md "Adapter packages — being phased out").
+ * Departments are called directly (no adapter package); AI context is built
+ * inline at the portal from the dept's data bundle.
  */
 export function produceIrdAiContext(bundle: IRDDataBundle): AiContextChunk[] {
   const chunks: AiContextChunk[] = [];

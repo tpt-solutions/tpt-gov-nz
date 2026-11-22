@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createSessionToken, setSessionCookie, clearSessionCookie } from "./session";
 import { PORTAL_CONFIG, DEPARTMENTS, DEMO_DID, type DeptId } from "./config";
-import { setDemoScenario } from "./demo";
+import { isDemoMode, setDemoScenario } from "./demo";
 import type { ScenarioId } from "./mock-data";
 import { randomToken } from "./jwt";
 
@@ -12,6 +12,8 @@ const ALL_SCOPES = DEPARTMENTS.flatMap((d) => d.scopes);
 
 /** Demo sign-in: set a demo session for Alex Tane and pick a scenario. */
 export async function loginDemo(scenario: ScenarioId) {
+  // Enforced server-side: a demo session must never be mintable when demo mode is off.
+  if (!isDemoMode()) redirect("/login");
   await setDemoScenario(scenario);
   const token = createSessionToken({
     did: DEMO_DID,
@@ -25,6 +27,7 @@ export async function loginDemo(scenario: ScenarioId) {
 
 /** Switch the active demo scenario (persists in a cookie). */
 export async function setScenario(scenario: ScenarioId) {
+  if (!isDemoMode()) redirect("/login");
   await setDemoScenario(scenario);
   redirect("/dashboard");
 }

@@ -25,7 +25,7 @@ consent machinery stays intact.
 ## 3. Renaming & branding
 
 1. Update root `package.json` `name`, `description`.
-2. Replace `C:\Programming\tpt-gov-nz\apps\portal-citizen\app\lib\i18n` strings
+2. Replace the strings in `apps/portal-citizen/app/lib/i18n` (path relative to the repo root)
    (or extend `@tpt/gov-i18n`) with your languages.
 3. Swap the logo in `apps/portal-citizen/app/layout.tsx` and the staff portal.
 4. Update `README.md` and `README-DEMO.md` quick-start.
