@@ -26,11 +26,12 @@ const W = (rel, content) => {
 
 // ── type mapping ──────────────────────────────────────────────────────────────
 const T = {
-  string: { rust: "String", pg: "TEXT", zod: "z.string()", json: (f) => `c.${f}` },
-  i32: { rust: "i32", pg: "INTEGER", zod: "z.number()", json: (f) => `c.${f}` },
-  f64: { rust: "f64", pg: "DOUBLE PRECISION", zod: "z.number()", json: (f) => `c.${f}` },
-  bool: { rust: "bool", pg: "BOOLEAN", zod: "z.boolean()", json: (f) => `c.${f}` },
-  date: { rust: "chrono::NaiveDate", pg: "DATE", zod: "z.string()", json: (f) => `c.${f}.to_string()` },
+  // json(v, f): expression reading field `f` from the closure variable `v`.
+  string: { rust: "String", pg: "TEXT", zod: "z.string()", json: (v, f) => `${v}.${f}` },
+  i32: { rust: "i32", pg: "INTEGER", zod: "z.number()", json: (v, f) => `${v}.${f}` },
+  f64: { rust: "f64", pg: "DOUBLE PRECISION", zod: "z.number()", json: (v, f) => `${v}.${f}` },
+  bool: { rust: "bool", pg: "BOOLEAN", zod: "z.boolean()", json: (v, f) => `${v}.${f}` },
+  date: { rust: "chrono::NaiveDate", pg: "DATE", zod: "z.string()", json: (v, f) => `${v}.${f}.to_string()` },
 };
 
 const pascal = (s) => s.replace(/(^|[-_])(\w)/g, (_, __, c) => c.toUpperCase());

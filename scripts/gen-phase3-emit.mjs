@@ -54,6 +54,9 @@ CREATE INDEX idx_citizens_did ON citizens (did);
 
 CREATE INDEX idx_${tbl}_citizen ON ${tbl} (citizen_id);
 `;
+    // Entity tables are written as migrations 002..; the fixed-number migrations
+    // (090 actions_log, 091 ingestion_runs, 092 seed, 093 idempotency) follow them.
+    mig[`${String(mnum).padStart(3, "0")}_${tbl}.sql`] = entityMig[e.key];
     mnum++;
   }
 
@@ -311,7 +314,8 @@ pub async fn log_action(
 
   // routes.rs
   let scopeBlocks = d.entities.map((e) => {
-    const jsonFields = e.fields.map((f) => `"${f.j}": ${T[f.t].json(e.cardinality === "many" ? "c" : "p")},`).join("\n            ");
+    const closureVar = e.cardinality === "many" ? "c" : "p";
+    const jsonFields = e.fields.map((f) => `"${f.j}": ${T[f.t].json(closureVar, f.n)},`).join("\n            ");
     if (e.cardinality === "many") {
       return `    let ${e.key} = if has_scope("${e.scope}") {
         Some(db::fetch_${e.key}(&pool, citizen.id).await?)
@@ -326,7 +330,7 @@ pub async fn log_action(
     });`;
     }
     return `    let ${e.key} = if has_scope("${e.scope}") {
-        Some(db::fetch_${e.key}(&pool, citizen.id).await?)
+        db::fetch_${e.key}(&pool, citizen.id).await?
     } else {
         None
     };
@@ -424,10 +428,10 @@ pub async fn fetch_data(
             consent_grants: &req.consent_grants,
         };
 
+        // Signature and revocation are always enforced; OPA can only further restrict.
         match opa::evaluate(&input).await {
-            Some(true) => {}
             Some(false) => return Err(${P}Error::ScopeNotGranted(req.scopes.join(","))),
-            None => consent::verify_access(&input, None)?,
+            Some(true) | None => consent::enforce_signed_and_unrevoked(&input).await?,
         }
     }
 
@@ -628,6 +632,23 @@ pub fn verify_access(
     Ok(())
 }
 
+/// Enforce cross-department grant checks: verify each grant's Ed25519 signature
+/// against the identity server's issuer key (scope/expiry/party checks included),
+/// then confirm none of the presented grants has been revoked. Fails closed.
+pub async fn enforce_signed_and_unrevoked(input: &ConsentInput<'_>) -> Result<(), ${P}Error> {
+    let key = gov_consent::issuer_key_from_env()
+        .map_err(|e| ${P}Error::ScopeNotGranted(format!("issuer key unavailable: {e}")))?;
+    verify_access(input, Some(&key))?;
+    let ids: Vec<_> = input.consent_grants.iter().map(|g| g.id).collect();
+    let revocation = gov_consent::RevocationClient::from_env()
+        .map_err(|e| ${P}Error::ScopeNotGranted(format!("revocation check unavailable: {e}")))?;
+    revocation
+        .ensure_active(&ids)
+        .await
+        .map_err(|e| ${P}Error::ScopeNotGranted(format!("consent grant revoked or unknown: {e}")))?;
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -802,6 +823,7 @@ path = "src/main.rs"
 gov-federation-core = { path = "../../crates/gov-federation-core" }
 gov-federation-node = { path = "../../crates/gov-federation-node" }
 gov-identity-core = { path = "../../crates/gov-identity-core" }
+gov-consent = { path = "../../crates/gov-consent" }
 tokio = { workspace = true }
 axum = { workspace = true }
 tower-http = { workspace = true }
