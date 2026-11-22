@@ -736,7 +736,7 @@ Source: full platform review. Direction: **hybrid** — Rust owns correctness-cr
 - [ ] Staff portal: verify JWT in middleware and in every dept page/server action via one shared guard (currently cookie-presence only)
 - [ ] RealMe: fail closed without `REALME_IDP_CERT`; remove/guard `REALME_SKIP_VERIFY`; staff allow-list/roles; SubjectConfirmationData (Recipient, NotOnOrAfter, InResponseTo required), Response Issuer, `SessionIndex` from `AuthnStatement`; harden xmldom (no DOCTYPE/entities); persistent replay store; signed SLO / CSRF-safe logout; validate `relayState`
 - [x] Remove hard-coded fallback session secrets (both portals); throw in production *(throws on first `sessionSecret` access, not at process start; dev fallback retained when `NODE_ENV !== "production"`)*
-- [x] Demo login server actions must check demo mode server-side (`loginDemo`, `setScenario`, `loginStaffDemo`); constant-time staff password compare. *Open: rate limit on staff login.*
+- [x] Demo login server actions must check demo mode server-side (`loginDemo`, `setScenario`, `loginStaffDemo`); constant-time staff password compare; per-account staff login rate limit (5 failures / 15 min, in-process; a shared store is needed for multiple instances).
 - [ ] AI: `/api/ai` use session `grantedScopes`, bound input, guard `req.json()`, redact context chunks (medical/WINZ data), don't leak upstream errors; authenticate + rate-limit `portal-policy` AI actions; align `AI_*` vs `TPT__GOV__AI_*` env names and defaults *(partial: `/api/ai` done — fetches only granted depts/scopes, 2000-char cap, JSON guard, context chunks redacted, upstream errors logged not returned. Open: `portal-policy` AI auth + rate limit, env-name alignment)*
 
 ### Hybrid architecture
