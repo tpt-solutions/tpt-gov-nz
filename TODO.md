@@ -751,7 +751,7 @@ Source: full platform review. Direction: **hybrid** — Rust owns correctness-cr
 - [ ] Zod-validate client input in ~47 dept `actions.ts`; unify demo flag with `PORTAL_CONFIG`
 - [ ] Replace local-JSON case notes (`apps/portal-staff/app/lib/case-notes.ts`) with audited DB storage
 - [ ] Tests: identity server; HTTP-level forged/unsigned/revoked grant rejection; direct-access bypass; portal auth/JWT/consent/AI route; OpenRouter/Ollama providers; staff middleware; RealMe fail-open path
-- [ ] ESLint config; per-package tsconfigs for `gov-ai-client`, `gov-i18n`; apps extend `tsconfig.base.json`. *(Partial: citizen portal now has a `test` script (vitest) covering DID-to-key binding and Ed25519 verification.)*
+- [ ] ESLint config; per-package tsconfigs for `gov-ai-client`, `gov-i18n`; apps extend `tsconfig.base.json`. *(Partial: both portals now have a flat ESLint config (`next/core-web-vitals` + TypeScript) and lint with 0 errors and 0 warnings. The citizen portal has a `test` script (vitest) covering DID-to-key binding and Ed25519 verification. Per-package tsconfigs are still open.)*
 - [ ] Security headers: drop `unsafe-inline`, add `frame-ancestors`, `connect-src`, HSTS; cookie `secure` not tied to `NODE_ENV` alone
 - [ ] Accessibility: skip link and `<nav aria-label>` in staff portal; focus trap/Escape/`aria-live` in `AiChatWidget`; RealMe button contrast (≥4.5:1); reduce inline styles
 - [ ] te reo Māori: extend i18n beyond 9 files; staff + policy portal i18n; server-rendered `lang`
