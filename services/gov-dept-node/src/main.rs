@@ -76,7 +76,7 @@ async fn main() -> anyhow::Result<()> {
     info!(dept_id = %dept_id, listen = %http_listen, "gov-dept-node starting");
     let listener = tokio::net::TcpListener::bind(http_listen).await?;
     axum::serve(listener, app).await?;
-    
+
     // Wait for federation node to finish (should not happen in normal operation)
     fed_node_handle.await?;
     Ok(())
@@ -89,7 +89,7 @@ async fn load_or_create_audit_keypair(dept_id: &str) -> anyhow::Result<NodeKeypa
         return NodeKeypair::from_secret_b64(&secret_b64)
             .map_err(|e| anyhow::anyhow!("invalid audit secret key: {e}"));
     }
-    
+
     // Generate a new one (in production, this should be stored securely)
     let keypair = NodeKeypair::generate(dept_id);
     tracing::warn!(

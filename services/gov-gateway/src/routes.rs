@@ -236,7 +236,10 @@ fn extract_requesting_dept(claims: &Claims, target_dept: &str) -> Option<String>
         return Some(target_dept.to_string());
     }
     // Fall back to the first scope's prefix
-    claims.scopes.first().and_then(|s| s.split(':').next().map(|p| p.to_string()))
+    claims
+        .scopes
+        .first()
+        .and_then(|s| s.split(':').next().map(|p| p.to_string()))
 }
 
 pub async fn proxy_dept(

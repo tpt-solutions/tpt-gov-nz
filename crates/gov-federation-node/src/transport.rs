@@ -192,15 +192,17 @@ pub struct InboundState {
 pub fn router(state: InboundState) -> Router {
     // Ensure replay protection is initialized in the state
     let state = InboundState {
-        replay_protection: Arc::new(tokio::sync::Mutex::new(ReplayProtection::new(REPLAY_WINDOW_SIZE))),
+        replay_protection: Arc::new(tokio::sync::Mutex::new(ReplayProtection::new(
+            REPLAY_WINDOW_SIZE,
+        ))),
         federation_rate_limiter: Arc::new(FederationRateLimiter::new(
             DEFAULT_FEDERATION_RATE_LIMIT_RPM,
             Duration::from_secs(60),
             DEFAULT_FEDERATION_RATE_LIMIT_MAX_PEERS,
         )),
-        revocation_client: state.revocation_client.or_else(|| {
-            RevocationClient::from_env().ok().map(Arc::new)
-        }),
+        revocation_client: state
+            .revocation_client
+            .or_else(|| RevocationClient::from_env().ok().map(Arc::new)),
         ..state
     };
     Router::new()
@@ -360,18 +362,23 @@ mod tests {
             keypair: server_kp.clone(),
             peers: Arc::new(server_peers),
             handler: echo_handler(),
-            replay_protection: Arc::new(tokio::sync::Mutex::new(ReplayProtection::new(REPLAY_WINDOW_SIZE))),
+            replay_protection: Arc::new(tokio::sync::Mutex::new(ReplayProtection::new(
+                REPLAY_WINDOW_SIZE,
+            ))),
             federation_rate_limiter: Arc::new(FederationRateLimiter::new(
                 DEFAULT_FEDERATION_RATE_LIMIT_RPM,
                 Duration::from_secs(60),
                 DEFAULT_FEDERATION_RATE_LIMIT_MAX_PEERS,
             )),
-            revocation_client: Some(Arc::new(RevocationClient::new(
-                "http://127.0.0.1:1",
-                "test-key",
-                Duration::from_secs(5),
-                Duration::from_secs(60),
-            ).unwrap())),
+            revocation_client: Some(Arc::new(
+                RevocationClient::new(
+                    "http://127.0.0.1:1",
+                    "test-key",
+                    Duration::from_secs(5),
+                    Duration::from_secs(60),
+                )
+                .unwrap(),
+            )),
         };
         let addr = spawn_server(state).await;
 
@@ -404,18 +411,23 @@ mod tests {
             keypair: server_kp.clone(),
             peers: Arc::new(HashMap::new()),
             handler: echo_handler(),
-            replay_protection: Arc::new(tokio::sync::Mutex::new(ReplayProtection::new(REPLAY_WINDOW_SIZE))),
+            replay_protection: Arc::new(tokio::sync::Mutex::new(ReplayProtection::new(
+                REPLAY_WINDOW_SIZE,
+            ))),
             federation_rate_limiter: Arc::new(FederationRateLimiter::new(
                 DEFAULT_FEDERATION_RATE_LIMIT_RPM,
                 Duration::from_secs(60),
                 DEFAULT_FEDERATION_RATE_LIMIT_MAX_PEERS,
             )),
-            revocation_client: Some(Arc::new(RevocationClient::new(
-                "http://127.0.0.1:1",
-                "test-key",
-                Duration::from_secs(5),
-                Duration::from_secs(60),
-            ).unwrap())),
+            revocation_client: Some(Arc::new(
+                RevocationClient::new(
+                    "http://127.0.0.1:1",
+                    "test-key",
+                    Duration::from_secs(5),
+                    Duration::from_secs(60),
+                )
+                .unwrap(),
+            )),
         };
         let addr = spawn_server(state).await;
 
@@ -455,18 +467,23 @@ mod tests {
             keypair: server_kp.clone(),
             peers: Arc::new(server_peers),
             handler: echo_handler(),
-            replay_protection: Arc::new(tokio::sync::Mutex::new(ReplayProtection::new(REPLAY_WINDOW_SIZE))),
+            replay_protection: Arc::new(tokio::sync::Mutex::new(ReplayProtection::new(
+                REPLAY_WINDOW_SIZE,
+            ))),
             federation_rate_limiter: Arc::new(FederationRateLimiter::new(
                 DEFAULT_FEDERATION_RATE_LIMIT_RPM,
                 Duration::from_secs(60),
                 DEFAULT_FEDERATION_RATE_LIMIT_MAX_PEERS,
             )),
-            revocation_client: Some(Arc::new(RevocationClient::new(
-                "http://127.0.0.1:1",
-                "test-key",
-                Duration::from_secs(5),
-                Duration::from_secs(60),
-            ).unwrap())),
+            revocation_client: Some(Arc::new(
+                RevocationClient::new(
+                    "http://127.0.0.1:1",
+                    "test-key",
+                    Duration::from_secs(5),
+                    Duration::from_secs(60),
+                )
+                .unwrap(),
+            )),
         };
         let addr = spawn_server(state).await;
 

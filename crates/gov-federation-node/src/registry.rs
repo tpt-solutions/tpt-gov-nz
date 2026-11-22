@@ -1,4 +1,4 @@
-﻿// Durable NodeRegistry for federation peer management
+// Durable NodeRegistry for federation peer management
 //
 // The NodeRegistry persists peer information across restarts and supports
 // token-based enrolment for new departments joining the federation.
@@ -8,10 +8,10 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Duration;
 
+use crate::config::PeerConfig;
 use anyhow::{Context, Result};
 use base64::Engine;
 use ed25519_dalek::SigningKey;
-use crate::config::PeerConfig;
 use gov_federation_core::NodeKeypair;
 use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
@@ -69,10 +69,11 @@ impl NodeRegistry {
     /// Create a new registry, loading from disk if it exists.
     pub async fn new(storage_path: PathBuf) -> Result<Self> {
         let inner = if storage_path.exists() {
-            let data = tokio::fs::read(&storage_path).await
+            let data = tokio::fs::read(&storage_path)
+                .await
                 .with_context(|| format!("reading registry from {}", storage_path.display()))?;
-            let storage: RegistryStorage = serde_json::from_slice(&data)
-                .with_context(|| "deserializing registry")?;
+            let storage: RegistryStorage =
+                serde_json::from_slice(&data).with_context(|| "deserializing registry")?;
             Arc::new(RwLock::new(storage))
         } else {
             Arc::new(RwLock::new(RegistryStorage::default()))
@@ -101,13 +102,16 @@ impl NodeRegistry {
     /// Save the registry to disk.
     pub async fn save(&self) -> Result<()> {
         let storage = self.inner.read().await;
-        let data = serde_json::to_vec_pretty(&*storage)
-            .context("serializing registry")?;
+        let data = serde_json::to_vec_pretty(&*storage).context("serializing registry")?;
         let temp_path = self.storage_path.with_extension("tmp");
-        tokio::fs::write(&temp_path, data).await
+        tokio::fs::write(&temp_path, data)
+            .await
             .with_context(|| format!("writing temp registry to {}", temp_path.display()))?;
-        tokio::fs::rename(&temp_path, &self.storage_path).await
-            .with_context(|| format!("renaming temp registry to {}", self.storage_path.display()))?;
+        tokio::fs::rename(&temp_path, &self.storage_path)
+            .await
+            .with_context(|| {
+                format!("renaming temp registry to {}", self.storage_path.display())
+            })?;
         Ok(())
     }
 
@@ -127,7 +131,7 @@ impl NodeRegistry {
                         .decode(&node.signing_key_b64)
                         .context("decoding stored signing key")?
                         .try_into()
-                        .map_err(|_| anyhow::anyhow!("invalid key length"))?
+                        .map_err(|_| anyhow::anyhow!("invalid key length"))?,
                 );
                 let verifying_key = signing_key.verifying_key();
                 return Ok(NodeKeypair {
@@ -139,8 +143,8 @@ impl NodeRegistry {
         }
 
         let keypair = NodeKeypair::generate(dept_id);
-        let signing_key_b64 = base64::engine::general_purpose::STANDARD
-            .encode(keypair.signing_key.to_bytes());
+        let signing_key_b64 =
+            base64::engine::general_purpose::STANDARD.encode(keypair.signing_key.to_bytes());
 
         storage.this_node = Some(StoredNode {
             dept_id: dept_id.to_string(),
@@ -163,7 +167,7 @@ impl NodeRegistry {
     /// Register a new peer (called when enrolment token is used).
     pub async fn register_peer(&self, peer: PeerConfig, display_name: &str) -> Result<()> {
         let mut storage = self.inner.write().await;
-        
+
         let stored = StoredPeer {
             dept_id: peer.dept_id.clone(),
             display_name: display_name.to_string(),
@@ -194,14 +198,20 @@ impl NodeRegistry {
     /// Get all active peers.
     pub async fn get_active_peers(&self) -> HashMap<String, PeerConfig> {
         let storage = self.inner.read().await;
-        storage.peers
+        storage
+            .peers
             .iter()
             .filter(|(_, p)| p.is_active)
-            .map(|(k, p)| (k.clone(), PeerConfig {
-                dept_id: p.dept_id.clone(),
-                addr: p.addr.parse().unwrap(),
-                public_key_b64: p.public_key_b64.clone(),
-            }))
+            .map(|(k, p)| {
+                (
+                    k.clone(),
+                    PeerConfig {
+                        dept_id: p.dept_id.clone(),
+                        addr: p.addr.parse().unwrap(),
+                        public_key_b64: p.public_key_b64.clone(),
+                    },
+                )
+            })
             .collect()
     }
 
@@ -232,7 +242,9 @@ impl NodeRegistry {
             used: false,
         };
 
-        storage.enrolment_tokens.insert(token.token_id.to_string(), token.clone());
+        storage
+            .enrolment_tokens
+            .insert(token.token_id.to_string(), token.clone());
         drop(storage);
         self.save().await?;
         info!(dept_id = %dept_id, token_id = %token.token_id, "Enrolment token created");
@@ -242,7 +254,8 @@ impl NodeRegistry {
     /// Validate and consume an enrolment token.
     pub async fn consume_enrolment_token(&self, token_id: Uuid) -> Result<EnrolmentToken> {
         let mut storage = self.inner.write().await;
-        let token = storage.enrolment_tokens
+        let token = storage
+            .enrolment_tokens
             .get_mut(&token_id.to_string())
             .ok_or_else(|| anyhow::anyhow!("Enrolment token not found"))?;
 
@@ -262,14 +275,22 @@ impl NodeRegistry {
 
     /// Get all enrolment tokens (for admin UI).
     pub async fn get_enrolment_tokens(&self) -> Vec<EnrolmentToken> {
-        self.inner.read().await.enrolment_tokens.values().cloned().collect()
+        self.inner
+            .read()
+            .await
+            .enrolment_tokens
+            .values()
+            .cloned()
+            .collect()
     }
 
     /// Clean up expired enrolment tokens.
     pub async fn cleanup_expired_tokens(&self) -> Result<()> {
         let mut storage = self.inner.write().await;
         let now = chrono::Utc::now();
-        storage.enrolment_tokens.retain(|_, t| !t.used && t.expires_at > now);
+        storage
+            .enrolment_tokens
+            .retain(|_, t| !t.used && t.expires_at > now);
         drop(storage);
         self.save().await?;
         Ok(())
@@ -297,11 +318,17 @@ mod tests {
         let path = temp.path().join("registry.json");
 
         let registry = NodeRegistry::new(path.clone()).await.unwrap();
-        let keypair = registry.get_or_create_node("ird", "Inland Revenue", "127.0.0.1:7001").await.unwrap();
+        let keypair = registry
+            .get_or_create_node("ird", "Inland Revenue", "127.0.0.1:7001")
+            .await
+            .unwrap();
         assert_eq!(keypair.dept_id, "ird");
 
         let registry2 = NodeRegistry::new(path).await.unwrap();
-        let keypair2 = registry2.get_or_create_node("ird", "Inland Revenue", "127.0.0.1:7001").await.unwrap();
+        let keypair2 = registry2
+            .get_or_create_node("ird", "Inland Revenue", "127.0.0.1:7001")
+            .await
+            .unwrap();
         assert_eq!(keypair.public_key_b64(), keypair2.public_key_b64());
     }
 
@@ -311,13 +338,24 @@ mod tests {
         let path = temp.path().join("registry.json");
         let registry = NodeRegistry::new(path).await.unwrap();
 
-        let token = registry.create_enrolment_token("newdept", "New Department", 24).await.unwrap();
+        let token = registry
+            .create_enrolment_token("newdept", "New Department", 24)
+            .await
+            .unwrap();
         assert!(!token.used);
 
-        let consumed = registry.consume_enrolment_token(token.token_id).await.unwrap();
+        let consumed = registry
+            .consume_enrolment_token(token.token_id)
+            .await
+            .unwrap();
         assert!(consumed.used);
 
-        assert!(registry.consume_enrolment_token(token.token_id).await.is_err());
+        assert!(
+            registry
+                .consume_enrolment_token(token.token_id)
+                .await
+                .is_err()
+        );
     }
 
     #[tokio::test]
@@ -333,7 +371,10 @@ mod tests {
             public_key_b64: keypair.public_key_b64(),
         };
 
-        registry.register_peer(peer.clone(), "Work and Income").await.unwrap();
+        registry
+            .register_peer(peer.clone(), "Work and Income")
+            .await
+            .unwrap();
         let retrieved = registry.get_peer("winz").await.unwrap();
         assert_eq!(retrieved.public_key_b64, peer.public_key_b64);
     }

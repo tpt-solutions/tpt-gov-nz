@@ -16,10 +16,10 @@ use axum::{
     middleware::Next,
     response::{IntoResponse, Response},
 };
+use ed25519_dalek::VerifyingKey;
 use gov_consent::{RevocationClient, issuer_key_from_env};
 use gov_identity_core::DataGrantCredential;
-use ed25519_dalek::VerifyingKey;
-use opa_wasm::{Policy, Runtime, DefaultContext, wasmtime};
+use opa_wasm::{DefaultContext, Policy, Runtime, wasmtime};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use tracing::{debug, error, warn};
@@ -91,7 +91,8 @@ impl OpaPolicy {
 
         // Create policy with empty initial data (will be provided per-request)
         // with_data consumes the runtime, so we create policy and don't need runtime afterwards
-        let policy = runtime.with_data(&mut store, &serde_json::json!({}))
+        let policy = runtime
+            .with_data(&mut store, &serde_json::json!({}))
             .await
             .context("creating OPA policy instance")?;
 
@@ -132,12 +133,17 @@ impl OpaPolicy {
 
     /// Evaluate the policy with the given input.
     pub async fn evaluate(&self, input: &OpaConsentInput) -> Result<OpaDecision> {
-        let input_json = serde_json::to_vec(input)
-            .context("serializing OPA input")?;
+        let input_json = serde_json::to_vec(input).context("serializing OPA input")?;
 
         // Try department-specific query first, then fallback to generic
-        let query = format!("data.{}.consent.allow",
-            self.policy_path.split('/').last().unwrap_or("default").replace(".wasm", ""));
+        let query = format!(
+            "data.{}.consent.allow",
+            self.policy_path
+                .split('/')
+                .last()
+                .unwrap_or("default")
+                .replace(".wasm", "")
+        );
 
         // Create a new store for this evaluation
         let mut store = wasmtime::Store::new(&self.engine, ());
@@ -145,17 +151,14 @@ impl OpaPolicy {
         // Evaluate with the policy - need explicit types for V (input), R (output), T (store data)
         // Deserialize input first, then pass reference
         let input: OpaConsentInput = serde_json::from_slice(&input_json)?;
-        let result: serde_json::Value = self.policy
-            .evaluate::<OpaConsentInput, serde_json::Value, ()>(
-                &mut store,
-                &query,
-                &input,
-            )
+        let result: serde_json::Value = self
+            .policy
+            .evaluate::<OpaConsentInput, serde_json::Value, ()>(&mut store, &query, &input)
             .await
             .context("OPA policy evaluation failed")?;
 
-        let decision: OpaDecision = serde_json::from_value(result)
-            .context("parsing OPA decision")?;
+        let decision: OpaDecision =
+            serde_json::from_value(result).context("parsing OPA decision")?;
 
         Ok(decision)
     }
@@ -176,15 +179,13 @@ pub struct ConsentConfig {
 impl ConsentConfig {
     /// Build consent config from environment.
     pub async fn from_env() -> Result<Self> {
-        let issuer_key = issuer_key_from_env()
-            .context("loading issuer public key")?;
+        let issuer_key = issuer_key_from_env().context("loading issuer public key")?;
 
-        let revocation = RevocationClient::from_env()
-            .context("building revocation client")?;
+        let revocation = RevocationClient::from_env().context("building revocation client")?;
 
         // Load OPA policies from directory (if configured)
-        let policy_dir = std::env::var("TPT__GOV__OPA_POLICY_DIR")
-            .unwrap_or_else(|_| "./policies".to_string());
+        let policy_dir =
+            std::env::var("TPT__GOV__OPA_POLICY_DIR").unwrap_or_else(|_| "./policies".to_string());
         let policies = OpaPolicy::from_directory(&policy_dir)
             .await
             .unwrap_or_else(|e| {
@@ -202,25 +203,24 @@ impl ConsentConfig {
 
     /// Verify a DataGrantCredential signature.
     pub fn verify_grant(&self, grant: &DataGrantCredential) -> Result<()> {
-        grant.verify_signature(&self.issuer_key)
+        grant
+            .verify_signature(&self.issuer_key)
             .context("grant signature verification failed")?;
-        grant.is_valid()
-            .context("grant expired")?;
+        grant.is_valid().context("grant expired")?;
         Ok(())
     }
 
     /// Check grant revocation status.
     pub async fn check_revocation(&self, grant_ids: &[uuid::Uuid]) -> Result<()> {
-        self.revocation.ensure_active(grant_ids).await
+        self.revocation
+            .ensure_active(grant_ids)
+            .await
             .context("grant revocation check failed")?;
         Ok(())
     }
 
     /// Evaluate OPA policy for a department.
-    pub async fn evaluate_consent(
-        &self,
-        input: OpaConsentInput,
-    ) -> Result<OpaDecision> {
+    pub async fn evaluate_consent(&self, input: OpaConsentInput) -> Result<OpaDecision> {
         // Try to get department-specific policy
         let dept_id = &input.providing_dept_id;
 
@@ -239,11 +239,11 @@ impl ConsentConfig {
 
         for scope in &input.requested_scopes {
             let covered = input.consent_grants.iter().any(|grant| {
-                grant.requesting_dept_id == input.requesting_dept_id &&
-                grant.providing_dept_id == input.providing_dept_id &&
-                grant.citizen_did == input.citizen_did &&
-                grant.expires_at > chrono::Utc::now().timestamp() &&
-                grant.scopes.contains(scope)
+                grant.requesting_dept_id == input.requesting_dept_id
+                    && grant.providing_dept_id == input.providing_dept_id
+                    && grant.citizen_did == input.citizen_did
+                    && grant.expires_at > chrono::Utc::now().timestamp()
+                    && grant.scopes.contains(scope)
             });
 
             if !covered {
@@ -303,12 +303,18 @@ pub async fn consent_middleware(
     // Extract required headers
     let headers = req.headers();
 
-    let citizen_did = match headers.get(CITIZEN_DID_HEADER).and_then(|v| v.to_str().ok()) {
+    let citizen_did = match headers
+        .get(CITIZEN_DID_HEADER)
+        .and_then(|v| v.to_str().ok())
+    {
         Some(d) if !d.is_empty() => d.to_string(),
         _ => return forbidden("missing x-citizen-did header"),
     };
 
-    let requesting_dept_id = match headers.get(REQUESTING_DEPT_HEADER).and_then(|v| v.to_str().ok()) {
+    let requesting_dept_id = match headers
+        .get(REQUESTING_DEPT_HEADER)
+        .and_then(|v| v.to_str().ok())
+    {
         Some(d) if !d.is_empty() => d.to_string(),
         _ => return forbidden("missing x-requesting-dept-id header"),
     };
@@ -345,9 +351,7 @@ pub async fn consent_middleware(
 
     // Determine requested scopes from the request (query params or body)
     // For now, we'll extract from a header or default to all grant scopes
-    let requested_scopes: Vec<String> = grants.iter()
-        .flat_map(|g| g.scopes.clone())
-        .collect();
+    let requested_scopes: Vec<String> = grants.iter().flat_map(|g| g.scopes.clone()).collect();
 
     // Build OPA input
     let opa_input = OpaConsentInput {
@@ -355,15 +359,18 @@ pub async fn consent_middleware(
         requesting_dept_id: requesting_dept_id.clone(),
         providing_dept_id: providing_dept_id.clone(),
         requested_scopes,
-        consent_grants: grants.iter().map(|g| GrantInput {
-            id: g.id.to_string(),
-            requesting_dept_id: g.requesting_dept_id.clone(),
-            providing_dept_id: g.providing_dept_id.clone(),
-            citizen_did: g.citizen_did.to_string(),
-            scopes: g.scopes.clone(),
-            issued_at: g.issued_at,
-            expires_at: g.expires_at,
-        }).collect(),
+        consent_grants: grants
+            .iter()
+            .map(|g| GrantInput {
+                id: g.id.to_string(),
+                requesting_dept_id: g.requesting_dept_id.clone(),
+                providing_dept_id: g.providing_dept_id.clone(),
+                citizen_did: g.citizen_did.to_string(),
+                scopes: g.scopes.clone(),
+                issued_at: g.issued_at,
+                expires_at: g.expires_at,
+            })
+            .collect(),
     };
 
     // Evaluate OPA policy
@@ -426,7 +433,8 @@ fn forbidden(message: &str) -> Response {
             "error": "forbidden",
             "message": message,
         })),
-    ).into_response()
+    )
+        .into_response()
 }
 
 fn internal_error(message: &str) -> Response {
@@ -436,7 +444,8 @@ fn internal_error(message: &str) -> Response {
             "error": "internal_server_error",
             "message": message,
         })),
-    ).into_response()
+    )
+        .into_response()
 }
 
 #[cfg(test)]
@@ -445,9 +454,18 @@ mod tests {
 
     #[test]
     fn test_extract_dept_id_from_path() {
-        assert_eq!(extract_dept_id_from_path("/v1/dept/ird/citizen/data"), Some("ird".to_string()));
-        assert_eq!(extract_dept_id_from_path("/v1/dept/WINZ/health"), Some("winz".to_string()));
-        assert_eq!(extract_dept_id_from_path("/v1/dept/moh"), Some("moh".to_string()));
+        assert_eq!(
+            extract_dept_id_from_path("/v1/dept/ird/citizen/data"),
+            Some("ird".to_string())
+        );
+        assert_eq!(
+            extract_dept_id_from_path("/v1/dept/WINZ/health"),
+            Some("winz".to_string())
+        );
+        assert_eq!(
+            extract_dept_id_from_path("/v1/dept/moh"),
+            Some("moh".to_string())
+        );
         assert_eq!(extract_dept_id_from_path("/health"), None);
         assert_eq!(extract_dept_id_from_path("/v1/citizen/resolve"), None);
         assert_eq!(extract_dept_id_from_path("/v1/dept/"), None);

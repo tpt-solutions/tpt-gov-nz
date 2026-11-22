@@ -23,8 +23,8 @@ pub async fn verify_grant(grant: &DataGrantCredential) -> Result<()> {
         .context("grant signature verification failed")?;
 
     // 3. Check revocation status
-    let revocation_client = RevocationClient::from_env()
-        .context("failed to create revocation client")?;
+    let revocation_client =
+        RevocationClient::from_env().context("failed to create revocation client")?;
     revocation_client
         .ensure_active(&[grant.id])
         .await
@@ -54,8 +54,8 @@ pub async fn verify_grants(grants: &[DataGrantCredential]) -> Result<()> {
     }
 
     // 3. Batch revocation check
-    let revocation_client = RevocationClient::from_env()
-        .context("failed to create revocation client")?;
+    let revocation_client =
+        RevocationClient::from_env().context("failed to create revocation client")?;
     let ids: Vec<_> = grants.iter().map(|g| g.id).collect();
     revocation_client
         .ensure_active(&ids)
@@ -75,8 +75,9 @@ mod tests {
         // Without TPT__GOV__ISSUER_PUBLIC_KEY set, should fail
         let issuer = CredentialIssuer::generate();
         let citizen = GovDid::parse("did:gov:nz:citizen001").unwrap();
-        let grant = issuer.issue_data_grant(citizen, "winz", "ird", vec!["ird:income".into()], 3600);
-        
+        let grant =
+            issuer.issue_data_grant(citizen, "winz", "ird", vec!["ird:income".into()], 3600);
+
         // This will fail because env var is not set
         let result = verify_grant(&grant).await;
         assert!(result.is_err());

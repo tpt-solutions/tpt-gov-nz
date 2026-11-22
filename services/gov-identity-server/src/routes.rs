@@ -66,7 +66,9 @@ impl From<gov_identity_core::IdentityError> for ApiError {
     fn from(err: gov_identity_core::IdentityError) -> Self {
         match err {
             gov_identity_core::IdentityError::InvalidDid(msg) => Self::bad_request(msg),
-            gov_identity_core::IdentityError::InvalidSignature => Self::bad_request("invalid signature"),
+            gov_identity_core::IdentityError::InvalidSignature => {
+                Self::bad_request("invalid signature")
+            }
             gov_identity_core::IdentityError::Expired => Self::bad_request("credential expired"),
             gov_identity_core::IdentityError::Revoked => Self::bad_request("credential revoked"),
             gov_identity_core::IdentityError::Serialisation(e) => Self::internal(e),
@@ -721,14 +723,12 @@ pub async fn revoke_grant(
     .ok_or_else(|| ApiError::not_found("grant not found or already revoked"))?;
 
     // Mark grant as revoked.
-    sqlx::query(
-        "UPDATE data_grants SET revoked_at = $1 WHERE id = $2 AND revoked_at IS NULL",
-    )
-    .bind(now)
-    .bind(id)
-    .execute(&mut *tx)
-    .await
-    .map_err(ApiError::internal)?;
+    sqlx::query("UPDATE data_grants SET revoked_at = $1 WHERE id = $2 AND revoked_at IS NULL")
+        .bind(now)
+        .bind(id)
+        .execute(&mut *tx)
+        .await
+        .map_err(ApiError::internal)?;
 
     // Add to revocation list.
     sqlx::query(
@@ -1021,14 +1021,12 @@ pub async fn admin_revoke_citizen_grants(
 
     for grant in &grants {
         // Mark grant as revoked.
-        sqlx::query(
-            "UPDATE data_grants SET revoked_at = $1 WHERE id = $2",
-        )
-        .bind(now)
-        .bind(grant.id)
-        .execute(&mut *tx)
-        .await
-        .map_err(ApiError::internal)?;
+        sqlx::query("UPDATE data_grants SET revoked_at = $1 WHERE id = $2")
+            .bind(now)
+            .bind(grant.id)
+            .execute(&mut *tx)
+            .await
+            .map_err(ApiError::internal)?;
 
         // Add to revocation list.
         sqlx::query(
@@ -1082,13 +1080,11 @@ pub async fn admin_rotate_issuer_key(
     let new_key_b64 = new_issuer.secret_key_b64();
 
     // Update the issuer_keys table.
-    sqlx::query(
-        "UPDATE issuer_keys SET secret_key_b64 = $1 WHERE id = 1",
-    )
-    .bind(new_key_b64)
-    .execute(&state.pool)
-    .await
-    .map_err(ApiError::internal)?;
+    sqlx::query("UPDATE issuer_keys SET secret_key_b64 = $1 WHERE id = 1")
+        .bind(new_key_b64)
+        .execute(&state.pool)
+        .await
+        .map_err(ApiError::internal)?;
 
     // Log the rotation.
     let rotated_at = chrono::Utc::now();
@@ -1141,7 +1137,9 @@ pub struct DeptHealthResponse {
 }
 
 /// Admin endpoint: get health stats for all departments.
-pub async fn admin_dept_health(State(state): State<AppState>) -> ApiResult<Json<Vec<DeptHealthResponse>>> {
+pub async fn admin_dept_health(
+    State(state): State<AppState>,
+) -> ApiResult<Json<Vec<DeptHealthResponse>>> {
     #[derive(sqlx::FromRow)]
     struct DeptHealthRow {
         dept_id: String,
@@ -1199,7 +1197,9 @@ pub async fn admin_dept_health(State(state): State<AppState>) -> ApiResult<Json<
                 e.grants_active += row.grants_active;
                 e.grants_revoked += row.grants_revoked;
                 match (row.last_grant_issued, e.last_grant_issued) {
-                    (Some(new), Some(old)) if new > old => e.last_grant_issued = row.last_grant_issued,
+                    (Some(new), Some(old)) if new > old => {
+                        e.last_grant_issued = row.last_grant_issued
+                    }
                     (Some(_), None) => e.last_grant_issued = row.last_grant_issued,
                     _ => {}
                 }

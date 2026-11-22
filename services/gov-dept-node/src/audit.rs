@@ -87,11 +87,11 @@ fn compute_entry_hash(
     detail: Option<&str>,
 ) -> [u8; 32] {
     let mut hasher = Sha256::new();
-    
+
     if let Some(prev) = prev_hash {
         hasher.update(prev);
     }
-    
+
     hasher.update(dept_id.as_bytes());
     hasher.update(citizen_did.as_bytes());
     hasher.update(action.as_bytes());
@@ -105,7 +105,7 @@ fn compute_entry_hash(
     if let Some(d) = detail {
         hasher.update(d.as_bytes());
     }
-    
+
     hasher.finalize().into()
 }
 
@@ -116,11 +116,10 @@ pub async fn log_access(
     event: &AuditEvent,
     audit_keypair: Option<&NodeKeypair>,
 ) -> anyhow::Result<[u8; 32]> {
-    let prev_hash: Option<Vec<u8>> = sqlx::query_scalar(
-        "SELECT entry_hash FROM audit_log ORDER BY id DESC LIMIT 1",
-    )
-    .fetch_optional(pool)
-    .await?;
+    let prev_hash: Option<Vec<u8>> =
+        sqlx::query_scalar("SELECT entry_hash FROM audit_log ORDER BY id DESC LIMIT 1")
+            .fetch_optional(pool)
+            .await?;
 
     let prev_hash_bytes = prev_hash.as_deref();
 
@@ -177,11 +176,10 @@ pub async fn log_access(
 
 /// Verify the hash chain integrity from a given entry back to genesis.
 pub async fn verify_hash_chain(pool: &PgPool) -> anyhow::Result<bool> {
-    let rows: Vec<(i64, Option<Vec<u8>>, Vec<u8>)> = sqlx::query_as(
-        "SELECT id, prev_hash, entry_hash FROM audit_log ORDER BY id ASC",
-    )
-    .fetch_all(pool)
-    .await?;
+    let rows: Vec<(i64, Option<Vec<u8>>, Vec<u8>)> =
+        sqlx::query_as("SELECT id, prev_hash, entry_hash FROM audit_log ORDER BY id ASC")
+            .fetch_all(pool)
+            .await?;
 
     let mut expected_prev: Option<Vec<u8>> = None;
     for (id, prev_hash, entry_hash) in rows {

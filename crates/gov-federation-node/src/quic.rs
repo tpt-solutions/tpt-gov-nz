@@ -12,9 +12,9 @@ use anyhow::{Context, Result};
 use base64::Engine;
 use gov_federation_core::{FederationEnvelope, NodeKeypair};
 use quinn::{ClientConfig, Endpoint, ServerConfig, TransportConfig};
-use rcgen::{CertificateParams, DistinguishedName, DnType, KeyPair, SanType, Ia5String};
-use rustls::pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer};
+use rcgen::{CertificateParams, DistinguishedName, DnType, Ia5String, KeyPair, SanType};
 use rustls::RootCertStore;
+use rustls::pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer};
 use tracing::{debug, error, info, warn};
 
 use crate::transport::InboundState;
@@ -34,9 +34,16 @@ const QUIC_IDLE_TIMEOUT: Duration = Duration::from_secs(30);
 fn generate_self_signed_cert(dept_id: &str) -> Result<(Vec<u8>, Vec<u8>)> {
     let mut params = CertificateParams::default();
     params.distinguished_name = DistinguishedName::new();
-    params.distinguished_name.push(DnType::CommonName, format!("tpt-gov-nz-{}", dept_id));
-    params.distinguished_name.push(DnType::OrganizationName, "tpt-gov-nz");
-    params.subject_alt_names = vec![SanType::DnsName(Ia5String::try_from(format!("{}.federation.tpt.gov.nz", dept_id))?)];
+    params
+        .distinguished_name
+        .push(DnType::CommonName, format!("tpt-gov-nz-{}", dept_id));
+    params
+        .distinguished_name
+        .push(DnType::OrganizationName, "tpt-gov-nz");
+    params.subject_alt_names = vec![SanType::DnsName(Ia5String::try_from(format!(
+        "{}.federation.tpt.gov.nz",
+        dept_id
+    ))?)];
     params.key_usages = vec![
         rcgen::KeyUsagePurpose::DigitalSignature,
         rcgen::KeyUsagePurpose::KeyEncipherment,
@@ -157,9 +164,13 @@ impl QuicTransport {
             .decode(peer_public_key_b64)
             .context("invalid peer public key base64")?;
         let peer_key = ed25519_dalek::VerifyingKey::from_bytes(
-            &peer_pubkey.try_into().map_err(|_| anyhow::anyhow!("invalid key length"))?
+            &peer_pubkey
+                .try_into()
+                .map_err(|_| anyhow::anyhow!("invalid key length"))?,
         )?;
-        response.verify(&peer_key).context("response signature verification failed")?;
+        response
+            .verify(&peer_key)
+            .context("response signature verification failed")?;
 
         // Verify response is for our request
         if response.correlation_id != Some(envelope.message_id) {
@@ -238,7 +249,9 @@ pub async fn serve_quic(endpoint: Endpoint, state: InboundState) -> Result<()> {
                     }
                     let peer_config = peer_config.unwrap();
 
-                    let peer_pubkey = match base64::engine::general_purpose::STANDARD.decode(&peer_config.public_key_b64) {
+                    let peer_pubkey = match base64::engine::general_purpose::STANDARD
+                        .decode(&peer_config.public_key_b64)
+                    {
                         Ok(k) => k,
                         Err(e) => {
                             warn!(error = %e, "Invalid peer public key");
@@ -264,25 +277,29 @@ pub async fn serve_quic(endpoint: Endpoint, state: InboundState) -> Result<()> {
                         warn!(from_dept = %from_dept, "QUIC envelope signature verification failed");
                         return;
                     }
-// Check timestamp freshness
+                    // Check timestamp freshness
                     let now_ms = chrono::Utc::now().timestamp_millis();
-                    if (now_ms - envelope.timestamp_ms).abs() > crate::transport::MAX_TIMESTAMP_SKEW_SECS * 1000 {
+                    if (now_ms - envelope.timestamp_ms).abs()
+                        > crate::transport::MAX_TIMESTAMP_SKEW_SECS * 1000
+                    {
                         warn!(from_dept = %from_dept, "QUIC envelope timestamp skew exceeded");
                         return;
                     }
 
                     // Replay protection
-                    if state.replay_protection.lock().await.check_and_insert(envelope.message_id).is_err() {
+                    if state
+                        .replay_protection
+                        .lock()
+                        .await
+                        .check_and_insert(envelope.message_id)
+                        .is_err()
+                    {
                         warn!(from_dept = %from_dept, msg_id = %envelope.message_id, "QUIC replay detected");
                         return;
                     }
 
                     // Rate limiting
-                    if state
-                        .federation_rate_limiter
-                        .check(from_dept)
-                        .is_err()
-                    {
+                    if state.federation_rate_limiter.check(from_dept).is_err() {
                         warn!(from_dept = %from_dept, "QUIC rate limit exceeded");
                         return;
                     }
@@ -290,11 +307,8 @@ pub async fn serve_quic(endpoint: Endpoint, state: InboundState) -> Result<()> {
                     // Revocation check
                     if let Some(revocation) = &state.revocation_client {
                         if !envelope.consent_grant_ids.is_empty() {
-                            let grant_ids: Vec<_> = envelope
-                                .consent_grant_ids
-                                .iter()
-                                .copied()
-                                .collect();
+                            let grant_ids: Vec<_> =
+                                envelope.consent_grant_ids.iter().copied().collect();
                             if !grant_ids.is_empty() {
                                 if revocation.ensure_active(&grant_ids).await.is_err() {
                                     warn!(from_dept = %from_dept, "QUIC grant revoked or unknown");

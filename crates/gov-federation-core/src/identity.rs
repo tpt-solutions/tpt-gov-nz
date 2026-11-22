@@ -1,4 +1,4 @@
-﻿use base64::Engine;
+use base64::Engine;
 use ed25519_dalek::{SigningKey, VerifyingKey};
 use serde::{Deserialize, Serialize};
 
@@ -55,7 +55,10 @@ impl NodeKeypair {
     }
 
     /// Create a NodeKeypair from a base64-encoded secret key with explicit dept_id.
-    pub fn from_secret_b64_with_dept_id(encoded: &str, dept_id: impl Into<String>) -> anyhow::Result<Self> {
+    pub fn from_secret_b64_with_dept_id(
+        encoded: &str,
+        dept_id: impl Into<String>,
+    ) -> anyhow::Result<Self> {
         let mut keypair = Self::from_secret_b64(encoded)?;
         keypair.dept_id = dept_id.into();
         Ok(keypair)
@@ -71,7 +74,7 @@ mod tests {
     fn from_secret_b64_round_trip() {
         let keypair = NodeKeypair::generate("test");
         let secret_b64 = keypair.secret_key_b64();
-        
+
         let restored = NodeKeypair::from_secret_b64(&secret_b64).unwrap();
         assert_eq!(keypair.public_key_b64(), restored.public_key_b64());
     }
@@ -80,7 +83,7 @@ mod tests {
     fn from_secret_b64_with_dept_id() {
         let keypair = NodeKeypair::generate("test");
         let secret_b64 = keypair.secret_key_b64();
-        
+
         let restored = NodeKeypair::from_secret_b64_with_dept_id(&secret_b64, "test-dept").unwrap();
         assert_eq!(keypair.public_key_b64(), restored.public_key_b64());
         assert_eq!(restored.dept_id, "test-dept");
@@ -89,6 +92,11 @@ mod tests {
     #[test]
     fn from_secret_b64_rejects_bad_input() {
         assert!(NodeKeypair::from_secret_b64("not base64!").is_err());
-        assert!(NodeKeypair::from_secret_b64(&base64::engine::general_purpose::STANDARD.encode([0u8; 31])).is_err());
+        assert!(
+            NodeKeypair::from_secret_b64(
+                &base64::engine::general_purpose::STANDARD.encode([0u8; 31])
+            )
+            .is_err()
+        );
     }
 }

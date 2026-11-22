@@ -64,9 +64,11 @@ async fn main() -> anyhow::Result<()> {
     let jwt = auth::JwtConfig::from_env()?;
 
     // Initialize consent configuration (OPA policies, grant verification, revocation).
-    let consent = Arc::new(consent::ConsentConfig::from_env()
-        .await
-        .context("building consent configuration")?);
+    let consent = Arc::new(
+        consent::ConsentConfig::from_env()
+            .await
+            .context("building consent configuration")?,
+    );
 
     let app_state = AppState {
         registry: routes::DeptRegistry::from_env(),

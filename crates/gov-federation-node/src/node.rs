@@ -3,13 +3,16 @@ use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::Arc;
-use std::time::Duration;
 #[cfg(feature = "quic")]
 use std::sync::OnceLock;
+use std::time::Duration;
 
 use crate::config::{FederationNodeConfig, PeerConfig};
 use crate::registry::NodeRegistry;
-use crate::transport::{self, EnvelopeHandler, HttpMockTransport, InboundState, FederationRateLimiter, REPLAY_WINDOW_SIZE, DEFAULT_FEDERATION_RATE_LIMIT_RPM, DEFAULT_FEDERATION_RATE_LIMIT_MAX_PEERS};
+use crate::transport::{
+    self, DEFAULT_FEDERATION_RATE_LIMIT_MAX_PEERS, DEFAULT_FEDERATION_RATE_LIMIT_RPM,
+    EnvelopeHandler, FederationRateLimiter, HttpMockTransport, InboundState, REPLAY_WINDOW_SIZE,
+};
 use gov_consent::RevocationClient;
 use gov_federation_core::{
     FederationEnvelope, FederationError, FederationMessageType, NodeKeypair,
@@ -83,7 +86,9 @@ impl FederationNode {
             keypair: self.keypair.clone(),
             peers: self.peers.clone(),
             handler: self.handler.clone(),
-            replay_protection: Arc::new(tokio::sync::Mutex::new(crate::transport::ReplayProtection::new(REPLAY_WINDOW_SIZE))),
+            replay_protection: Arc::new(tokio::sync::Mutex::new(
+                crate::transport::ReplayProtection::new(REPLAY_WINDOW_SIZE),
+            )),
             federation_rate_limiter: Arc::new(FederationRateLimiter::new(
                 DEFAULT_FEDERATION_RATE_LIMIT_RPM,
                 Duration::from_secs(60),
@@ -139,7 +144,9 @@ impl FederationNode {
             keypair: self.keypair.clone(),
             peers: self.peers.clone(),
             handler: self.handler.clone(),
-            replay_protection: Arc::new(tokio::sync::Mutex::new(crate::transport::ReplayProtection::new(REPLAY_WINDOW_SIZE))),
+            replay_protection: Arc::new(tokio::sync::Mutex::new(
+                crate::transport::ReplayProtection::new(REPLAY_WINDOW_SIZE),
+            )),
             federation_rate_limiter: Arc::new(FederationRateLimiter::new(
                 DEFAULT_FEDERATION_RATE_LIMIT_RPM,
                 Duration::from_secs(60),
