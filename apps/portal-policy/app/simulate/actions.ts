@@ -3,6 +3,7 @@
 import { GovAiClient } from "@tpt/gov-ai-client";
 import type { AiConfig } from "@tpt/gov-schema";
 import { getScenario } from "@/app/lib/policies";
+import { simulationLimiter } from "@/app/lib/access";
 
 export interface SimulationResult {
   ok: boolean;
@@ -11,16 +12,17 @@ export interface SimulationResult {
 }
 
 function buildAiConfig(): AiConfig {
-  const provider = (process.env.AI_PROVIDER ?? "ollama") as AiConfig["provider"];
+  // Same TPT__GOV__AI_* variables as the rest of the platform (see CLAUDE.md).
+  const provider = (process.env.TPT__GOV__AI_PROVIDER ?? "ollama") as AiConfig["provider"];
   const config: AiConfig = {
-    level: (process.env.AI_LEVEL as AiConfig["level"]) ?? "advisory",
+    level: (process.env.TPT__GOV__AI_LEVEL as AiConfig["level"]) ?? "advisory",
     provider,
-    model: process.env.AI_MODEL,
+    model: process.env.TPT__GOV__AI_MODEL,
     baseUrl:
       provider === "ollama"
-        ? process.env.OLLAMA_BASE_URL ?? "http://localhost:11434"
-        : process.env.AI_BASE_URL,
-    apiKey: process.env.AI_API_KEY,
+        ? process.env.TPT__GOV__AI_BASE_URL ?? "http://localhost:11434"
+        : process.env.TPT__GOV__AI_BASE_URL,
+    apiKey: process.env.TPT__GOV__AI_API_KEY,
   };
   return config;
 }
@@ -48,6 +50,9 @@ export async function simulatePolicy(
   if (!scenario) {
     return { ok: false, error: "Unknown policy scenario." };
   }
+  if (!simulationLimiter.take("lab")) {
+    return { ok: false, error: "Too many simulation runs. Try again in a few minutes." };
+  }
 
   const config = buildAiConfig();
   const client = new GovAiClient(config);
@@ -56,7 +61,7 @@ export async function simulatePolicy(
     return {
       ok: false,
       error:
-        "AI simulation is disabled (AI_LEVEL=none or provider not configured). Set AI_LEVEL=advisory and configure a provider to run simulations.",
+        "AI simulation is disabled (TPT__GOV__AI_LEVEL=none or provider not configured). Set TPT__GOV__AI_LEVEL=advisory and configure a provider to run simulations.",
     };
   }
 
@@ -71,9 +76,8 @@ Run the cross-department impact simulation.`;
     const response = await client.chat(SYSTEM_PROMPT, userMessage);
     return { ok: true, report: response.content };
   } catch (err) {
-    return {
-      ok: false,
-      error: err instanceof Error ? err.message : "Simulation failed.",
-    };
+    // Keep upstream detail on the server; the browser gets a generic message.
+    console.error("policy simulation failed", err);
+    return { ok: false, error: "The simulation could not be completed. Try again later." };
   }
 }
