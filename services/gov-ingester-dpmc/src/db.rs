@@ -66,19 +66,37 @@ pub async fn upsert_engagements(
     Ok(row.inserted.unwrap_or(false))
 }
 
+/// One ingestion run's outcome, written to `ingestion_runs`.
+#[derive(Debug, Clone, Copy)]
+pub struct IngestionRunRecord<'a> {
+    pub run_id: Uuid,
+    pub source: &'a str,
+    pub batch_id: Option<&'a str>,
+    pub started_at: DateTime<Utc>,
+    pub finished_at: DateTime<Utc>,
+    pub citizens_processed: i32,
+    pub rows_inserted: i32,
+    pub rows_updated: i32,
+    pub status: IngestionStatus,
+    pub error_message: Option<&'a str>,
+}
+
 pub async fn record_ingestion_run(
     pool: &PgPool,
-    run_id: Uuid,
-    source: &str,
-    batch_id: Option<&str>,
-    started_at: DateTime<Utc>,
-    finished_at: DateTime<Utc>,
-    citizens_processed: i32,
-    rows_inserted: i32,
-    rows_updated: i32,
-    status: IngestionStatus,
-    error_message: Option<&str>,
+    run: &IngestionRunRecord<'_>,
 ) -> sqlx::Result<()> {
+    let IngestionRunRecord {
+        run_id,
+        source,
+        batch_id,
+        started_at,
+        finished_at,
+        citizens_processed,
+        rows_inserted,
+        rows_updated,
+        status,
+        error_message,
+    } = *run;
     let status_str = match status {
         IngestionStatus::Running => "running",
         IngestionStatus::Success => "success",

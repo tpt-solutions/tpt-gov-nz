@@ -65,17 +65,19 @@ pub async fn run_once(
 
     db::record_ingestion_run(
         pool,
+        &db::IngestionRunRecord {
         run_id,
-        &source,
-        batch_id.as_deref(),
-        started,
-        finished,
-        citizens_processed as i32,
-        inserted as i32,
-        updated as i32,
-        IngestionStatus::Success,
-        None,
-    )
+        source: &source,
+        batch_id: batch_id.as_deref(),
+        started_at: started,
+        finished_at: finished,
+        citizens_processed: citizens_processed as i32,
+        rows_inserted: inserted as i32,
+        rows_updated: updated as i32,
+        status: IngestionStatus::Success,
+        error_message: None,
+        },
+        )
     .await?;
 
     Ok(IngestionSummary {
@@ -109,18 +111,20 @@ pub async fn run_once_audited(
             let now = Utc::now();
             let msg = e.to_string();
             db::record_ingestion_run(
-                pool,
-                run_id,
-                "unknown",
-                None,
-                now,
-                now,
-                0,
-                0,
-                0,
-                IngestionStatus::Failed,
-                Some(&msg),
-            )
+        pool,
+        &db::IngestionRunRecord {
+        run_id,
+        source: "unknown",
+        batch_id: None,
+        started_at: now,
+        finished_at: now,
+        citizens_processed: 0,
+        rows_inserted: 0,
+        rows_updated: 0,
+        status: IngestionStatus::Failed,
+        error_message: Some(&msg),
+        },
+        )
             .await
             .ok();
             Err(e)
