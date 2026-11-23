@@ -42,6 +42,7 @@ export default function GuidedTour() {
       const timer = setTimeout(() => setOpen(true), 400);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, []);
 
   function finish() {
@@ -56,6 +57,7 @@ export default function GuidedTour() {
   if (!open) return null;
 
   const current = STEPS[step];
+  if (!current) return null;
   const isLast = step === STEPS.length - 1;
 
   return (

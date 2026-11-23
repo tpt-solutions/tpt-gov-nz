@@ -43,7 +43,8 @@ export interface VerifyResult {
 export function verifyJwt(token: string, secret: string): VerifyResult {
   const parts = token.split(".");
   if (parts.length !== 3) return { valid: false };
-  const [headerB64, payloadB64, sigB64] = parts;
+  // Missing segments default to "" so they fail the checks below (closed).
+  const [headerB64 = "", payloadB64 = "", sigB64 = ""] = parts;
   const expected = hmac(secret, `${headerB64}.${payloadB64}`)
     .toString("base64")
     .replace(/\+/g, "-")

@@ -66,8 +66,8 @@ export function produceWinzAiContext(data: WINZDataBundle): AiContextChunk[] {
     });
   }
 
-  if (data.payments && data.payments.length > 0) {
-    const last = data.payments[0];
+  const last = data.payments?.[0];
+  if (last) {
     chunks.push({
       deptId: "winz",
       content: `Most recent payment: ${last.benefitType} $${Number(last.amount).toFixed(2)} on ${last.paymentDate} via ${last.method}.`,
