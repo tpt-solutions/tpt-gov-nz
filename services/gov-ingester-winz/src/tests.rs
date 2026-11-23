@@ -60,8 +60,9 @@ async fn run_once_with_mock_transport(pool: sqlx::PgPool) {
     assert_eq!(summary.status, IngestionStatus::Success);
     // test-citizen-001 is seeded by migration 007 (so its rows are updates);
     // test-citizen-002 is new (so its rows are inserts).
-    assert_eq!(summary.rows_inserted, 6);
-    assert_eq!(summary.rows_updated, 6);
+    // Each citizen: its citizen row plus two benefit rows and two payment rows.
+    assert_eq!(summary.rows_inserted, 5);
+    assert_eq!(summary.rows_updated, 5);
     assert!(summary.batch_id.as_deref() == Some("WINZ-2026-07-B001"));
 
     // Audit row was written.
