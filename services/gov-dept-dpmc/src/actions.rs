@@ -14,7 +14,7 @@ pub async fn execute(
     ai_level: Option<&str>,
 ) -> Result<Json<Value>, DpmcError> {
     let result = match action_type {
-        "request-honours-update" => requestHonoursUpdate(pool, citizen_id, parameters).await,
+        "request-honours-update" => request_honours_update(pool, citizen_id, parameters).await,
         _ => Err(DpmcError::InvalidAction(format!(
             "Unknown action: {action_type}"
         ))),
@@ -27,20 +27,22 @@ pub async fn execute(
 
     db::log_action(
         pool,
-        citizen_id,
-        action_type,
-        parameters.clone(),
-        performed_by,
-        ai_level,
-        success,
-        message.as_deref(),
+        db::ActionLogEntry {
+            citizen_id,
+            action_type,
+            parameters: parameters.clone(),
+            performed_by,
+            ai_level,
+            result_success: success,
+            result_message: message.as_deref(),
+        },
     )
     .await?;
 
     result.map(Json)
 }
 
-async fn requestHonoursUpdate(
+async fn request_honours_update(
     _pool: &PgPool,
     _citizen_id: Uuid,
     parameters: &Value,

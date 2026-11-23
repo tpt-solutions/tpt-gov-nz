@@ -1,0 +1,46 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT permit_number, activity, location, status, expires_date FROM doc_permits WHERE citizen_id = $1 ORDER BY expires_date DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "permit_number",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "activity",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "location",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "status",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "expires_date",
+        "type_info": "Date"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "22701b39d9be0f479f5559307fa7ec1030be22ce1bddee46fc9461c2764cc770"
+}

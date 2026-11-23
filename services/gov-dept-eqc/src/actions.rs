@@ -14,7 +14,7 @@ pub async fn execute(
     ai_level: Option<&str>,
 ) -> Result<Json<Value>, EqcError> {
     let result = match action_type {
-        "request-claim-update" => requestClaimUpdate(pool, citizen_id, parameters).await,
+        "request-claim-update" => request_claim_update(pool, citizen_id, parameters).await,
         _ => Err(EqcError::InvalidAction(format!(
             "Unknown action: {action_type}"
         ))),
@@ -27,20 +27,22 @@ pub async fn execute(
 
     db::log_action(
         pool,
-        citizen_id,
-        action_type,
-        parameters.clone(),
-        performed_by,
-        ai_level,
-        success,
-        message.as_deref(),
+        db::ActionLogEntry {
+            citizen_id,
+            action_type,
+            parameters: parameters.clone(),
+            performed_by,
+            ai_level,
+            result_success: success,
+            result_message: message.as_deref(),
+        },
     )
     .await?;
 
     result.map(Json)
 }
 
-async fn requestClaimUpdate(
+async fn request_claim_update(
     _pool: &PgPool,
     _citizen_id: Uuid,
     parameters: &Value,

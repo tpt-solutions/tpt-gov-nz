@@ -1,7 +1,4 @@
-use axum::{
-    Json,
-    extract::{Path, State},
-};
+use axum::{Json, extract::State};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use sqlx::PgPool;

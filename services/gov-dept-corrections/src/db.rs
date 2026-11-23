@@ -10,8 +10,7 @@ pub struct CitizenRow {
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct ProbationRow {
-    pub id: Uuid,
-    pub citizen_id: Uuid,
+
     pub status: String,
     pub officer_name: String,
     pub next_report_date: Option<chrono::NaiveDate>,
@@ -20,8 +19,7 @@ pub struct ProbationRow {
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct CaseRow {
-    pub id: Uuid,
-    pub citizen_id: Uuid,
+
     pub case_number: String,
     pub sentence_type: String,
     pub start_date: chrono::NaiveDate,
@@ -45,8 +43,7 @@ pub async fn fetch_probation(
 ) -> sqlx::Result<Option<ProbationRow>> {
     sqlx::query_as!(
         ProbationRow,
-        "SELECT id, citizen_id, status, officer_name, next_report_date, location \
-         FROM corrections_probation WHERE citizen_id = $1",
+        "SELECT status, officer_name, next_report_date, location FROM corrections_probation WHERE citizen_id = $1",
         citizen_id
     )
     .fetch_optional(pool)
@@ -56,24 +53,35 @@ pub async fn fetch_probation(
 pub async fn fetch_cases(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<CaseRow>> {
     sqlx::query_as!(
         CaseRow,
-        "SELECT id, citizen_id, case_number, sentence_type, start_date, end_date, summary \
-         FROM corrections_case WHERE citizen_id = $1 ORDER BY start_date DESC",
+        "SELECT case_number, sentence_type, start_date, end_date, summary FROM corrections_case WHERE citizen_id = $1 ORDER BY start_date DESC",
         citizen_id
     )
     .fetch_all(pool)
     .await
 }
 
-pub async fn log_action(
-    pool: &PgPool,
-    citizen_id: Uuid,
-    action_type: &str,
-    parameters: serde_json::Value,
-    performed_by: &str,
-    ai_level: Option<&str>,
-    result_success: bool,
-    result_message: Option<&str>,
-) -> sqlx::Result<()> {
+/// One row for `actions_log`.
+#[derive(Debug)]
+pub struct ActionLogEntry<'a> {
+    pub citizen_id: Uuid,
+    pub action_type: &'a str,
+    pub parameters: serde_json::Value,
+    pub performed_by: &'a str,
+    pub ai_level: Option<&'a str>,
+    pub result_success: bool,
+    pub result_message: Option<&'a str>,
+}
+
+pub async fn log_action(pool: &PgPool, entry: ActionLogEntry<'_>) -> sqlx::Result<()> {
+    let ActionLogEntry {
+        citizen_id,
+        action_type,
+        parameters,
+        performed_by,
+        ai_level,
+        result_success,
+        result_message,
+    } = entry;
     sqlx::query!(
         r#"INSERT INTO actions_log (citizen_id, action_type, parameters, performed_by, ai_level, result_success, result_message)
            VALUES ($1, $2, $3, $4, $5, $6, $7)"#,

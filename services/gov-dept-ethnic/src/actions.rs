@@ -14,7 +14,7 @@ pub async fn execute(
     ai_level: Option<&str>,
 ) -> Result<Json<Value>, EthnicError> {
     let result = match action_type {
-        "request-grant-info" => requestGrantInfo(pool, citizen_id, parameters).await,
+        "request-grant-info" => request_grant_info(pool, citizen_id, parameters).await,
         _ => Err(EthnicError::InvalidAction(format!(
             "Unknown action: {action_type}"
         ))),
@@ -27,25 +27,27 @@ pub async fn execute(
 
     db::log_action(
         pool,
-        citizen_id,
-        action_type,
-        parameters.clone(),
-        performed_by,
-        ai_level,
-        success,
-        message.as_deref(),
+        db::ActionLogEntry {
+            citizen_id,
+            action_type,
+            parameters: parameters.clone(),
+            performed_by,
+            ai_level,
+            result_success: success,
+            result_message: message.as_deref(),
+        },
     )
     .await?;
 
     result.map(Json)
 }
 
-async fn requestGrantInfo(
+async fn request_grant_info(
     _pool: &PgPool,
     _citizen_id: Uuid,
     parameters: &Value,
 ) -> Result<Value, EthnicError> {
-    let grantName = parameters
+    let grant_name = parameters
         .get("grantName")
         .and_then(|v| v.as_str())
         .map(|s| s.trim())
@@ -54,7 +56,7 @@ async fn requestGrantInfo(
 
     Ok(json!({
         "success": true,
-        "message": format!("{}{}", "Grant info request received for", grantName),
-        "grantName": grantName,
+        "message": format!("{}{}", "Grant info request received for", grant_name),
+        "grantName": grant_name,
     }))
 }

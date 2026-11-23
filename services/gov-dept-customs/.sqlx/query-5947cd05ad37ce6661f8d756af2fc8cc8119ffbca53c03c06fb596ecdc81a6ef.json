@@ -1,0 +1,46 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT declaration_id, date, country_from, goods_declared, status FROM customs_declarations WHERE citizen_id = $1 ORDER BY date DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "declaration_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 2,
+        "name": "country_from",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "goods_declared",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "status",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "5947cd05ad37ce6661f8d756af2fc8cc8119ffbca53c03c06fb596ecdc81a6ef"
+}

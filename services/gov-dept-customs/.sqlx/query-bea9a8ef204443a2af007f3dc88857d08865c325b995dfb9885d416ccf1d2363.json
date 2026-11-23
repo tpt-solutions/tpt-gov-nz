@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT passport_number, last_arrival, arrival_port, frequent_traveller FROM customs_travel WHERE citizen_id = $1 ORDER BY last_arrival DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "passport_number",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "last_arrival",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 2,
+        "name": "arrival_port",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "frequent_traveller",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "bea9a8ef204443a2af007f3dc88857d08865c325b995dfb9885d416ccf1d2363"
+}

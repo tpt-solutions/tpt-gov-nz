@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT status, officer_name, next_report_date, location FROM corrections_probation WHERE citizen_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "status",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "officer_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "next_report_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 3,
+        "name": "location",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      true
+    ]
+  },
+  "hash": "13a2c56a37030937bec5c069a50368f517d6b7ad7d400894a654c968857e61cd"
+}

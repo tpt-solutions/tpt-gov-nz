@@ -1,0 +1,52 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT tenancy_id, property_address, weekly_rent, income_related_rent, start_date, status FROM hud_tenancies WHERE citizen_id = $1 ORDER BY start_date DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "tenancy_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "property_address",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "weekly_rent",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 3,
+        "name": "income_related_rent",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 4,
+        "name": "start_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 5,
+        "name": "status",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "0d2b1213ccee7cb48a95a05d7591585aa2211466dbd704d816d0c1029ec7c5c7"
+}

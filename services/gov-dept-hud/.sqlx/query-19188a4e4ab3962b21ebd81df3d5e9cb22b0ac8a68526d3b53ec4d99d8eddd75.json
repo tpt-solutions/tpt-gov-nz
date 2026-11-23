@@ -1,0 +1,46 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT request_number, category, status, description, requested_date FROM hud_maintenance_requests WHERE citizen_id = $1 ORDER BY requested_date DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "request_number",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "category",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "status",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "requested_date",
+        "type_info": "Date"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "19188a4e4ab3962b21ebd81df3d5e9cb22b0ac8a68526d3b53ec4d99d8eddd75"
+}

@@ -1,0 +1,46 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT case_number, sentence_type, start_date, end_date, summary FROM corrections_case WHERE citizen_id = $1 ORDER BY start_date DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "case_number",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "sentence_type",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "start_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 3,
+        "name": "end_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 4,
+        "name": "summary",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true
+    ]
+  },
+  "hash": "ee5ce76707468c757e9d20547307a86ee645bf6b1b1f159e062d6e036bd88758"
+}

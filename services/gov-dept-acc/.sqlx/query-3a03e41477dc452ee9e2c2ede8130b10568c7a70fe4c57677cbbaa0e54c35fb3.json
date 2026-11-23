@@ -1,0 +1,46 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT plan_id, description, status, provider, next_review FROM acc_rehabilitation WHERE citizen_id = $1 ORDER BY next_review NULLS LAST",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "plan_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "status",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "provider",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "next_review",
+        "type_info": "Date"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true
+    ]
+  },
+  "hash": "3a03e41477dc452ee9e2c2ede8130b10568c7a70fe4c57677cbbaa0e54c35fb3"
+}

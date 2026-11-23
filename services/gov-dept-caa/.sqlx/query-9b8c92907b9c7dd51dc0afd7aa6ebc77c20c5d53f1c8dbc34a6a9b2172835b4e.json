@@ -1,0 +1,34 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT registration, aircraft_type, status FROM caa_aircraft WHERE citizen_id = $1 ORDER BY created_at DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "registration",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "aircraft_type",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "status",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "9b8c92907b9c7dd51dc0afd7aa6ebc77c20c5d53f1c8dbc34a6a9b2172835b4e"
+}

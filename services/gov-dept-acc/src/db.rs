@@ -10,7 +10,6 @@ pub struct CitizenRow {
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct ClaimRow {
-    pub id: Uuid,
     pub claim_number: String,
     pub claim_type: String,
     pub status: String,
@@ -21,7 +20,6 @@ pub struct ClaimRow {
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct EntitlementRow {
-    pub id: Uuid,
     pub has_entitlement: bool,
     pub r#type: Option<String>,
     pub weekly_amount: Option<f64>,
@@ -30,7 +28,6 @@ pub struct EntitlementRow {
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct RehabilitationRow {
-    pub id: Uuid,
     pub plan_id: String,
     pub description: String,
     pub status: String,
@@ -51,8 +48,7 @@ pub async fn resolve_by_did(pool: &PgPool, did: &str) -> sqlx::Result<Option<Cit
 pub async fn fetch_claims(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<ClaimRow>> {
     sqlx::query_as!(
         ClaimRow,
-        "SELECT id, claim_number, claim_type, status, injury_date, description, weekly_compensation \
-         FROM acc_claims WHERE citizen_id = $1 ORDER BY injury_date DESC",
+        "SELECT claim_number, claim_type, status, injury_date, description, weekly_compensation FROM acc_claims WHERE citizen_id = $1 ORDER BY injury_date DESC",
         citizen_id
     )
     .fetch_all(pool)
@@ -65,8 +61,7 @@ pub async fn fetch_entitlement(
 ) -> sqlx::Result<Option<EntitlementRow>> {
     sqlx::query_as!(
         EntitlementRow,
-        "SELECT id, has_entitlement, type, weekly_amount, remaining_weeks \
-         FROM acc_entitlements WHERE citizen_id = $1 LIMIT 1",
+        "SELECT has_entitlement, type, weekly_amount, remaining_weeks FROM acc_entitlements WHERE citizen_id = $1 LIMIT 1",
         citizen_id
     )
     .fetch_optional(pool)
@@ -79,24 +74,35 @@ pub async fn fetch_rehabilitation(
 ) -> sqlx::Result<Vec<RehabilitationRow>> {
     sqlx::query_as!(
         RehabilitationRow,
-        "SELECT id, plan_id, description, status, provider, next_review \
-         FROM acc_rehabilitation WHERE citizen_id = $1 ORDER BY next_review NULLS LAST",
+        "SELECT plan_id, description, status, provider, next_review FROM acc_rehabilitation WHERE citizen_id = $1 ORDER BY next_review NULLS LAST",
         citizen_id
     )
     .fetch_all(pool)
     .await
 }
 
-pub async fn log_action(
-    pool: &PgPool,
-    citizen_id: Uuid,
-    action_type: &str,
-    parameters: serde_json::Value,
-    performed_by: &str,
-    ai_level: Option<&str>,
-    result_success: bool,
-    result_message: Option<&str>,
-) -> sqlx::Result<()> {
+/// One row for `actions_log`.
+#[derive(Debug)]
+pub struct ActionLogEntry<'a> {
+    pub citizen_id: Uuid,
+    pub action_type: &'a str,
+    pub parameters: serde_json::Value,
+    pub performed_by: &'a str,
+    pub ai_level: Option<&'a str>,
+    pub result_success: bool,
+    pub result_message: Option<&'a str>,
+}
+
+pub async fn log_action(pool: &PgPool, entry: ActionLogEntry<'_>) -> sqlx::Result<()> {
+    let ActionLogEntry {
+        citizen_id,
+        action_type,
+        parameters,
+        performed_by,
+        ai_level,
+        result_success,
+        result_message,
+    } = entry;
     sqlx::query!(
         r#"INSERT INTO actions_log (citizen_id, action_type, parameters, performed_by, ai_level, result_success, result_message)
            VALUES ($1, $2, $3, $4, $5, $6, $7)"#,

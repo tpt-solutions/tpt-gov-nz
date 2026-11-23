@@ -1,0 +1,52 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT application_number, application_type, status, priority_band, bedrooms_needed, submitted_date FROM hud_applications WHERE citizen_id = $1 ORDER BY submitted_date DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "application_number",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "application_type",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "status",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "priority_band",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "bedrooms_needed",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "submitted_date",
+        "type_info": "Date"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  "hash": "b89ae6a86795130168b56e8f4727d396a28a873da579446b0117e1df05a65f90"
+}

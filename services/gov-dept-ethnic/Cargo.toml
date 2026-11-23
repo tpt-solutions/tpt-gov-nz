@@ -37,6 +37,7 @@ opa = ["dep:reqwest"]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(feature, values("opa"))'] }
 
 [dev-dependencies]
+gov-test-support = { path = "../../crates/gov-test-support" }
 tokio = { workspace = true }
 tower = { workspace = true }
 http = "1"

@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT has_entitlement, type, weekly_amount, remaining_weeks FROM acc_entitlements WHERE citizen_id = $1 LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "has_entitlement",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 1,
+        "name": "type",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "weekly_amount",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 3,
+        "name": "remaining_weeks",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "314e3d2f997d4ce091d598d9bef13b062daf9e0d0212f025ee6ba23adc98d2bb"
+}

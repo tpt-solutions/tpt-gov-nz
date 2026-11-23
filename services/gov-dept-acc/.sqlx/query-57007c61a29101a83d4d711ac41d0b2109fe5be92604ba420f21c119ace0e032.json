@@ -1,0 +1,52 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT claim_number, claim_type, status, injury_date, description, weekly_compensation FROM acc_claims WHERE citizen_id = $1 ORDER BY injury_date DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "claim_number",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "claim_type",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "status",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "injury_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 4,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "weekly_compensation",
+        "type_info": "Float8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "57007c61a29101a83d4d711ac41d0b2109fe5be92604ba420f21c119ace0e032"
+}

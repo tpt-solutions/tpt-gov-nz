@@ -15,7 +15,7 @@ pub async fn execute(
 ) -> Result<Json<Value>, CaaError> {
     let result = match action_type {
         "request-licence-replacement" => {
-            requestLicenceReplacement(pool, citizen_id, parameters).await
+            request_licence_replacement(pool, citizen_id, parameters).await
         }
         _ => Err(CaaError::InvalidAction(format!(
             "Unknown action: {action_type}"
@@ -29,25 +29,27 @@ pub async fn execute(
 
     db::log_action(
         pool,
-        citizen_id,
-        action_type,
-        parameters.clone(),
-        performed_by,
-        ai_level,
-        success,
-        message.as_deref(),
+        db::ActionLogEntry {
+            citizen_id,
+            action_type,
+            parameters: parameters.clone(),
+            performed_by,
+            ai_level,
+            result_success: success,
+            result_message: message.as_deref(),
+        },
     )
     .await?;
 
     result.map(Json)
 }
 
-async fn requestLicenceReplacement(
+async fn request_licence_replacement(
     _pool: &PgPool,
     _citizen_id: Uuid,
     parameters: &Value,
 ) -> Result<Value, CaaError> {
-    let licenceNo = parameters
+    let licence_no = parameters
         .get("licenceNo")
         .and_then(|v| v.as_str())
         .map(|s| s.trim())
@@ -56,7 +58,7 @@ async fn requestLicenceReplacement(
 
     Ok(json!({
         "success": true,
-        "message": format!("{}{}", "Licence replacement request received for", licenceNo),
-        "licenceNo": licenceNo,
+        "message": format!("{}{}", "Licence replacement request received for", licence_no),
+        "licenceNo": licence_no,
     }))
 }

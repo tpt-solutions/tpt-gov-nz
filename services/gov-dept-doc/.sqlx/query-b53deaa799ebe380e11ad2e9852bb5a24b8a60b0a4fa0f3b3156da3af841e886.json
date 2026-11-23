@@ -1,0 +1,46 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT concession_id, type, holder, start_date, end_date FROM doc_concessions WHERE citizen_id = $1 ORDER BY start_date DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "concession_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "type",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "holder",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "start_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 4,
+        "name": "end_date",
+        "type_info": "Date"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "b53deaa799ebe380e11ad2e9852bb5a24b8a60b0a4fa0f3b3156da3af841e886"
+}
