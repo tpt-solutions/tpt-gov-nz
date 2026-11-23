@@ -68,7 +68,6 @@ impl NodeKeypair {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ed25519_dalek::SigningKey;
 
     #[test]
     fn from_secret_b64_round_trip() {

@@ -1,14 +1,12 @@
 use std::collections::HashMap;
 #[cfg(feature = "quic")]
 use std::net::SocketAddr;
-use std::path::PathBuf;
 use std::sync::Arc;
 #[cfg(feature = "quic")]
 use std::sync::OnceLock;
 use std::time::Duration;
 
 use crate::config::{FederationNodeConfig, PeerConfig};
-use crate::registry::NodeRegistry;
 use crate::transport::{
     self, DEFAULT_FEDERATION_RATE_LIMIT_MAX_PEERS, DEFAULT_FEDERATION_RATE_LIMIT_RPM,
     EnvelopeHandler, FederationRateLimiter, HttpMockTransport, InboundState, REPLAY_WINDOW_SIZE,

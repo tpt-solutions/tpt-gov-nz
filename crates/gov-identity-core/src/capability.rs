@@ -343,7 +343,11 @@ mod tests {
             f.b.public_key_b64(),
         );
         assert_eq!(
-            verify_chain(&chain(&f.root, vec![link]), &f.issuer.verifying_key(), f.now),
+            verify_chain(
+                &chain(&f.root, vec![link]),
+                &f.issuer.verifying_key(),
+                f.now
+            ),
             Err(CapabilityError::Widened(0, "ird:kiwisaver".into()))
         );
     }
@@ -365,7 +369,11 @@ mod tests {
             f.c.public_key_b64(),
         );
         assert_eq!(
-            verify_chain(&chain(&f.root, vec![l1, l2]), &f.issuer.verifying_key(), f.now),
+            verify_chain(
+                &chain(&f.root, vec![l1, l2]),
+                &f.issuer.verifying_key(),
+                f.now
+            ),
             Err(CapabilityError::Widened(1, "ird:tax-summary".into()))
         );
     }
@@ -380,7 +388,11 @@ mod tests {
             f.b.public_key_b64(),
         );
         assert_eq!(
-            verify_chain(&chain(&f.root, vec![link]), &f.issuer.verifying_key(), f.now),
+            verify_chain(
+                &chain(&f.root, vec![link]),
+                &f.issuer.verifying_key(),
+                f.now
+            ),
             Err(CapabilityError::Outlives(0))
         );
     }
@@ -395,7 +407,11 @@ mod tests {
             f.b.public_key_b64(),
         );
         assert_eq!(
-            verify_chain(&chain(&f.root, vec![link]), &f.issuer.verifying_key(), f.now),
+            verify_chain(
+                &chain(&f.root, vec![link]),
+                &f.issuer.verifying_key(),
+                f.now
+            ),
             Err(CapabilityError::Expired(0))
         );
     }
@@ -411,7 +427,11 @@ mod tests {
             f.c.public_key_b64(),
         );
         assert_eq!(
-            verify_chain(&chain(&f.root, vec![forged]), &f.issuer.verifying_key(), f.now),
+            verify_chain(
+                &chain(&f.root, vec![forged]),
+                &f.issuer.verifying_key(),
+                f.now
+            ),
             Err(CapabilityError::BadSignature(0))
         );
     }
@@ -433,7 +453,11 @@ mod tests {
             f.c.public_key_b64(),
         );
         assert_eq!(
-            verify_chain(&chain(&f.root, vec![l1, l2]), &f.issuer.verifying_key(), f.now),
+            verify_chain(
+                &chain(&f.root, vec![l1, l2]),
+                &f.issuer.verifying_key(),
+                f.now
+            ),
             Err(CapabilityError::BadSignature(1))
         );
     }
@@ -454,7 +478,11 @@ mod tests {
             f.c.public_key_b64(),
         );
         assert!(matches!(
-            verify_chain(&chain(&f.root, vec![l2, l1]), &f.issuer.verifying_key(), f.now),
+            verify_chain(
+                &chain(&f.root, vec![l2, l1]),
+                &f.issuer.verifying_key(),
+                f.now
+            ),
             Err(CapabilityError::BadSignature(0))
         ));
     }
@@ -476,7 +504,11 @@ mod tests {
             f.b.public_key_b64(),
         );
         assert_eq!(
-            verify_chain(&chain(&unbound, vec![link]), &f.issuer.verifying_key(), f.now),
+            verify_chain(
+                &chain(&unbound, vec![link]),
+                &f.issuer.verifying_key(),
+                f.now
+            ),
             Err(CapabilityError::Unbound)
         );
     }
@@ -523,7 +555,11 @@ mod tests {
             "not-a-key".into(),
         );
         assert_eq!(
-            verify_chain(&chain(&f.root, vec![link]), &f.issuer.verifying_key(), f.now),
+            verify_chain(
+                &chain(&f.root, vec![link]),
+                &f.issuer.verifying_key(),
+                f.now
+            ),
             Err(CapabilityError::BadHolderKey(0))
         );
     }

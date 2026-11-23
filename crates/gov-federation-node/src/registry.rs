@@ -124,22 +124,22 @@ impl NodeRegistry {
     ) -> Result<NodeKeypair> {
         let mut storage = self.inner.write().await;
 
-        if let Some(node) = &storage.this_node {
-            if node.dept_id == dept_id {
-                let signing_key = SigningKey::from_bytes(
-                    &base64::engine::general_purpose::STANDARD
-                        .decode(&node.signing_key_b64)
-                        .context("decoding stored signing key")?
-                        .try_into()
-                        .map_err(|_| anyhow::anyhow!("invalid key length"))?,
-                );
-                let verifying_key = signing_key.verifying_key();
-                return Ok(NodeKeypair {
-                    signing_key,
-                    verifying_key,
-                    dept_id: node.dept_id.clone(),
-                });
-            }
+        if let Some(node) = &storage.this_node
+            && node.dept_id == dept_id
+        {
+            let signing_key = SigningKey::from_bytes(
+                &base64::engine::general_purpose::STANDARD
+                    .decode(&node.signing_key_b64)
+                    .context("decoding stored signing key")?
+                    .try_into()
+                    .map_err(|_| anyhow::anyhow!("invalid key length"))?,
+            );
+            let verifying_key = signing_key.verifying_key();
+            return Ok(NodeKeypair {
+                signing_key,
+                verifying_key,
+                dept_id: node.dept_id.clone(),
+            });
         }
 
         let keypair = NodeKeypair::generate(dept_id);
