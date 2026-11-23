@@ -46,6 +46,10 @@ export interface RealmeConfig {
 }
 
 export function getRealmeConfig(): RealmeConfig {
+  // Unverified SAML must never be accepted in production, whatever the environment says.
+  if (process.env.REALME_SKIP_VERIFY === "true" && process.env.NODE_ENV === "production") {
+    throw new Error("REALME_SKIP_VERIFY is not allowed in production");
+  }
   const ssoUrl =
     process.env.REALME_SSO_URL ??
     "https://www.realme.govt.nz/logon-mts/main?execution=e1s1";
@@ -134,6 +138,17 @@ export interface AuthnRequestResult {
 }
 
 /** Build a signed Redirect-binding AuthnRequest and return the IdP redirect URL. */
+/**
+ * Keep RelayState only if it is a same-origin relative path (for example `/citizens`).
+ * Anything else, including absolute URLs and protocol-relative `//host` paths, is dropped.
+ */
+export function safeRelayState(relay: string | null | undefined): string {
+  if (!relay || relay.length > 512) return "";
+  // Must start with a single "/", contain no whitespace or backslash.
+  if (!/^\/(?![/\\])[^\s\\]*$/.test(relay)) return "";
+  return relay;
+}
+
 export function buildAuthnRequest(relayState?: string): AuthnRequestResult {
   const cfg = getRealmeConfig();
   const id = `_${crypto.randomBytes(16).toString("hex")}`;
@@ -209,6 +224,8 @@ export interface ParsedSamlResponse {
 }
 
 function parseXml(xml: string): Document {
+  // Entity declarations enable XML bombs and external entity tricks. SAML never needs them.
+  if (/<!DOCTYPE/i.test(xml)) throw new Error("DOCTYPE declarations are not allowed in SAML responses");
   const doc = new DOMParser().parseFromString(xml, "text/xml");
   if (!doc.documentElement) throw new Error("could not parse SAML XML");
   return doc;
@@ -325,13 +342,13 @@ export interface VerifyResult {
  */
 export function verifyResponseSignature(xml: string): VerifyResult {
   const cfg = getRealmeConfig();
-  if (cfg.skipVerify || !cfg.idpCert) {
-    return {
-      ok: true,
-      reason: cfg.skipVerify
-        ? "verification skipped (REALME_SKIP_VERIFY=true)"
-        : "verification skipped (REALME_IDP_CERT unset)",
-    };
+  if (cfg.skipVerify) {
+    // Development only: getRealmeConfig refuses this in production.
+    return { ok: true, reason: "verification skipped (REALME_SKIP_VERIFY=true)" };
+  }
+  if (!cfg.idpCert) {
+    // Fail closed: an unpinned IdP certificate means the response cannot be trusted.
+    return { ok: false, reason: "REALME_IDP_CERT is not configured; refusing unverified SAML response" };
   }
 
   let doc: Document;
@@ -447,20 +464,23 @@ export function validateAssertion(
     return { ok: false, reason: "response contains no signed assertion/subject" };
   }
 
-  if (parsed.destination && opts.acsUrl && parsed.destination !== opts.acsUrl) {
+  if (opts.acsUrl && parsed.destination !== opts.acsUrl) {
     return {
       ok: false,
       reason: `Destination mismatch: expected ${opts.acsUrl}, got ${parsed.destination}`,
     };
   }
 
-  if (opts.requestId && parsed.inResponseTo && parsed.inResponseTo !== opts.requestId) {
+  if (opts.requestId && parsed.inResponseTo !== opts.requestId) {
     return {
       ok: false,
       reason: `InResponseTo mismatch: expected ${opts.requestId}, got ${parsed.inResponseTo}`,
     };
   }
 
+  if (!parsed.notOnOrAfter) {
+    return { ok: false, reason: "assertion has no NotOnOrAfter condition" };
+  }
   if (parsed.notBefore && now + skew < Date.parse(parsed.notBefore)) {
     return { ok: false, reason: `assertion not yet valid (NotBefore ${parsed.notBefore})` };
   }
@@ -478,7 +498,10 @@ export function validateAssertion(
     };
   }
 
-  if (cfg.idpEntityId && parsed.assertionIssuer && parsed.assertionIssuer !== cfg.idpEntityId) {
+  if (!cfg.idpEntityId) {
+    return { ok: false, reason: "REALME_IDP_ENTITY_ID is not configured" };
+  }
+  if (parsed.assertionIssuer !== cfg.idpEntityId) {
     return {
       ok: false,
       reason: `issuer mismatch: expected ${cfg.idpEntityId}, got ${parsed.assertionIssuer}`,

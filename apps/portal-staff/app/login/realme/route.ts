@@ -5,6 +5,7 @@ import {
   createRealmeState,
   REALME_STATE_COOKIE,
   getRealmeConfig,
+  safeRelayState,
 } from "../../lib/realme";
 
 /**
@@ -14,7 +15,7 @@ import {
  */
 export async function GET(req: NextRequest) {
   const cfg = getRealmeConfig();
-  const relay = req.nextUrl.searchParams.get("relayState") ?? "";
+  const relay = safeRelayState(req.nextUrl.searchParams.get("relayState"));
   const { redirectUrl, requestId } = buildAuthnRequest(relay);
 
   const state = createRealmeState(requestId, cfg.requestTtlSeconds);

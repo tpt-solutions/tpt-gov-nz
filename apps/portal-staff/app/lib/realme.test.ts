@@ -5,6 +5,8 @@ import { SignedXml } from "xml-crypto";
 import {
   buildAuthnRequest,
   generateSpMetadata,
+  getRealmeConfig,
+  safeRelayState,
   processSamlResponse,
   RealmeAuthError,
   createRealmeState,
@@ -246,5 +248,86 @@ describe("RealMe correlation state", () => {
     expect(v.ok).toBe(true);
     expect(v.requestId).toBe("req-123");
     expect(verifyRealmeState(undefined).ok).toBe(false);
+  });
+});
+
+describe("RealMe fail-closed behaviour", () => {
+  it("refuses to accept a response when no IdP certificate is pinned", () => {
+    const requestId = uid();
+    const xml = signAssertion(buildResponse({ requestId }), idp.key, idp.cert);
+    const saved = process.env.REALME_IDP_CERT;
+    delete process.env.REALME_IDP_CERT;
+    try {
+      expect(() => processSamlResponse(b64(xml), { requestId, acsUrl: ACS })).toThrow(
+        /REALME_IDP_CERT/,
+      );
+    } finally {
+      process.env.REALME_IDP_CERT = saved;
+    }
+  });
+
+  it("refuses REALME_SKIP_VERIFY in production", () => {
+    const savedSkip = process.env.REALME_SKIP_VERIFY;
+    const savedEnv = process.env.NODE_ENV;
+    process.env.REALME_SKIP_VERIFY = "true";
+    (process.env as Record<string, string>).NODE_ENV = "production";
+    try {
+      expect(() => getRealmeConfig()).toThrow(/not allowed in production/);
+    } finally {
+      process.env.REALME_SKIP_VERIFY = savedSkip;
+      (process.env as Record<string, string>).NODE_ENV = savedEnv;
+    }
+  });
+
+  it("allows REALME_SKIP_VERIFY outside production (development only)", () => {
+    const savedSkip = process.env.REALME_SKIP_VERIFY;
+    process.env.REALME_SKIP_VERIFY = "true";
+    try {
+      expect(getRealmeConfig().skipVerify).toBe(true);
+    } finally {
+      process.env.REALME_SKIP_VERIFY = savedSkip;
+    }
+  });
+
+  it("refuses to validate when the IdP entity ID is not configured", () => {
+    const requestId = uid();
+    const xml = signAssertion(buildResponse({ requestId }), idp.key, idp.cert);
+    const saved = process.env.REALME_IDP_ENTITY_ID;
+    delete process.env.REALME_IDP_ENTITY_ID;
+    try {
+      expect(() => processSamlResponse(b64(xml), { requestId, acsUrl: ACS })).toThrow(
+        /REALME_IDP_ENTITY_ID/,
+      );
+    } finally {
+      process.env.REALME_IDP_ENTITY_ID = saved;
+    }
+  });
+});
+
+describe("RealMe hardening: relayState and DOCTYPE", () => {
+  it("keeps same-origin relative paths", () => {
+    expect(safeRelayState("/citizens")).toBe("/citizens");
+    expect(safeRelayState("/dept/ird?x=1")).toBe("/dept/ird?x=1");
+  });
+
+  it("drops absolute, protocol-relative and backslash targets", () => {
+    expect(safeRelayState("https://evil.example/")).toBe("");
+    expect(safeRelayState("//evil.example/")).toBe("");
+    expect(safeRelayState("/\\evil.example")).toBe("");
+    expect(safeRelayState("javascript:alert(1)")).toBe("");
+    expect(safeRelayState("/with space")).toBe("");
+    expect(safeRelayState(null)).toBe("");
+  });
+
+  it("rejects SAML responses that declare a DOCTYPE", () => {
+    const requestId = uid();
+    const xml = signAssertion(buildResponse({ requestId }), idp.key, idp.cert);
+    const withDoctype = xml.replace(
+      "<samlp:Response",
+      '<!DOCTYPE x [<!ENTITY e "boom">]><samlp:Response',
+    );
+    expect(() => processSamlResponse(b64(withDoctype), { requestId, acsUrl: ACS })).toThrow(
+      /DOCTYPE/,
+    );
   });
 });
