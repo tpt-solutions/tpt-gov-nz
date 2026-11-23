@@ -24,10 +24,38 @@ jobs:
           node-version: 20
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Lint
+        run: pnpm lint
       - name: Typecheck
         run: pnpm typecheck
       - name: Test
         run: pnpm test
+      - name: Build portals
+        run: pnpm --filter @tpt/portal-citizen --filter @tpt/portal-staff build
+
+  policy:
+    name: OPA policies (check, test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: open-policy-agent/setup-opa@v2
+        with:
+          version: latest
+      - name: Check policies
+        run: opa check policies examples
+      - name: Test policies
+        run: opa test policies examples
+
+  secrets-scan:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   rust:
     name: Rust (build, unit tests)
