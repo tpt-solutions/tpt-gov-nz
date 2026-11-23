@@ -1,0 +1,34 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT school, year_level, status FROM moe_enrolment WHERE citizen_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "school",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "year_level",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 2,
+        "name": "status",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "0a02065e58cdb9303247a21e3011b5b34bb27d0fc99e7ba537c0dd3c9972e7f9"
+}

@@ -1,0 +1,46 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT licence_number, full_name, licence_class, expiry_date, conditions FROM driver_licences WHERE citizen_id = $1 LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "licence_number",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "full_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "licence_class",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "expiry_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 4,
+        "name": "conditions",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "ba247b81dde08db1216abdc0c995363dae0511654446009a72c240f548b6494e"
+}

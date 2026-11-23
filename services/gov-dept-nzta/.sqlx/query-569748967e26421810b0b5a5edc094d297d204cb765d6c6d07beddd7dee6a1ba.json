@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT vehicle_rego, licence_type, expiry_date, units_remaining FROM ruc_records WHERE citizen_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "vehicle_rego",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "licence_type",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "expiry_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 3,
+        "name": "units_remaining",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "569748967e26421810b0b5a5edc094d297d204cb765d6c6d07beddd7dee6a1ba"
+}

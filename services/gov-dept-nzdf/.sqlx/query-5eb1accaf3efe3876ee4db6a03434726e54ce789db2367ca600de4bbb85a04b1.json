@@ -1,0 +1,34 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT service_no, branch, status FROM nzdf_service_records WHERE citizen_id = $1 ORDER BY created_at DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "service_no",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "branch",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "status",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "5eb1accaf3efe3876ee4db6a03434726e54ce789db2367ca600de4bbb85a04b1"
+}

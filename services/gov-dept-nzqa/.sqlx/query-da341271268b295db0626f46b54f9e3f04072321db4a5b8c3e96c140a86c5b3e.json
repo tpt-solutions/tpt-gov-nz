@@ -1,0 +1,34 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT record_summary, total_credits, credit_summary FROM nzqa_transcripts WHERE citizen_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "record_summary",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "total_credits",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 2,
+        "name": "credit_summary",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "da341271268b295db0626f46b54f9e3f04072321db4a5b8c3e96c140a86c5b3e"
+}

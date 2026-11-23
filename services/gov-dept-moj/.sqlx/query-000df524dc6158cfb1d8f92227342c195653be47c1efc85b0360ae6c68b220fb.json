@@ -1,0 +1,46 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT case_number, case_type, status, next_hearing_date, description FROM moj_court_records WHERE citizen_id = $1 ORDER BY next_hearing_date NULLS LAST",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "case_number",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "case_type",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "status",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "next_hearing_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 4,
+        "name": "description",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "000df524dc6158cfb1d8f92227342c195653be47c1efc85b0360ae6c68b220fb"
+}

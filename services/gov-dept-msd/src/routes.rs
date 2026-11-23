@@ -110,6 +110,7 @@ pub async fn fetch_data(
         json!(
             rows.iter()
                 .map(|e| json!({
+                    "eventId": e.event_id,
                     "eventDate": e.event_date.to_string(),
                     "serviceLine": e.service_line,
                     "summary": e.summary,

@@ -14,7 +14,7 @@ pub async fn execute(
     ai_level: Option<&str>,
 ) -> Result<Json<Value>, NzdfError> {
     let result = match action_type {
-        "request-service-record" => requestServiceRecord(pool, citizen_id, parameters).await,
+        "request-service-record" => request_service_record(pool, citizen_id, parameters).await,
         _ => Err(NzdfError::InvalidAction(format!(
             "Unknown action: {action_type}"
         ))),
@@ -27,25 +27,27 @@ pub async fn execute(
 
     db::log_action(
         pool,
-        citizen_id,
-        action_type,
-        parameters.clone(),
-        performed_by,
-        ai_level,
-        success,
-        message.as_deref(),
+        db::ActionLogEntry {
+            citizen_id,
+            action_type,
+            parameters: parameters.clone(),
+            performed_by,
+            ai_level,
+            result_success: success,
+            result_message: message.as_deref(),
+        },
     )
     .await?;
 
     result.map(Json)
 }
 
-async fn requestServiceRecord(
+async fn request_service_record(
     _pool: &PgPool,
     _citizen_id: Uuid,
     parameters: &Value,
 ) -> Result<Value, NzdfError> {
-    let serviceNo = parameters
+    let service_no = parameters
         .get("serviceNo")
         .and_then(|v| v.as_str())
         .map(|s| s.trim())
@@ -54,7 +56,7 @@ async fn requestServiceRecord(
 
     Ok(json!({
         "success": true,
-        "message": format!("{}{}", "Service record request received for", serviceNo),
-        "serviceNo": serviceNo,
+        "message": format!("{}{}", "Service record request received for", service_no),
+        "serviceNo": service_no,
     }))
 }

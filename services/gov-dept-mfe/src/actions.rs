@@ -14,7 +14,7 @@ pub async fn execute(
     ai_level: Option<&str>,
 ) -> Result<Json<Value>, MfeError> {
     let result = match action_type {
-        "request-emissions-report" => requestEmissionsReport(pool, citizen_id, parameters).await,
+        "request-emissions-report" => request_emissions_report(pool, citizen_id, parameters).await,
         _ => Err(MfeError::InvalidAction(format!(
             "Unknown action: {action_type}"
         ))),
@@ -27,20 +27,22 @@ pub async fn execute(
 
     db::log_action(
         pool,
-        citizen_id,
-        action_type,
-        parameters.clone(),
-        performed_by,
-        ai_level,
-        success,
-        message.as_deref(),
+        db::ActionLogEntry {
+            citizen_id,
+            action_type,
+            parameters: parameters.clone(),
+            performed_by,
+            ai_level,
+            result_success: success,
+            result_message: message.as_deref(),
+        },
     )
     .await?;
 
     result.map(Json)
 }
 
-async fn requestEmissionsReport(
+async fn request_emissions_report(
     _pool: &PgPool,
     _citizen_id: Uuid,
     parameters: &Value,

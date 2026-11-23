@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT cert_number, category, issued_date, expires_date FROM mpi_certifications WHERE citizen_id = $1 ORDER BY issued_date DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "cert_number",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "category",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "issued_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 3,
+        "name": "expires_date",
+        "type_info": "Date"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "fd3da2ffc5951109c254d438ea014bedb60598e49c52e36e9a41b7391ce3f769"
+}

@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT nzbn, entity_name, role, appointed_date FROM mbie_directorships WHERE citizen_id = $1 ORDER BY appointed_date DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "nzbn",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "entity_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "role",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "appointed_date",
+        "type_info": "Date"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "6604c85acc3ebcad8af57b68c5799e3ea291c885a88a5f0a4acc41a2ce702838"
+}
