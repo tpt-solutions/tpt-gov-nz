@@ -48,6 +48,17 @@ impl DeptRegistry {
     pub fn get_url(&self, dept_id: &str) -> Option<&str> {
         self.departments.get(dept_id).map(|s| s.as_str())
     }
+
+    /// All registered `(dept_id, base_url)` pairs, sorted by department id.
+    pub fn entries(&self) -> Vec<(String, String)> {
+        let mut out: Vec<(String, String)> = self
+            .departments
+            .iter()
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect();
+        out.sort();
+        out
+    }
 }
 
 /// Extract the `dept_id` segment from a `/v1/dept/{dept_id}/...` path.
@@ -182,7 +193,7 @@ pub async fn citizen_resolve(
 
 // --- Dept proxy ---
 
-fn build_target(base_url: &str, path: &str, query: Option<&str>, https: bool) -> String {
+pub(crate) fn build_target(base_url: &str, path: &str, query: Option<&str>, https: bool) -> String {
     let base = base_url.trim_end_matches('/');
     let base = if https {
         base.replacen("http://", "https://", 1)
@@ -232,7 +243,7 @@ async fn collect_limited(
 fn extract_requesting_dept(claims: &Claims, target_dept: &str) -> Option<String> {
     // First, try to find a scope for the target department
     let target_prefix = format!("{}:", target_dept);
-    if let Some(scope) = claims.scopes.iter().find(|s| s.starts_with(&target_prefix)) {
+    if claims.scopes.iter().any(|s| s.starts_with(&target_prefix)) {
         return Some(target_dept.to_string());
     }
     // Fall back to the first scope's prefix

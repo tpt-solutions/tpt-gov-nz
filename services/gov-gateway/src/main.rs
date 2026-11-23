@@ -15,7 +15,9 @@ use anyhow::Context;
 mod auth;
 mod circuit_breaker;
 mod consent;
+mod metrics;
 mod rate_limit;
+mod readiness;
 mod routes;
 mod state;
 mod telemetry;
@@ -106,10 +108,15 @@ async fn main() -> anyhow::Result<()> {
             auth::jwt_auth,
         ));
 
+    // Liveness (/health) never calls downstreams; readiness (/ready) probes them.
+    // /health keeps its original response, which lists the registered departments.
     let app = Router::new()
         .route("/health", get(routes::health))
+        .route("/ready", get(readiness::ready))
+        .route("/metrics", get(metrics::endpoint))
         .merge(protected)
         .with_state(app_state)
+        .layer(middleware::from_fn(metrics::track))
         .layer(TraceLayer::new_for_http());
 
     info!(listen = %addr, "gov-gateway starting");
