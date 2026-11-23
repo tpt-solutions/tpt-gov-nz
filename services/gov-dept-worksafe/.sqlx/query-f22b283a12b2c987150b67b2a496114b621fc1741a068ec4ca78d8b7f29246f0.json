@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT reference, site, inspection_date, outcome FROM worksafe_inspections WHERE citizen_id = $1 ORDER BY created_at DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "reference",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "site",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "inspection_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 3,
+        "name": "outcome",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "f22b283a12b2c987150b67b2a496114b621fc1741a068ec4ca78d8b7f29246f0"
+}

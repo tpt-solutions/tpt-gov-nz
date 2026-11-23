@@ -14,7 +14,7 @@ pub async fn execute(
     ai_level: Option<&str>,
 ) -> Result<Json<Value>, TecError> {
     let result = match action_type {
-        "request-course-info" => requestCourseInfo(pool, citizen_id, parameters).await,
+        "request-course-info" => request_course_info(pool, citizen_id, parameters).await,
         _ => Err(TecError::InvalidAction(format!(
             "Unknown action: {action_type}"
         ))),
@@ -27,25 +27,27 @@ pub async fn execute(
 
     db::log_action(
         pool,
-        citizen_id,
-        action_type,
-        parameters.clone(),
-        performed_by,
-        ai_level,
-        success,
-        message.as_deref(),
+        db::ActionLogEntry {
+            citizen_id,
+            action_type,
+            parameters: parameters.clone(),
+            performed_by,
+            ai_level,
+            result_success: success,
+            result_message: message.as_deref(),
+        },
     )
     .await?;
 
     result.map(Json)
 }
 
-async fn requestCourseInfo(
+async fn request_course_info(
     _pool: &PgPool,
     _citizen_id: Uuid,
     parameters: &Value,
 ) -> Result<Value, TecError> {
-    let courseName = parameters
+    let course_name = parameters
         .get("courseName")
         .and_then(|v| v.as_str())
         .map(|s| s.trim())
@@ -54,7 +56,7 @@ async fn requestCourseInfo(
 
     Ok(json!({
         "success": true,
-        "message": format!("{}{}", "Course info request received for", courseName),
-        "courseName": courseName,
+        "message": format!("{}{}", "Course info request received for", course_name),
+        "courseName": course_name,
     }))
 }

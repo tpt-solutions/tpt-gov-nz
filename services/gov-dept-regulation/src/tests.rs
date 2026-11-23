@@ -75,7 +75,7 @@ async fn fetch_data_proposals_scope(pool: PgPool) {
 // ── actions ───────────────────────────────────────────────────────────────────────
 
 #[sqlx::test]
-async fn action_requestReviewSummary_valid(pool: PgPool) {
+async fn action_request_review_summary_valid(pool: PgPool) {
     let resp = crate::actions::execute(
         &pool,
         citizen_id(&pool).await,
@@ -90,7 +90,7 @@ async fn action_requestReviewSummary_valid(pool: PgPool) {
 }
 
 #[sqlx::test]
-async fn action_requestReviewSummary_rejects_empty(pool: PgPool) {
+async fn action_request_review_summary_rejects_empty(pool: PgPool) {
     let err = crate::actions::execute(
         &pool,
         citizen_id(&pool).await,
@@ -157,11 +157,11 @@ async fn http_round_trip(pool: PgPool) {
 
 // ── cross-department federation (consent-gated) ─────────────────────────────────
 
-use gov_identity_core::{CredentialIssuer, GovDid};
+use gov_identity_core::GovDid;
 
 #[sqlx::test]
 async fn cross_dept_requests_regulation_with_valid_grant(pool: PgPool) {
-    let issuer = CredentialIssuer::generate();
+    let issuer = gov_test_support::shared_issuer();
     let grant = issuer.issue_data_grant(
         GovDid::parse(TEST_DID).unwrap(),
         "ird",

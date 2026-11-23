@@ -1,0 +1,34 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT has_plan, retirement_age, last_review FROM retirement_retirement_plan WHERE citizen_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "has_plan",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 1,
+        "name": "retirement_age",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 2,
+        "name": "last_review",
+        "type_info": "Date"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "ada355ee2d480e67d868853846abf4c4a7f7f9f2743fc82d422a700fc1d2fe8e"
+}

@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT forecast_year, gdp_growth_pct, inflation_pct, net_debt_pct FROM treasury_economic_outlook WHERE citizen_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "forecast_year",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "gdp_growth_pct",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 2,
+        "name": "inflation_pct",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 3,
+        "name": "net_debt_pct",
+        "type_info": "Float8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "0913460b5e6d29bfd8bb70584e79d6c0b40ee60b6aa07369e911914bb0908681"
+}

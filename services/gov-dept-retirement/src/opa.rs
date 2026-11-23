@@ -1,7 +1,9 @@
 //! Optional OPA sidecar client for the Retirement Commission (Te Ara Ahunga Ora) node.
 
 use crate::consent::ConsentInput;
+#[cfg(feature = "opa")]
 use gov_identity_core::DataGrantCredential;
+#[cfg(feature = "opa")]
 use serde::Serialize;
 
 #[cfg(feature = "opa")]

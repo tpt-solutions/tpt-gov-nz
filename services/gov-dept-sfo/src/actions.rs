@@ -15,7 +15,7 @@ pub async fn execute(
 ) -> Result<Json<Value>, SfoError> {
     let result = match action_type {
         "request-investigation-update" => {
-            requestInvestigationUpdate(pool, citizen_id, parameters).await
+            request_investigation_update(pool, citizen_id, parameters).await
         }
         _ => Err(SfoError::InvalidAction(format!(
             "Unknown action: {action_type}"
@@ -29,20 +29,22 @@ pub async fn execute(
 
     db::log_action(
         pool,
-        citizen_id,
-        action_type,
-        parameters.clone(),
-        performed_by,
-        ai_level,
-        success,
-        message.as_deref(),
+        db::ActionLogEntry {
+            citizen_id,
+            action_type,
+            parameters: parameters.clone(),
+            performed_by,
+            ai_level,
+            result_success: success,
+            result_message: message.as_deref(),
+        },
     )
     .await?;
 
     result.map(Json)
 }
 
-async fn requestInvestigationUpdate(
+async fn request_investigation_update(
     _pool: &PgPool,
     _citizen_id: Uuid,
     parameters: &Value,

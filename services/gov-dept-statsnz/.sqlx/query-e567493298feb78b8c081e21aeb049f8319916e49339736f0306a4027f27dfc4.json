@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT census_year, dwelling_type, household_size, region FROM statsnz_census WHERE citizen_id = $1 ORDER BY census_year DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "census_year",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "dwelling_type",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "household_size",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 3,
+        "name": "region",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "e567493298feb78b8c081e21aeb049f8319916e49339736f0306a4027f27dfc4"
+}

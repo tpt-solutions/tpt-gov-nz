@@ -1,0 +1,34 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT topic, engagement_date, outcome FROM tearawhiti_engagements WHERE citizen_id = $1 ORDER BY created_at DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "topic",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "engagement_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 2,
+        "name": "outcome",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "2785983b38ba717a95c1a083ba719cf65afe35e8f72c914c86c458465c166ed3"
+}
