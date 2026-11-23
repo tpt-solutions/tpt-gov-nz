@@ -20,7 +20,9 @@ static REQUESTS: Mutex<Counts> = Mutex::new(BTreeMap::new());
 
 /// Lock the counters. A poisoned lock still holds valid counts, so recover it rather than panic.
 fn counts() -> MutexGuard<'static, Counts> {
-    REQUESTS.lock().unwrap_or_else(|poisoned| poisoned.into_inner())
+    REQUESTS
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
 }
 
 /// Map a method to a fixed label; anything unusual is folded into `OTHER`.
@@ -68,7 +70,10 @@ pub fn render() -> String {
 
 /// `GET /metrics`
 pub async fn endpoint() -> impl IntoResponse {
-    ([(header::CONTENT_TYPE, "text/plain; version=0.0.4")], render())
+    (
+        [(header::CONTENT_TYPE, "text/plain; version=0.0.4")],
+        render(),
+    )
 }
 
 #[cfg(test)]
@@ -84,7 +89,9 @@ mod tests {
         // Other tests share the global counters, so check for at least our two hits.
         let line = text
             .lines()
-            .find(|l| l.starts_with("gov_gateway_http_requests_total{method=\"GET\",status=\"299\"}"))
+            .find(|l| {
+                l.starts_with("gov_gateway_http_requests_total{method=\"GET\",status=\"299\"}")
+            })
             .expect("GET/299 series present");
         let count: u64 = line.rsplit(' ').next().unwrap().parse().unwrap();
         assert!(count >= 2);

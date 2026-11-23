@@ -41,6 +41,7 @@ pub struct RateLimiter {
 }
 
 impl RateLimiter {
+    #[cfg(test)]
     pub fn new(max_requests: u32, window: Duration) -> Self {
         Self::with_max_callers(max_requests, window, 10_000)
     }
@@ -128,6 +129,7 @@ impl RateLimiter {
     }
 
     /// Number of callers currently tracked (for tests / metrics).
+    #[cfg(test)]
     pub fn tracked_callers(&self) -> usize {
         self.lock().len()
     }

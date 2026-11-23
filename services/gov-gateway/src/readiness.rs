@@ -71,14 +71,16 @@ async fn probe(state: &AppState, name: &str, base_url: &str, use_mtls: bool) -> 
     let outcome = match (use_mtls, state.mtls.as_ref()) {
         // Fail closed: never fall back to plaintext when mTLS was requested.
         (true, None) => return failed(name, "mTLS client unavailable"),
-        (true, Some(mtls)) => match tokio::time::timeout(state.upstream_timeout, mtls.request(req)).await {
-            Ok(Ok(resp)) => Ok(resp.status().as_u16()),
-            Ok(Err(e)) => {
-                tracing::warn!(error = %e, target = name, "readiness probe (mTLS) failed");
-                Err("connection failed")
+        (true, Some(mtls)) => {
+            match tokio::time::timeout(state.upstream_timeout, mtls.request(req)).await {
+                Ok(Ok(resp)) => Ok(resp.status().as_u16()),
+                Ok(Err(e)) => {
+                    tracing::warn!(error = %e, target = name, "readiness probe (mTLS) failed");
+                    Err("connection failed")
+                }
+                Err(_) => Err("timed out"),
             }
-            Err(_) => Err("timed out"),
-        },
+        }
         _ => match tokio::time::timeout(state.upstream_timeout, state.http.request(req)).await {
             Ok(Ok(resp)) => Ok(resp.status().as_u16()),
             Ok(Err(e)) => {

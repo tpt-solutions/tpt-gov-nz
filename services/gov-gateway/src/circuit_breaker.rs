@@ -146,19 +146,19 @@ impl CircuitBreakerRegistry {
 pub async fn circuit_breaker(State(app): State<AppState>, req: Request, next: Next) -> Response {
     let dept_id = extract_dept_id(req.uri().path());
 
-    if let Some(dept) = &dept_id {
-        if !app.breakers.allow(dept) {
-            tracing::warn!(dept = %dept, "circuit open — failing fast");
-            return (
-                StatusCode::SERVICE_UNAVAILABLE,
-                Json(json!({
-                    "error": "circuit_open",
-                    "dept": dept,
-                    "message": "downstream department is temporarily unavailable",
-                })),
-            )
-                .into_response();
-        }
+    if let Some(dept) = &dept_id
+        && !app.breakers.allow(dept)
+    {
+        tracing::warn!(dept = %dept, "circuit open — failing fast");
+        return (
+            StatusCode::SERVICE_UNAVAILABLE,
+            Json(json!({
+                "error": "circuit_open",
+                "dept": dept,
+                "message": "downstream department is temporarily unavailable",
+            })),
+        )
+            .into_response();
     }
 
     let resp = next.run(req).await;

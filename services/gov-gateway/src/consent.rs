@@ -140,7 +140,7 @@ impl OpaPolicy {
             "data.{}.consent.allow",
             self.policy_path
                 .split('/')
-                .last()
+                .next_back()
                 .unwrap_or("default")
                 .replace(".wasm", "")
         );

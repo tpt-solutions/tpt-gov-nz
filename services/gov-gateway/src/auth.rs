@@ -72,10 +72,10 @@ impl JwtConfig {
 
         let mut validation = Validation::new(Algorithm::HS256);
         validation.validate_exp = true;
-        if let Ok(aud) = std::env::var("TPT__GOV__JWT_AUDIENCE") {
-            if !aud.is_empty() {
-                validation.set_audience(&[aud]);
-            }
+        if let Ok(aud) = std::env::var("TPT__GOV__JWT_AUDIENCE")
+            && !aud.is_empty()
+        {
+            validation.set_audience(&[aud]);
         }
 
         Ok(Self {
