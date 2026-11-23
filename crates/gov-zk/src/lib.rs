@@ -74,55 +74,69 @@ fn verify_scalar_knowledge(base: RistrettoPoint, proof: &ScalarProof) -> bool {
 /// OR-proof that a commitment `c` binds to bit 0 *or* bit 1.
 pub struct BitProof {
     a0: RistrettoPoint,
+    e0: Scalar,
     z0: Scalar,
     a1: RistrettoPoint,
+    e1: Scalar,
     z1: Scalar,
 }
 
+/// Prove that `c = bit·G + r·H` commits to 0 or 1, without revealing which.
+///
+/// Cramer–Damgård–Schoenmakers OR-proof. Branch 0 proves knowledge of `r` with base `c`
+/// (`c = r·H`), branch 1 with base `c − G`. The real branch takes its challenge as
+/// `e_total − e_simulated`; the simulated branch is chosen first. Each branch's challenge is
+/// stored in the proof, so the verifier can check that the two sum to the Fiat–Shamir total.
 fn prove_bit(c: RistrettoPoint, bit: u8, r: Scalar) -> BitProof {
-    let base1 = c - g(); // c - 1·G
-    let (t0, t1) = (random_scalar(), random_scalar());
-    let (a0, a1) = (h() * t0, h() * t1);
+    let base0 = c;
+    let base1 = c - g();
 
-    let (e0, z0, e1, z1) = if bit == 0 {
-        let e0 = challenge(&[c, a0], &[0]);
-        let z0 = t0 + e0 * r;
-        // simulated false branch (case 1)
-        let z1 = random_scalar();
-        let e1 = random_scalar();
-        let _a1 = h() * z1 - base1 * e1;
-        (e0, z0, e1, z1)
-    } else {
-        let e1 = challenge(&[base1, a1], &[1]);
-        let z1 = t1 + e1 * r;
-        // simulated false branch (case 0)
-        let z0 = random_scalar();
-        let e0 = random_scalar();
-        let _a0 = h() * z0 - c * e0;
-        (e0, z0, e1, z1)
-    };
-
-    let e_total = challenge(&[c, a0, a1], &[]);
-    let e_true = e_total - (e0 + e1);
-
-    // Recompute the true branch's commitment with the adjusted challenge.
     if bit == 0 {
-        let a0 = h() * z0 - c * e_true;
-        BitProof { a0, z0, a1, z1 }
+        let t = random_scalar();
+        let a0 = h() * t;
+        // Simulate branch 1.
+        let e1 = random_scalar();
+        let z1 = random_scalar();
+        let a1 = h() * z1 - base1 * e1;
+        let e_total = challenge(&[c, a0, a1], &[]);
+        let e0 = e_total - e1;
+        let z0 = t + e0 * r;
+        BitProof {
+            a0,
+            e0,
+            z0,
+            a1,
+            e1,
+            z1,
+        }
     } else {
-        let a1 = h() * z1 - base1 * e_true;
-        BitProof { a0, z0, a1, z1 }
+        let t = random_scalar();
+        let a1 = h() * t;
+        // Simulate branch 0.
+        let e0 = random_scalar();
+        let z0 = random_scalar();
+        let a0 = h() * z0 - base0 * e0;
+        let e_total = challenge(&[c, a0, a1], &[]);
+        let e1 = e_total - e0;
+        let z1 = t + e1 * r;
+        BitProof {
+            a0,
+            e0,
+            z0,
+            a1,
+            e1,
+            z1,
+        }
     }
 }
 
 fn verify_bit(c: RistrettoPoint, proof: &BitProof) -> bool {
+    let base0 = c;
     let base1 = c - g();
-    let e0 = challenge(&[c, proof.a0], &[0]);
-    let e1 = challenge(&[base1, proof.a1], &[1]);
     let e_total = challenge(&[c, proof.a0, proof.a1], &[]);
-    let sum_ok = (e0 + e1 - e_total) == Scalar::from(0u64);
-    let eq0 = proof.a0 == h() * proof.z0 - c * e0;
-    let eq1 = proof.a1 == h() * proof.z1 - base1 * e1;
+    let sum_ok = proof.e0 + proof.e1 == e_total;
+    let eq0 = h() * proof.z0 == proof.a0 + base0 * proof.e0;
+    let eq1 = h() * proof.z1 == proof.a1 + base1 * proof.e1;
     sum_ok && eq0 && eq1
 }
 
@@ -222,8 +236,9 @@ pub fn prove_age(birth_year: u16, blinding: Scalar, current_year: u16) -> Result
     let delta = random_scalar(); // blinding for the age commitment (ra - rb)
     let ca = g() * Scalar::from(age) + h() * delta;
 
+    // ca + cb − current_year·G = (delta + blinding)·H, so the witness is delta + blinding.
     let base = ca - g() * Scalar::from(current_year as u64) + cb;
-    let delta_proof = prove_scalar_knowledge(delta, base);
+    let delta_proof = prove_scalar_knowledge(delta + blinding, base);
     let range = prove_range(ca, age, delta, 18, 150);
 
     Ok(AgeProof {
@@ -307,5 +322,27 @@ mod tests {
             !verify_range(c2, &proof),
             "proof must bind to its commitment"
         );
+    }
+
+    #[test]
+    fn range_proof_rejects_out_of_range_value() {
+        // 300 is outside [18, 150]. The honest prover can only encode its low bits, so the
+        // proof must not verify against the commitment to 300.
+        let blinding = random_scalar();
+        let c = commit(300, blinding);
+        let proof = prove_range(c, 300, blinding, 18, 150);
+        assert!(
+            !verify_range(c, &proof),
+            "out-of-range value must not verify"
+        );
+    }
+
+    #[test]
+    fn bit_proof_rejects_a_non_bit_value() {
+        // commit(2) is not a bit commitment, so no OR-proof for 0 or 1 can verify for it.
+        let r = random_scalar();
+        let c = commit(2, r);
+        let proof = prove_bit(c, 0, r);
+        assert!(!verify_bit(c, &proof), "a commitment to 2 is not a bit");
     }
 }

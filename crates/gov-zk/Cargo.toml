@@ -10,7 +10,7 @@ keywords = ["zero-knowledge", "zkp", "range-proof", "privacy", "ristretto"]
 categories = ["cryptography"]
 
 [dependencies]
-curve25519-dalek = { workspace = true }
+curve25519-dalek = { workspace = true, features = ["digest"] }
 sha2 = { workspace = true }
 rand = { workspace = true }
 anyhow = { workspace = true }
