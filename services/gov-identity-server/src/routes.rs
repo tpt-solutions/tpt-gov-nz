@@ -180,7 +180,7 @@ pub async fn oidc_discovery(State(state): State<AppState>) -> Json<OidcDiscovery
                 .did
                 .to_string()
                 .split(':')
-                .last()
+                .next_back()
                 .unwrap_or("8081")
         )
     });
@@ -264,18 +264,6 @@ fn validate_did(did: &str) -> ApiResult<gov_identity_core::GovDid> {
 }
 
 // ── DID registration ──────────────────────────────────────────────────────────
-
-#[derive(Deserialize)]
-pub struct RegisterDidRequest {
-    pub did: String,
-    pub public_key_b64: String,
-}
-
-#[derive(Serialize)]
-pub struct RegisterDidResponse {
-    pub did: String,
-    pub created_at: String,
-}
 
 #[derive(sqlx::FromRow)]
 struct DidRow {
@@ -487,74 +475,6 @@ pub async fn register_did_with_proof(
         Json(RegisterDidWithProofResponse {
             did: result.1.did,
             created_at: result.1.created_at.to_rfc3339(),
-        }),
-    ))
-}
-
-/// Register a citizen DID and its public key (legacy endpoint without challenge).
-///
-/// Registration is **first-write-wins**: the key can never be overwritten. A
-/// repeat registration with the same key is idempotent; a different key is
-/// rejected with `409 Conflict`.
-pub async fn register_did(
-    State(state): State<AppState>,
-    Json(req): Json<RegisterDidRequest>,
-) -> ApiResult<(StatusCode, Json<RegisterDidResponse>)> {
-    let did = validate_did(&req.did)?;
-    let verifying_key = decode_public_key(&req.public_key_b64)?;
-
-    // The DID is derived from the public key, so this binds the key to the DID
-    // and prevents a caller registering a DID they do not control.
-    let expected = gov_identity_core::GovDid::from_verifying_key(&verifying_key);
-    if expected.as_str() != did.as_str() {
-        return Err(ApiError::bad_request(
-            "public key does not match DID fingerprint",
-        ));
-    }
-
-    let inserted = sqlx::query_as::<_, DidRow>(
-        r#"INSERT INTO did_documents (did, public_key_b64)
-           VALUES ($1, $2)
-           ON CONFLICT (did) DO NOTHING
-           RETURNING did, public_key_b64, created_at"#,
-    )
-    .bind(did.as_str())
-    .bind(req.public_key_b64.trim())
-    .fetch_optional(&state.pool)
-    .await
-    .map_err(ApiError::internal)?;
-
-    if let Some(row) = inserted {
-        return Ok((
-            StatusCode::CREATED,
-            Json(RegisterDidResponse {
-                did: row.did,
-                created_at: row.created_at.to_rfc3339(),
-            }),
-        ));
-    }
-
-    // Already registered — only allow the exact same key.
-    let existing = sqlx::query_as::<_, DidRow>(
-        "SELECT did, public_key_b64, created_at FROM did_documents WHERE did = $1",
-    )
-    .bind(did.as_str())
-    .fetch_optional(&state.pool)
-    .await
-    .map_err(ApiError::internal)?
-    .ok_or_else(|| ApiError::internal("DID disappeared during registration"))?;
-
-    if existing.public_key_b64 != req.public_key_b64.trim() {
-        return Err(ApiError::conflict(
-            "DID is already registered with a different public key",
-        ));
-    }
-
-    Ok((
-        StatusCode::OK,
-        Json(RegisterDidResponse {
-            did: existing.did,
-            created_at: existing.created_at.to_rfc3339(),
         }),
     ))
 }

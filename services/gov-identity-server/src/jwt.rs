@@ -102,11 +102,6 @@ pub async fn require_jwt(State(state): State<AppState>, req: Request, next: Next
     next.run(req).await
 }
 
-/// Extract claims from request extensions (set by `require_jwt` middleware).
-pub fn get_claims(req: &Request) -> Option<&IdentityClaims> {
-    req.extensions().get::<IdentityClaims>()
-}
-
 /// Create an unauthorized response.
 fn unauthorized_response(message: &str) -> Response {
     (

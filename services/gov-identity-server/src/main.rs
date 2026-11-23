@@ -126,11 +126,11 @@ async fn main() -> anyhow::Result<()> {
 /// Load the issuer key from `TPT__GOV__ISSUER_KEY` when set, otherwise from the
 /// `issuer_keys` table, generating and persisting a new key on first start.
 async fn load_or_create_issuer(pool: &PgPool) -> anyhow::Result<CredentialIssuer> {
-    if let Ok(encoded) = std::env::var("TPT__GOV__ISSUER_KEY") {
-        if !encoded.trim().is_empty() {
-            info!("Using issuer key from TPT__GOV__ISSUER_KEY");
-            return Ok(CredentialIssuer::from_secret_b64(&encoded)?);
-        }
+    if let Ok(encoded) = std::env::var("TPT__GOV__ISSUER_KEY")
+        && !encoded.trim().is_empty()
+    {
+        info!("Using issuer key from TPT__GOV__ISSUER_KEY");
+        return Ok(CredentialIssuer::from_secret_b64(&encoded)?);
     }
 
     let existing: Option<String> =
