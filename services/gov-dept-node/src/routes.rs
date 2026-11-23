@@ -4,7 +4,6 @@ use axum::{
     http::{HeaderMap, StatusCode},
 };
 use serde::Deserialize;
-use sqlx::PgPool;
 
 use crate::audit::{AuditEvent, Decision, log_access};
 use crate::consent::{self, ConsentInput};

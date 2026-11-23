@@ -76,6 +76,8 @@ pub async fn ensure_schema(pool: &PgPool) -> anyhow::Result<()> {
 }
 
 /// Compute the hash of an audit entry for the hash chain.
+// Eight inputs are the chain's fixed fields; grouping them would only move the list elsewhere.
+#[allow(clippy::too_many_arguments)]
 fn compute_entry_hash(
     prev_hash: Option<&[u8]>,
     dept_id: &str,
@@ -175,6 +177,10 @@ pub async fn log_access(
 }
 
 /// Verify the hash chain integrity from a given entry back to genesis.
+///
+/// Not yet called: intended for an audit verification job. Kept so the chain can be checked
+/// without re-implementing the hash rules (see TODO.md, audit item).
+#[allow(dead_code)]
 pub async fn verify_hash_chain(pool: &PgPool) -> anyhow::Result<bool> {
     let rows: Vec<(i64, Option<Vec<u8>>, Vec<u8>)> =
         sqlx::query_as("SELECT id, prev_hash, entry_hash FROM audit_log ORDER BY id ASC")
