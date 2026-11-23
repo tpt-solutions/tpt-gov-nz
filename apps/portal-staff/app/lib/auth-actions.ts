@@ -2,14 +2,22 @@
 
 import { redirect } from "next/navigation";
 import { createHash, timingSafeEqual } from "node:crypto";
+import { cookies } from "next/headers";
 import {
   createStaffSessionToken,
   setStaffSessionCookie,
   clearStaffSessionCookie,
+  getStaffSession,
 } from "./session";
 import { randomToken } from "./jwt";
 import { clearFailures, isLocked, recordFailure } from "./login-limiter";
-import { STAFF_CONFIG } from "./config";
+import { STAFF_CONFIG, secureCookies } from "./config";
+import {
+  buildLogoutRequest,
+  createRealmeState,
+  getRealmeConfig,
+  REALME_SLO_COOKIE,
+} from "./realme";
 
 /** Compare secrets in constant time (hashing first so lengths never leak). */
 function passwordMatches(given: string, expected: string): boolean {
@@ -70,8 +78,42 @@ export async function loginStaff(formData: FormData) {
   redirect("/citizens");
 }
 
-/** Sign out of the staff session. */
+/**
+ * Sign out of the staff session. The local session always ends first. For a RealMe
+ * sign-in, when Single Logout is configured, the browser is then sent to the IdP with a
+ * signed LogoutRequest. Server actions are origin-checked by Next.js, so this cannot be
+ * triggered from another site the way a GET link could.
+ */
 export async function logoutStaff() {
+  const session = await getStaffSession();
   await clearStaffSessionCookie();
+
+  let idpRedirect: string | undefined;
+  const cfg = getRealmeConfig();
+  if (session?.realmeNameId && cfg.sloUrl && cfg.idpCert && cfg.idpEntityId) {
+    try {
+      const { redirectUrl, requestId } = buildLogoutRequest({
+        nameId: session.realmeNameId,
+        sessionIndex: session.realmeSessionIndex,
+      });
+      const store = await cookies();
+      store.set(REALME_SLO_COOKIE, createRealmeState(requestId, 600), {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: secureCookies(),
+        path: "/login/realme",
+        maxAge: 600,
+      });
+      idpRedirect = redirectUrl;
+    } catch {
+      // Signing misconfigured: fall back to local sign-out rather than failing the action.
+      idpRedirect = undefined;
+    }
+  }
+  // redirect() throws to end the action, so it must stay outside the try block above.
+  if (idpRedirect) {
+    // External IdP URL, built and signed in realme.ts; typed-routes only knows internal paths.
+    redirect(idpRedirect as Parameters<typeof redirect>[0]);
+  }
   redirect("/login");
 }

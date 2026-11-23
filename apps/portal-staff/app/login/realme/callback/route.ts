@@ -4,6 +4,7 @@ import {
   verifyRealmeState,
   REALME_STATE_COOKIE,
   getRealmeConfig,
+  isRealmeStaffAllowed,
 } from "../../../lib/realme";
 import { createStaffSessionToken, setStaffSessionCookie } from "../../../lib/session";
 import { randomToken } from "../../../lib/jwt";
@@ -47,6 +48,10 @@ export async function POST(req: NextRequest) {
   if (!subject.nameId) {
     return NextResponse.redirect(new URL("/login?error=noid", req.url), 302);
   }
+  // A valid RealMe identity is not the same as case-worker access.
+  if (!isRealmeStaffAllowed(subject)) {
+    return NextResponse.redirect(new URL("/login?error=not_authorised", req.url), 302);
+  }
 
   const attrs = subject.attributes;
   const displayName =
@@ -60,6 +65,8 @@ export async function POST(req: NextRequest) {
     displayName,
     sessionId: randomToken(16),
     demo: false,
+    realmeNameId: subject.nameId,
+    realmeSessionIndex: subject.sessionIndex,
   });
   await setStaffSessionCookie(token);
 

@@ -44,6 +44,7 @@ export default async function WinzStaffOverviewPage({
   ]);
 
   const total = data ? Number(data.totalWeeklyPayment) : 0;
+  const latestPayment = data?.payments?.[0];
 
   return (
     <main style={{ padding: "1rem" }}>
@@ -85,12 +86,12 @@ export default async function WinzStaffOverviewPage({
             ))}
           </section>
 
-          {data.payments && data.payments.length > 0 && (
+          {latestPayment && (
             <section>
               <h2>Latest payment</h2>
               <p>
-                {data.payments[0].benefitType}: ${Number(data.payments[0].amount).toFixed(2)} on{" "}
-                {data.payments[0].paymentDate} via {data.payments[0].method}
+                {latestPayment.benefitType}: ${Number(latestPayment.amount).toFixed(2)} on{" "}
+                {latestPayment.paymentDate} via {latestPayment.method}
               </p>
             </section>
           )}

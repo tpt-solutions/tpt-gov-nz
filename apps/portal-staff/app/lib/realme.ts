@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
-import { readFileSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { deflateRawSync, inflateRawSync } from "node:zlib";
 import { DOMParser } from "@xmldom/xmldom";
 import xpath from "xpath";
@@ -28,21 +29,30 @@ const SAML_NS = "urn:oasis:names:tc:SAML:2.0:assertion";
 const SAMLP_NS = "urn:oasis:names:tc:SAML:2.0:protocol";
 const DS_NS = "http://www.w3.org/2000/09/xmldsig#";
 const POST_BINDING = "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST";
+const REDIRECT_BINDING = "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect";
+const MAIL_OID = "urn:oid:0.9.2342.19200300.100.1.3";
 const SIG_ALGO = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
 
 export interface RealmeConfig {
   ssoUrl: string;
   spEntityId: string;
   acsUrl: string;
-  spSigningKey?: string;
-  spSigningCert?: string;
-  idpCert?: string;
-  idpEntityId?: string;
+  spSigningKey?: string | undefined;
+  spSigningCert?: string | undefined;
+  idpCert?: string | undefined;
+  idpEntityId?: string | undefined;
   audience: string;
   skipVerify: boolean;
   requestTtlSeconds: number;
   clockSkewSeconds: number;
   nameIdFormat: string;
+  /** IdP Single Logout endpoint (HTTP-Redirect). Logout stays local when unset. */
+  sloUrl?: string | undefined;
+  /**
+   * Case workers allowed to sign in via RealMe, matched case-insensitively against
+   * the NameID or the mail attribute. Empty means nobody is allowed.
+   */
+  staffAllowlist: string[];
 }
 
 export function getRealmeConfig(): RealmeConfig {
@@ -73,6 +83,11 @@ export function getRealmeConfig(): RealmeConfig {
     nameIdFormat:
       process.env.REALME_NAMEID_FORMAT ??
       "urn:oasis:names:tc:SAML:2.0:nameid-format:persistent",
+    sloUrl: process.env.REALME_SLO_URL || undefined,
+    staffAllowlist: (process.env.REALME_STAFF_ALLOWLIST ?? "")
+      .split(",")
+      .map((s) => s.trim().toLowerCase())
+      .filter((s) => s.length > 0),
   };
 }
 
@@ -107,7 +122,7 @@ export function generateSpMetadata(): string {
 <md:EntityDescriptor xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata" entityID="${cfg.spEntityId}">
   <md:SPSSODescriptor AuthnRequestsSigned="true" WantAssertionsSigned="true" protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
     <md:NameIDFormat>${cfg.nameIdFormat}</md:NameIDFormat>
-    <md:SingleLogoutService Binding="${POST_BINDING}" Location="${cfg.acsUrl.replace("/callback", "/slo")}"/>
+    <md:SingleLogoutService Binding="${REDIRECT_BINDING}" Location="${cfg.acsUrl.replace("/callback", "/slo")}"/>
     <md:AssertionConsumerService Binding="${POST_BINDING}" Location="${cfg.acsUrl}" index="0" isDefault="true"/>
     <md:AttributeConsumingService index="0">
       <md:ServiceName xml:lang="en">tpt-gov-nz staff portal</md:ServiceName>
@@ -160,29 +175,39 @@ export function buildAuthnRequest(relayState?: string): AuthnRequestResult {
   <samlp:NameIDPolicy Format="${cfg.nameIdFormat}" AllowCreate="true"/>
 </samlp:AuthnRequest>`;
 
-  const samlRequest = deflateRawSync(Buffer.from(xml, "utf8")).toString("base64");
+  const url = new URL(cfg.ssoUrl);
+  for (const [k, v] of redirectBindingParams("SAMLRequest", xml, relayState)) {
+    url.searchParams.set(k, v);
+  }
+  return { redirectUrl: url.toString(), requestId: id };
+}
 
-  const params: Record<string, string> = { SAMLRequest: samlRequest };
-  if (relayState) params.RelayState = relayState;
-
+/**
+ * Redirect-binding parameters (SAML 2.0 bindings §3.4.4.1), signed when an SP key
+ * is configured. The signature covers `SAMLRequest|SAMLResponse`, `RelayState`,
+ * `SigAlg` in that order, each URL-encoded, so the order here is part of the contract.
+ */
+function redirectBindingParams(
+  messageParam: "SAMLRequest" | "SAMLResponse",
+  xml: string,
+  relayState?: string,
+): Array<[string, string]> {
+  const cfg = getRealmeConfig();
+  const params: Array<[string, string]> = [
+    [messageParam, deflateRawSync(Buffer.from(xml, "utf8")).toString("base64")],
+  ];
+  if (relayState) params.push(["RelayState", relayState]);
   if (cfg.spSigningKey) {
-    params.SigAlg = SIG_ALGO;
-    const sorted = Object.keys(params)
-      .sort()
-      .map((k) => `${k}=${encodeURIComponent(params[k])}`)
-      .join("&");
-    const key = privateKeyObject(cfg.spSigningKey);
+    params.push(["SigAlg", SIG_ALGO]);
+    const signedString = params.map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join("&");
     const signature = crypto
       .createSign("RSA-SHA256")
-      .update(sorted)
-      .sign(key)
+      .update(signedString)
+      .sign(privateKeyObject(cfg.spSigningKey))
       .toString("base64");
-    params.Signature = signature;
+    params.push(["Signature", signature]);
   }
-
-  const url = new URL(cfg.ssoUrl);
-  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
-  return { redirectUrl: url.toString(), requestId: id };
+  return params;
 }
 
 // ---------------------------------------------------------------------------
@@ -201,26 +226,32 @@ export function decodeSamlResponse(base64: string): string {
 
 export interface SamlSubject {
   nameId: string;
-  nameIdFormat?: string;
-  sessionIndex?: string;
+  nameIdFormat?: string | undefined;
+  /** From AuthnStatement (SAML 2.0 core §4.1.4.2), needed for single logout. */
+  sessionIndex?: string | undefined;
+  /** SubjectConfirmation method, Recipient, InResponseTo and NotOnOrAfter. */
+  confirmationMethod?: string | undefined;
+  confirmationRecipient?: string | undefined;
+  confirmationInResponseTo?: string | undefined;
+  confirmationNotOnOrAfter?: string | undefined;
   attributes: Record<string, string[]>;
 }
 
 export interface ParsedSamlResponse {
   id: string;
-  issuer?: string;
-  inResponseTo?: string;
-  destination?: string;
-  issueInstant?: string;
+  issuer?: string | undefined;
+  inResponseTo?: string | undefined;
+  destination?: string | undefined;
+  issueInstant?: string | undefined;
   status: string;
-  statusMessage?: string;
-  assertionId?: string;
-  assertionIssuer?: string;
-  notBefore?: string;
-  notOnOrAfter?: string;
+  statusMessage?: string | undefined;
+  assertionId?: string | undefined;
+  assertionIssuer?: string | undefined;
+  notBefore?: string | undefined;
+  notOnOrAfter?: string | undefined;
   audiences: string[];
-  subject?: SamlSubject;
-  assertionNode?: Node;
+  subject?: SamlSubject | undefined;
+  assertionNode?: Node | undefined;
 }
 
 function parseXml(xml: string): Document {
@@ -304,10 +335,18 @@ export function parseSamlResponse(xml: string): ParsedSamlResponse {
         attributes: {},
       };
       const sc = select1(subject, "SubjectConfirmation", SAML_NS) as Element | null;
-      const scData = sc ? select1(sc, "SubjectConfirmationData", SAML_NS) : null;
-      if (scData) {
-        subjectResult.sessionIndex =
-          (scData as Element).getAttribute("SessionIndex") ?? undefined;
+      if (sc) {
+        subjectResult.confirmationMethod = sc.getAttribute("Method") ?? undefined;
+        const scData = select1(sc, "SubjectConfirmationData", SAML_NS) as Element | null;
+        if (scData) {
+          subjectResult.confirmationRecipient = scData.getAttribute("Recipient") ?? undefined;
+          subjectResult.confirmationInResponseTo = scData.getAttribute("InResponseTo") ?? undefined;
+          subjectResult.confirmationNotOnOrAfter = scData.getAttribute("NotOnOrAfter") ?? undefined;
+        }
+      }
+      const authn = select1(assertion, "AuthnStatement", SAML_NS) as Element | null;
+      if (authn) {
+        subjectResult.sessionIndex = authn.getAttribute("SessionIndex") ?? undefined;
       }
       result.subject = subjectResult;
     }
@@ -403,11 +442,11 @@ export function verifyResponseSignature(xml: string): VerifyResult {
 // ---------------------------------------------------------------------------
 
 export interface ValidateOptions {
-  audience?: string;
-  acsUrl?: string;
-  requestId?: string;
-  now?: Date;
-  clockSkewSeconds?: number;
+  audience?: string | undefined;
+  acsUrl?: string | undefined;
+  requestId?: string | undefined;
+  now?: Date | undefined;
+  clockSkewSeconds?: number | undefined;
 }
 
 const SUCCESS = "urn:oasis:names:tc:SAML:2.0:status:Success";
@@ -430,7 +469,7 @@ export function createRealmeState(requestId: string, ttlSeconds: number): string
 /** Verify the correlation cookie; returns the original request ID on success. */
 export function verifyRealmeState(
   token: string | undefined,
-): { ok: boolean; requestId?: string } {
+): { ok: boolean; requestId?: string | undefined } {
   if (!token) return { ok: false };
   const r = verifyJwt(token, STAFF_CONFIG.sessionSecret);
   if (!r.valid || !r.payload) return { ok: false };
@@ -478,6 +517,32 @@ export function validateAssertion(
     };
   }
 
+  // Bearer subject confirmation: the only method a browser SSO response can use,
+  // and the Recipient/InResponseTo/NotOnOrAfter checks below only bind the
+  // assertion to this ACS and this request when they are present.
+  const subj = parsed.subject;
+  if (subj?.confirmationMethod !== "urn:oasis:names:tc:SAML:2.0:cm:bearer") {
+    return { ok: false, reason: `subject confirmation method is not bearer: ${subj?.confirmationMethod}` };
+  }
+  if (!subj.confirmationNotOnOrAfter) {
+    return { ok: false, reason: "SubjectConfirmationData has no NotOnOrAfter" };
+  }
+  if (now - skew > Date.parse(subj.confirmationNotOnOrAfter)) {
+    return { ok: false, reason: `subject confirmation expired (NotOnOrAfter ${subj.confirmationNotOnOrAfter})` };
+  }
+  if (opts.acsUrl && subj.confirmationRecipient !== opts.acsUrl) {
+    return {
+      ok: false,
+      reason: `SubjectConfirmation Recipient mismatch: expected ${opts.acsUrl}, got ${subj.confirmationRecipient}`,
+    };
+  }
+  if (opts.requestId && subj.confirmationInResponseTo !== opts.requestId) {
+    return {
+      ok: false,
+      reason: `SubjectConfirmation InResponseTo mismatch: expected ${opts.requestId}, got ${subj.confirmationInResponseTo}`,
+    };
+  }
+
   if (!parsed.notOnOrAfter) {
     return { ok: false, reason: "assertion has no NotOnOrAfter condition" };
   }
@@ -512,19 +577,72 @@ export function validateAssertion(
 }
 
 // ---------------------------------------------------------------------------
-// Replay protection (process-lifetime store; use Redis in multi-instance prod)
+// Replay protection: a file-backed log, so a restart cannot forget an accepted assertion.
+// One line per accepted assertion: "<expiresAtMs> <assertionId>". Expired lines are
+// dropped when the log is loaded. Multi-instance deployments still need a shared store.
 // ---------------------------------------------------------------------------
 
-const seenAssertions = new Map<string, number>();
+/** Assertion IDs are NCName-like; anything else is refused before it reaches the log. */
+const ASSERTION_ID_PATTERN = /^[A-Za-z0-9_.:-]{1,256}$/;
 
-/** Record an assertion ID; returns true if it was already seen (i.e. a replay). */
-export function assertionSeen(assertionId: string, expiresAtMs: number): boolean {
+interface ReplayStore {
+  path: string;
+  seen: Map<string, number>;
+}
+
+let replayStore: ReplayStore | null = null;
+
+function replayStorePath(): string {
+  return process.env.REALME_REPLAY_STORE || join(process.cwd(), ".data", "realme-replay.log");
+}
+
+function openReplayStore(): ReplayStore {
+  const file = replayStorePath();
+  if (replayStore && replayStore.path === file) return replayStore;
+
   const now = Date.now();
-  for (const [id, exp] of seenAssertions) {
-    if (exp <= now) seenAssertions.delete(id);
+  const seen = new Map<string, number>();
+  let expired = 0;
+  if (existsSync(file)) {
+    for (const line of readFileSync(file, "utf8").split("\n")) {
+      const sp = line.indexOf(" ");
+      if (sp < 0) continue;
+      const exp = Number(line.slice(0, sp));
+      const id = line.slice(sp + 1);
+      if (!Number.isFinite(exp) || !ASSERTION_ID_PATTERN.test(id)) continue;
+      if (exp <= now) {
+        expired += 1;
+        continue;
+      }
+      seen.set(id, exp);
+    }
+    if (expired > 0) {
+      // Compact the log so expired entries do not accumulate across restarts.
+      const body = [...seen].map(([id, exp]) => `${exp} ${id}\n`).join("");
+      writeFileSync(file, body, { mode: 0o600 });
+    }
   }
-  if (seenAssertions.has(assertionId)) return true;
-  seenAssertions.set(assertionId, Math.max(expiresAtMs, now + 60_000));
+  replayStore = { path: file, seen };
+  return replayStore;
+}
+
+/**
+ * Record an assertion ID. Returns true if it was already seen (a replay). Throws when the
+ * log cannot be written: the caller must then refuse the assertion (fail closed).
+ */
+export function assertionSeen(assertionId: string, expiresAtMs: number): boolean {
+  const store = openReplayStore();
+  const now = Date.now();
+  for (const [id, exp] of store.seen) {
+    if (exp <= now) store.seen.delete(id);
+  }
+  if (store.seen.has(assertionId)) return true;
+
+  const exp = Math.max(expiresAtMs, now + 60_000);
+  mkdirSync(dirname(store.path), { recursive: true, mode: 0o700 });
+  // Persist before accepting, so the assertion is remembered even if the process dies now.
+  appendFileSync(store.path, `${exp} ${assertionId}\n`, { mode: 0o600 });
+  store.seen.set(assertionId, exp);
   return false;
 }
 
@@ -535,11 +653,11 @@ export function assertionSeen(assertionId: string, expiresAtMs: number): boolean
 export interface ProcessResult {
   subject: SamlSubject;
   assertionId: string;
-  inResponseTo?: string;
+  inResponseTo?: string | undefined;
 }
 
 export interface ProcessOptions extends ValidateOptions {
-  requestId?: string;
+  requestId?: string | undefined;
 }
 
 /**
@@ -568,8 +686,17 @@ export function processSamlResponse(
   if (!valid.ok) throw new RealmeAuthError(valid.reason ?? "invalid assertion", "saml_invalid");
 
   const assertionId = parsed.assertionId!;
+  if (!ASSERTION_ID_PATTERN.test(assertionId)) {
+    throw new RealmeAuthError("assertion ID has an unexpected format", "saml_invalid");
+  }
   const expiry = parsed.notOnOrAfter ? Date.parse(parsed.notOnOrAfter) : Date.now() + 60_000;
-  if (assertionSeen(assertionId, expiry)) {
+  let replayed: boolean;
+  try {
+    replayed = assertionSeen(assertionId, expiry);
+  } catch {
+    throw new RealmeAuthError("replay store unavailable; refusing assertion", "saml_replay_store");
+  }
+  if (replayed) {
     throw new RealmeAuthError(`assertion ${assertionId} already used`, "saml_replay");
   }
 
@@ -578,4 +705,233 @@ export function processSamlResponse(
     assertionId,
     inResponseTo: parsed.inResponseTo,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Staff allow-list: a valid RealMe login is not enough, the person must be a case worker
+// ---------------------------------------------------------------------------
+
+/** True only when the authenticated subject is on the configured case-worker allow-list. */
+export function isRealmeStaffAllowed(
+  subject: SamlSubject,
+  allowlist: string[] = getRealmeConfig().staffAllowlist,
+): boolean {
+  if (allowlist.length === 0) return false;
+  const candidates = [subject.nameId, ...(subject.attributes[MAIL_OID] ?? [])]
+    .map((v) => v.trim().toLowerCase())
+    .filter((v) => v.length > 0);
+  return candidates.some((c) => allowlist.includes(c));
+}
+
+// ---------------------------------------------------------------------------
+// Single Logout (HTTP-Redirect binding, signed both ways)
+// ---------------------------------------------------------------------------
+
+/** Holds the ID of our LogoutRequest so the IdP's LogoutResponse can be correlated. */
+export const REALME_SLO_COOKIE = "tpt_realme_slo";
+
+function escapeXml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
+/** Split a raw query string into [name, still-encoded value] pairs, preserving order. */
+function rawQueryPairs(rawQuery: string): Array<[string, string]> {
+  return rawQuery
+    .replace(/^\?/, "")
+    .split("&")
+    .filter((p) => p.length > 0)
+    .map((p) => {
+      const i = p.indexOf("=");
+      return i < 0 ? [p, ""] : [p.slice(0, i), p.slice(i + 1)];
+    });
+}
+
+function rawParam(pairs: Array<[string, string]>, name: string): string | undefined {
+  return pairs.find(([k]) => k === name)?.[1];
+}
+
+/**
+ * Verify the Redirect-binding signature of an IdP message against the pinned IdP
+ * certificate. The signed string is rebuilt from the raw, still-encoded values in the
+ * order the IdP sent them, which is what the SAML bindings spec requires.
+ */
+export function verifyRedirectSignature(rawQuery: string): VerifyResult {
+  const cfg = getRealmeConfig();
+  if (cfg.skipVerify) {
+    return { ok: true, reason: "verification skipped (REALME_SKIP_VERIFY=true)" };
+  }
+  if (!cfg.idpCert) {
+    return { ok: false, reason: "REALME_IDP_CERT is not configured; refusing unverified SLO message" };
+  }
+  const pairs = rawQueryPairs(rawQuery);
+  const signature = rawParam(pairs, "Signature");
+  const sigAlg = rawParam(pairs, "SigAlg");
+  if (signature === undefined || sigAlg === undefined) {
+    return { ok: false, reason: "SLO message is not signed" };
+  }
+  if (decodeURIComponent(sigAlg) !== SIG_ALGO) {
+    return { ok: false, reason: "unsupported SigAlg" };
+  }
+  const messageParam = rawParam(pairs, "SAMLRequest") !== undefined ? "SAMLRequest" : "SAMLResponse";
+  const message = rawParam(pairs, messageParam);
+  if (message === undefined) return { ok: false, reason: "SLO message has no SAML payload" };
+
+  const signedParts = [`${messageParam}=${message}`];
+  const relay = rawParam(pairs, "RelayState");
+  if (relay !== undefined) signedParts.push(`RelayState=${relay}`);
+  signedParts.push(`SigAlg=${sigAlg}`);
+
+  let valid = false;
+  try {
+    valid = crypto
+      .createVerify("RSA-SHA256")
+      .update(signedParts.join("&"))
+      .verify(cfg.idpCert, Buffer.from(decodeURIComponent(signature), "base64"));
+  } catch (err) {
+    return { ok: false, reason: (err as Error).message };
+  }
+  return valid
+    ? { ok: true }
+    : { ok: false, reason: "SLO signature does not verify against the pinned IdP certificate" };
+}
+
+/** Inflate the Redirect-binding payload. The output cap guards against decompression bombs. */
+function decodeRedirectMessage(raw: string): string {
+  const compressed = Buffer.from(decodeURIComponent(raw), "base64");
+  return inflateRawSync(compressed, { maxOutputLength: 64 * 1024 }).toString("utf8");
+}
+
+export interface LogoutRequestMessage {
+  id: string;
+  issuer?: string | undefined;
+  nameId?: string | undefined;
+  sessionIndex?: string | undefined;
+}
+
+function parseLogoutRequestXml(xml: string): LogoutRequestMessage {
+  const doc = parseXml(xml);
+  const req = select1(doc, "LogoutRequest", SAMLP_NS) as Element | null;
+  if (!req) throw new RealmeAuthError("no LogoutRequest element", "slo_invalid");
+  const nameId = select1(req, "NameID", SAML_NS);
+  const sessionIndex = select1(req, "SessionIndex", SAMLP_NS);
+  return {
+    id: req.getAttribute("ID") ?? "",
+    issuer: localText(select1(req, "Issuer", SAML_NS)) || undefined,
+    nameId: nameId ? localText(nameId) : undefined,
+    sessionIndex: sessionIndex ? localText(sessionIndex) : undefined,
+  };
+}
+
+function parseLogoutResponseXml(xml: string): {
+  id: string;
+  issuer?: string | undefined;
+  inResponseTo?: string | undefined;
+  status: string;
+} {
+  const doc = parseXml(xml);
+  const res = select1(doc, "LogoutResponse", SAMLP_NS) as Element | null;
+  if (!res) throw new RealmeAuthError("no LogoutResponse element", "slo_invalid");
+  const status = select1(res, "StatusCode", SAMLP_NS) as Element | null;
+  return {
+    id: res.getAttribute("ID") ?? "",
+    issuer: localText(select1(res, "Issuer", SAML_NS)) || undefined,
+    inResponseTo: res.getAttribute("InResponseTo") ?? undefined,
+    status: status?.getAttribute("Value") ?? "unknown",
+  };
+}
+
+/** Wrap an SLO message in a parse-and-verify step that turns every failure into RealmeAuthError. */
+function safeParse<T>(fn: () => T): T {
+  try {
+    return fn();
+  } catch (err) {
+    if (err instanceof RealmeAuthError) throw err;
+    throw new RealmeAuthError((err as Error).message, "slo_invalid");
+  }
+}
+
+/** Verify and parse an IdP LogoutRequest (front-channel, IdP-initiated logout). */
+export function processLogoutRequest(rawQuery: string): LogoutRequestMessage {
+  const cfg = getRealmeConfig();
+  const sig = verifyRedirectSignature(rawQuery);
+  if (!sig.ok) throw new RealmeAuthError(sig.reason ?? "invalid signature", "slo_signature");
+  const pairs = rawQueryPairs(rawQuery);
+  const samlRequest = rawParam(pairs, "SAMLRequest");
+  if (samlRequest === undefined) throw new RealmeAuthError("no SAMLRequest", "slo_invalid");
+  const msg = safeParse(() => parseLogoutRequestXml(decodeRedirectMessage(samlRequest)));
+  if (!cfg.idpEntityId) throw new RealmeAuthError("REALME_IDP_ENTITY_ID is not configured", "slo_invalid");
+  if (msg.issuer !== cfg.idpEntityId) {
+    throw new RealmeAuthError(`LogoutRequest issuer mismatch: got ${msg.issuer}`, "slo_invalid");
+  }
+  if (!ASSERTION_ID_PATTERN.test(msg.id)) {
+    throw new RealmeAuthError("LogoutRequest ID has an unexpected format", "slo_invalid");
+  }
+  return msg;
+}
+
+/** Verify an IdP LogoutResponse and check it answers our own LogoutRequest. */
+export function processLogoutResponse(rawQuery: string, expectedRequestId: string): void {
+  const cfg = getRealmeConfig();
+  const sig = verifyRedirectSignature(rawQuery);
+  if (!sig.ok) throw new RealmeAuthError(sig.reason ?? "invalid signature", "slo_signature");
+  const pairs = rawQueryPairs(rawQuery);
+  const samlResponse = rawParam(pairs, "SAMLResponse");
+  if (samlResponse === undefined) throw new RealmeAuthError("no SAMLResponse", "slo_invalid");
+  const msg = safeParse(() => parseLogoutResponseXml(decodeRedirectMessage(samlResponse)));
+  if (!cfg.idpEntityId || msg.issuer !== cfg.idpEntityId) {
+    throw new RealmeAuthError("LogoutResponse issuer mismatch", "slo_invalid");
+  }
+  if (!expectedRequestId || msg.inResponseTo !== expectedRequestId) {
+    throw new RealmeAuthError("LogoutResponse InResponseTo does not match our request", "slo_invalid");
+  }
+  if (msg.status !== SUCCESS) {
+    throw new RealmeAuthError(`IdP logout status: ${msg.status}`, "slo_status");
+  }
+}
+
+function requireSloUrl(): string {
+  const cfg = getRealmeConfig();
+  if (!cfg.sloUrl) throw new Error("REALME_SLO_URL is not configured");
+  return cfg.sloUrl;
+}
+
+/** Build a signed LogoutRequest for the IdP. The caller stores `requestId` in a cookie. */
+export function buildLogoutRequest(session: {
+  nameId: string;
+  sessionIndex?: string | undefined;
+}): { redirectUrl: string; requestId: string } {
+  const cfg = getRealmeConfig();
+  const sloUrl = requireSloUrl();
+  const id = `_${crypto.randomBytes(16).toString("hex")}`;
+  const sessionIndexXml = session.sessionIndex
+    ? `\n  <samlp:SessionIndex>${escapeXml(session.sessionIndex)}</samlp:SessionIndex>`
+    : "";
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<samlp:LogoutRequest xmlns:samlp="${SAMLP_NS}" xmlns:saml="${SAML_NS}" ID="${id}" Version="2.0" IssueInstant="${new Date().toISOString()}" Destination="${sloUrl}">
+  <saml:Issuer>${escapeXml(cfg.spEntityId)}</saml:Issuer>
+  <saml:NameID Format="${escapeXml(cfg.nameIdFormat)}">${escapeXml(session.nameId)}</saml:NameID>${sessionIndexXml}
+</samlp:LogoutRequest>`;
+  const url = new URL(sloUrl);
+  for (const [k, v] of redirectBindingParams("SAMLRequest", xml)) url.searchParams.set(k, v);
+  return { redirectUrl: url.toString(), requestId: id };
+}
+
+/** Build a signed LogoutResponse (Success) answering the IdP's LogoutRequest. */
+export function buildLogoutResponse(inResponseTo: string): string {
+  const cfg = getRealmeConfig();
+  const sloUrl = requireSloUrl();
+  const id = `_${crypto.randomBytes(16).toString("hex")}`;
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<samlp:LogoutResponse xmlns:samlp="${SAMLP_NS}" xmlns:saml="${SAML_NS}" ID="${id}" Version="2.0" IssueInstant="${new Date().toISOString()}" Destination="${sloUrl}" InResponseTo="${escapeXml(inResponseTo)}">
+  <saml:Issuer>${escapeXml(cfg.spEntityId)}</saml:Issuer>
+  <samlp:Status><samlp:StatusCode Value="${SUCCESS}"/></samlp:Status>
+</samlp:LogoutResponse>`;
+  const url = new URL(sloUrl);
+  for (const [k, v] of redirectBindingParams("SAMLResponse", xml)) url.searchParams.set(k, v);
+  return url.toString();
 }

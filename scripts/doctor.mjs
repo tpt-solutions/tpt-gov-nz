@@ -68,6 +68,39 @@ if (!existsSync(envPath)) {
   }
 }
 
+// RealMe sign-in (staff portal). When enabled, a missing setting makes sign-in fail closed,
+// so it is reported as a failure rather than a warning.
+if (existsSync(envPath)) {
+  const env = readFileSync(envPath, "utf8");
+  const get = (key) => (env.match(new RegExp(`^${key}=(.*)$`, "m"))?.[1] ?? "").trim();
+  if (get("NEXT_PUBLIC_REALME_ENABLED") === "true") {
+    const allowlist = get("REALME_STAFF_ALLOWLIST");
+    check(
+      "REALME_STAFF_ALLOWLIST",
+      allowlist ? "ok" : "fail",
+      allowlist ? "set" : "not set; every RealMe sign-in will be refused",
+    );
+    check(
+      "REALME_IDP_CERT",
+      get("REALME_IDP_CERT") ? "ok" : "fail",
+      get("REALME_IDP_CERT") ? "set" : "not set; RealMe responses cannot be verified (fail closed)",
+    );
+    check(
+      "REALME_IDP_ENTITY_ID",
+      get("REALME_IDP_ENTITY_ID") ? "ok" : "fail",
+      get("REALME_IDP_ENTITY_ID") ? "set" : "not set; RealMe responses will be refused",
+    );
+    if (get("REALME_SKIP_VERIFY") === "true") {
+      check("REALME_SKIP_VERIFY", "fail", "set to true; unverified SAML must never run in production");
+    }
+    check(
+      "REALME_SLO_URL",
+      get("REALME_SLO_URL") ? "ok" : "warn",
+      get("REALME_SLO_URL") ? "set" : "not set; staff sign-out will not end the RealMe session",
+    );
+  }
+}
+
 // node_modules
 check(
   "pnpm install",

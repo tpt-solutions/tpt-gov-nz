@@ -11,6 +11,9 @@ export interface StaffSessionClaims {
   issuedAt: number;
   expiresAt: number;
   demo: boolean;
+  /** Set for RealMe sign-ins: the IdP NameID and SessionIndex, needed for Single Logout. */
+  realmeNameId?: string | undefined;
+  realmeSessionIndex?: string | undefined;
 }
 
 /** Read and verify the staff session JWT from the httpOnly cookie. */
@@ -29,6 +32,8 @@ export async function getStaffSession(): Promise<StaffSessionClaims | null> {
     issuedAt: Number(p.iat ?? 0),
     expiresAt: Number(p.exp ?? 0),
     demo: p.demo === true,
+    realmeNameId: typeof p.realmeNameId === "string" ? p.realmeNameId : undefined,
+    realmeSessionIndex: typeof p.realmeSessionIndex === "string" ? p.realmeSessionIndex : undefined,
   };
 }
 
@@ -47,6 +52,8 @@ export function createStaffSessionToken(claims: Omit<StaffSessionClaims, "issued
       displayName: claims.displayName,
       sessionId: claims.sessionId,
       demo: claims.demo,
+      ...(claims.realmeNameId ? { realmeNameId: claims.realmeNameId } : {}),
+      ...(claims.realmeSessionIndex ? { realmeSessionIndex: claims.realmeSessionIndex } : {}),
     },
     STAFF_CONFIG.sessionSecret,
     STAFF_CONFIG.sessionTtlSeconds,

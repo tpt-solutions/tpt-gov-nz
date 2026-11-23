@@ -20,7 +20,8 @@ function base64urlToBytes(input: string): Uint8Array<ArrayBuffer> {
 export async function verifyJwtEdge(token: string, secret: string): Promise<boolean> {
   const parts = token.split(".");
   if (parts.length !== 3) return false;
-  const [headerB64, payloadB64, sigB64] = parts;
+  // Missing segments default to "" so they fail verification (closed).
+  const [headerB64 = "", payloadB64 = "", sigB64 = ""] = parts;
   try {
     const key = await crypto.subtle.importKey(
       "raw",

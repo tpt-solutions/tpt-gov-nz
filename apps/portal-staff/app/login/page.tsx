@@ -45,6 +45,14 @@ function StaffLoginForm() {
               Too many failed attempts. Try again in 15 minutes.
             </p>
           )}
+          {params.get("loggedOut") === "1" && (
+            <p role="status">You have been signed out.</p>
+          )}
+          {error === "slo" && (
+            <p style={{ color: "#b00020" }} role="alert">
+              Sign-out could not be completed with RealMe. Your staff session has ended.
+            </p>
+          )}
           <form action={loginStaff} style={{ display: "grid", gap: "0.5rem" }}>
             <label htmlFor="staffId">Staff ID</label>
             <input
@@ -79,10 +87,15 @@ function StaffLoginForm() {
       {process.env.NEXT_PUBLIC_REALME_ENABLED === "true" && (
         <section style={{ border: "1px solid #ccc", padding: "1rem", margin: "1rem 0" }}>
           <h2>RealMe</h2>
+          {error === "not_authorised" && (
+            <p style={{ color: "#b00020" }} role="alert">
+              Your RealMe identity is verified, but it is not registered for case-worker access.
+            </p>
+          )}
           <p>Sign in with your RealMe verified identity (SAML 2.0 SSO).</p>
           <a
             href="/login/realme"
-            style={{ display: "inline-block", padding: "0.5rem 1rem", background: "#007bff", color: "#fff", borderRadius: 6, textDecoration: "none", cursor: "pointer" }}
+            style={{ display: "inline-block", padding: "0.5rem 1rem", background: "#0056b3", color: "#fff", borderRadius: 6, textDecoration: "none", cursor: "pointer" }}
           >
             Sign in with RealMe
           </a>
