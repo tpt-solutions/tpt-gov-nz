@@ -22,10 +22,10 @@ allow if {
 
 scope_covered(scope) if {
 	some grant in input.consent_grants
-	grant.requestingDeptId == input.requesting_dept_id
-	grant.providingDeptId == input.providing_dept_id
-	grant.citizenDid == input.citizen_did
-	grant.expiresAt > time.now_ns() / 1000000000
+	grant.requesting_dept_id == input.requesting_dept_id
+	grant.providing_dept_id == input.providing_dept_id
+	grant.citizen_did == input.citizen_did
+	grant.expires_at > time.now_ns() / 1000000000
 	scope in grant.scopes
 }
 
