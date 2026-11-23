@@ -51,9 +51,10 @@ async fn run_once_with_mock_transport(pool: sqlx::PgPool) {
 
     assert_eq!(summary.citizens_processed, 2);
     assert_eq!(summary.status, IngestionStatus::Success);
-    // test-citizen-001 is seeded (3 rows are updates); test-citizen-002 is new (3 inserts).
-    assert_eq!(summary.rows_inserted, 3);
-    assert_eq!(summary.rows_updated, 3);
+    // test-citizen-001 is seeded: its citizen row plus three entity rows are updates.
+    // test-citizen-002 is new: its citizen row plus three entity rows are inserts.
+    assert_eq!(summary.rows_inserted, 4);
+    assert_eq!(summary.rows_updated, 4);
     assert!(summary.batch_id.as_deref() == Some("DIA-2026-07-B001"));
 
     let run = db::latest_run(&pool).await.unwrap().expect("audit row");

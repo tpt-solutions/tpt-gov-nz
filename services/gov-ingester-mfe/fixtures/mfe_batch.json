@@ -4,14 +4,14 @@
   "source": "mock",
   "citizens": [
     {
-      "mfe_id": "MFE-100001",
+      "mfeId": "MFE-100001",
       "did": "did:gov:nz:test-citizen-001",
       "name": "Alex Tane",
       "emissions": [
         {
           "reportYear": 2025,
           "sector": "Transport",
-          "tonnesCO2e": 3200.5
+          "tonnesCo2e": 3200.5
         }
       ],
       "reports": [
@@ -23,7 +23,7 @@
       ]
     },
     {
-      "mfe_id": "MFE-100002",
+      "mfeId": "MFE-100002",
       "did": "did:gov:nz:test-citizen-002",
       "name": "Bree Kare",
       "emissions": [],

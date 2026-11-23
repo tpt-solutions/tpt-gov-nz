@@ -6,11 +6,6 @@ use crate::{
     raw::RawTreasuryCitizen,
 };
 
-fn parse_date(s: &str, field: &str) -> Result<chrono::NaiveDate, IngestError> {
-    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d")
-        .map_err(|e| IngestError::Transform(format!("invalid {field} date '{s}': {e}")))
-}
-
 pub fn transform_citizen(raw: &RawTreasuryCitizen) -> Result<TransformedCitizen, IngestError> {
     if raw.did.trim().is_empty() {
         return Err(IngestError::Transform(format!(
@@ -29,23 +24,23 @@ pub fn transform_citizen(raw: &RawTreasuryCitizen) -> Result<TransformedCitizen,
         .iter()
         .map(|c| {
             Ok(BudgetEntity {
-                fiscal_year: c.fiscal_year.clone(),
+                fiscal_year: c.fiscal_year,
                 portfolio: c.portfolio.clone(),
                 appropriation: c.appropriation.clone(),
-                amount: c.amount.clone(),
+                amount: c.amount,
             })
         })
         .collect::<Result<Vec<_>, IngestError>>()?;
 
-    let economic_outlook = match &raw.economic_outlook {
-        Some(c) => Some(EconomicOutlookEntity {
-            forecast_year: c.forecast_year.clone(),
-            gdp_growth_pct: c.gdp_growth_pct.clone(),
-            inflation_pct: c.inflation_pct.clone(),
-            net_debt_pct: c.net_debt_pct.clone(),
-        }),
-        None => None,
-    };
+    let economic_outlook = raw
+        .economic_outlook
+        .as_ref()
+        .map(|c| EconomicOutlookEntity {
+            forecast_year: c.forecast_year,
+            gdp_growth_pct: c.gdp_growth_pct,
+            inflation_pct: c.inflation_pct,
+            net_debt_pct: c.net_debt_pct,
+        });
 
     Ok(TransformedCitizen {
         citizen,
@@ -59,9 +54,13 @@ mod tests {
     use super::*;
 
     fn sample() -> RawTreasuryCitizen {
-        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/treasury_batch.json")).unwrap();
-                let batch: crate::raw::RawTreasuryBatch = serde_json::from_slice(&bytes).unwrap();
-                batch.citizens.into_iter().next().unwrap()
+        let bytes = std::fs::read(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/fixtures/treasury_batch.json"
+        ))
+        .unwrap();
+        let batch: crate::raw::RawTreasuryBatch = serde_json::from_slice(&bytes).unwrap();
+        batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]

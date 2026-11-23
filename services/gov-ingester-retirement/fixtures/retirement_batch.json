@@ -4,10 +4,10 @@
   "source": "mock",
   "citizens": [
     {
-      "retirement_id": "RET-100001",
+      "retirementId": "RET-100001",
       "did": "did:gov:nz:test-citizen-001",
       "name": "Alex Tane",
-      "retirement_plan": {
+      "retirementPlan": {
         "hasPlan": true,
         "retirementAge": 65,
         "lastReview": "2025-12-01"
@@ -21,10 +21,10 @@
       ]
     },
     {
-      "retirement_id": "RET-100002",
+      "retirementId": "RET-100002",
       "did": "did:gov:nz:test-citizen-002",
       "name": "Bree Kare",
-      "retirement_plan": null,
+      "retirementPlan": null,
       "guidance": []
     }
   ]

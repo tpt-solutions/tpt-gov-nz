@@ -4,7 +4,7 @@
   "source": "mock",
   "citizens": [
     {
-      "moe_id": "MOE-100001",
+      "moeId": "MOE-100001",
       "did": "did:gov:nz:test-citizen-001",
       "name": "Alex Tane",
       "enrolment": {
@@ -12,7 +12,7 @@
         "yearLevel": 9,
         "status": "enrolled"
       },
-      "student_support": [
+      "studentSupport": [
         {
           "service": "Learning support",
           "status": "active",
@@ -21,11 +21,11 @@
       ]
     },
     {
-      "moe_id": "MOE-100002",
+      "moeId": "MOE-100002",
       "did": "did:gov:nz:test-citizen-002",
       "name": "Bree Kare",
       "enrolment": null,
-      "student_support": []
+      "studentSupport": []
     }
   ]
 }

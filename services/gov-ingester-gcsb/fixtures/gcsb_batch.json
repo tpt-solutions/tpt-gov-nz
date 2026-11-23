@@ -4,7 +4,7 @@
   "source": "mock",
   "citizens": [
     {
-      "gcsb_id": "GCSB-100001",
+      "gcsbId": "GCSB-100001",
       "did": "did:gov:nz:test-citizen-001",
       "name": "Alex Tane",
       "mandates": [
@@ -24,7 +24,7 @@
       ]
     },
     {
-      "gcsb_id": "GCSB-100002",
+      "gcsbId": "GCSB-100002",
       "did": "did:gov:nz:test-citizen-002",
       "name": "Bree Kare",
       "mandates": [],

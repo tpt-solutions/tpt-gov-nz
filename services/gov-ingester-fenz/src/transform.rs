@@ -58,9 +58,13 @@ mod tests {
     use super::*;
 
     fn sample() -> RawFenzCitizen {
-        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/fenz_batch.json")).unwrap();
-                let batch: crate::raw::RawFenzBatch = serde_json::from_slice(&bytes).unwrap();
-                batch.citizens.into_iter().next().unwrap()
+        let bytes = std::fs::read(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/fixtures/fenz_batch.json"
+        ))
+        .unwrap();
+        let batch: crate::raw::RawFenzBatch = serde_json::from_slice(&bytes).unwrap();
+        batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]
@@ -81,10 +85,7 @@ mod tests {
 
         let t = transform_citizen(&sample()).unwrap();
         assert_eq!(t.incidents.first().unwrap().reference, "FENZ-2026-050");
-        assert_eq!(
-            t.incidents.first().unwrap().incident_type,
-            "Structure fire"
-        );
+        assert_eq!(t.incidents.first().unwrap().incident_type, "Structure fire");
         assert_eq!(
             t.incidents.first().unwrap().incident_date.to_string(),
             "2026-01-30"

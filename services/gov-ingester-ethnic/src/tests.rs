@@ -35,7 +35,7 @@ async fn fixture_parses_and_transforms() {
 fn missing_did_is_rejected() {
     let raw: RawEthnicBatch = serde_json::from_value(serde_json::json!({
         "batchId": "B", "generatedAt": "x", "source": "mock",
-        "citizens": [{ "ethnic_id": "ETH-100001", "did": "", "programmes": [], "community_grants": [] }]
+        "citizens": [{ "ethnicId": "ETH-100001", "did": "", "programmes": [], "communityGrants": [] }]
     }))
     .unwrap();
     assert!(transform_citizen(&raw.citizens[0]).is_err());

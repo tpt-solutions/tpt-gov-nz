@@ -118,10 +118,7 @@ pub struct IngestionRunRecord<'a> {
     pub error_message: Option<&'a str>,
 }
 
-pub async fn record_ingestion_run(
-    pool: &PgPool,
-    run: &IngestionRunRecord<'_>,
-) -> sqlx::Result<()> {
+pub async fn record_ingestion_run(pool: &PgPool, run: &IngestionRunRecord<'_>) -> sqlx::Result<()> {
     let IngestionRunRecord {
         run_id,
         source,

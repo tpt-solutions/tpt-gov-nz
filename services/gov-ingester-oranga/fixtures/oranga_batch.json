@@ -4,17 +4,17 @@
   "source": "mock",
   "citizens": [
     {
-      "oranga_id": "OT-100001",
+      "orangaId": "OT-100001",
       "did": "did:gov:nz:test-citizen-001",
       "name": "Alex Tane",
-      "care_placements": [
+      "carePlacements": [
         {
           "placementType": "Whānau placement",
           "startDate": "2025-08-01",
           "region": "Waikato"
         }
       ],
-      "support_services": [
+      "supportServices": [
         {
           "service": "Intensive support",
           "status": "active",
@@ -23,11 +23,11 @@
       ]
     },
     {
-      "oranga_id": "OT-100002",
+      "orangaId": "OT-100002",
       "did": "did:gov:nz:test-citizen-002",
       "name": "Bree Kare",
-      "care_placements": [],
-      "support_services": []
+      "carePlacements": [],
+      "supportServices": []
     }
   ]
 }

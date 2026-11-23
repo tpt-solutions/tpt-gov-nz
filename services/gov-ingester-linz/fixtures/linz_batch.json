@@ -19,7 +19,9 @@
         {
           "titleNumber": "LNZ-T-1",
           "ownershipShare": "1/1",
-          "registeredOwners": ["Alex Tane"]
+          "registeredOwners": [
+            "Alex Tane"
+          ]
         }
       ]
     },
@@ -31,7 +33,7 @@
         {
           "titleNumber": "LNZ-T-2",
           "propertyAddress": "8 Waiata Place, Hamilton",
-          "landAreaSqm": 845.0,
+          "landAreaSqm": 845,
           "estateType": "Freehold"
         }
       ],
@@ -39,7 +41,10 @@
         {
           "titleNumber": "LNZ-T-2",
           "ownershipShare": "1/2",
-          "registeredOwners": ["Bree Kare", "Sam Kare"]
+          "registeredOwners": [
+            "Bree Kare",
+            "Sam Kare"
+          ]
         }
       ]
     }

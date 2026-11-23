@@ -61,9 +61,13 @@ mod tests {
     use super::*;
 
     fn sample() -> RawSfoCitizen {
-        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/sfo_batch.json")).unwrap();
-                let batch: crate::raw::RawSfoBatch = serde_json::from_slice(&bytes).unwrap();
-                batch.citizens.into_iter().next().unwrap()
+        let bytes = std::fs::read(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/fixtures/sfo_batch.json"
+        ))
+        .unwrap();
+        let batch: crate::raw::RawSfoBatch = serde_json::from_slice(&bytes).unwrap();
+        batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]

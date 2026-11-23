@@ -4,7 +4,7 @@
   "source": "mock",
   "citizens": [
     {
-      "ethnic_id": "ETH-100001",
+      "ethnicId": "ETH-100001",
       "did": "did:gov:nz:test-citizen-001",
       "name": "Alex Tane",
       "programmes": [
@@ -14,7 +14,7 @@
           "year": 2026
         }
       ],
-      "community_grants": [
+      "communityGrants": [
         {
           "grantName": "Community-led response fund",
           "amount": 5000,
@@ -23,11 +23,11 @@
       ]
     },
     {
-      "ethnic_id": "ETH-100002",
+      "ethnicId": "ETH-100002",
       "did": "did:gov:nz:test-citizen-002",
       "name": "Bree Kare",
       "programmes": [],
-      "community_grants": []
+      "communityGrants": []
     }
   ]
 }

@@ -29,9 +29,9 @@ pub fn transform_citizen(raw: &RawMfeCitizen) -> Result<TransformedCitizen, Inge
         .iter()
         .map(|c| {
             Ok(EmissionsEntity {
-                report_year: c.report_year.clone(),
+                report_year: c.report_year,
                 sector: c.sector.clone(),
-                tonnes_co2e: c.tonnes_co2e.clone(),
+                tonnes_co2e: c.tonnes_co2e,
             })
         })
         .collect::<Result<Vec<_>, IngestError>>()?;
@@ -60,9 +60,13 @@ mod tests {
     use super::*;
 
     fn sample() -> RawMfeCitizen {
-        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/mfe_batch.json")).unwrap();
-                let batch: crate::raw::RawMfeBatch = serde_json::from_slice(&bytes).unwrap();
-                batch.citizens.into_iter().next().unwrap()
+        let bytes = std::fs::read(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/fixtures/mfe_batch.json"
+        ))
+        .unwrap();
+        let batch: crate::raw::RawMfeBatch = serde_json::from_slice(&bytes).unwrap();
+        batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]

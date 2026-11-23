@@ -4,7 +4,7 @@
   "source": "mock",
   "citizens": [
     {
-      "worksafe_id": "WS-100001",
+      "worksafeId": "WS-100001",
       "did": "did:gov:nz:test-citizen-001",
       "name": "Alex Tane",
       "inspections": [
@@ -25,7 +25,7 @@
       ]
     },
     {
-      "worksafe_id": "WS-100002",
+      "worksafeId": "WS-100002",
       "did": "did:gov:nz:test-citizen-002",
       "name": "Bree Kare",
       "inspections": [],

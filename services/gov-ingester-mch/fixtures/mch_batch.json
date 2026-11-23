@@ -4,10 +4,10 @@
   "source": "mock",
   "citizens": [
     {
-      "mch_id": "MCH-100001",
+      "mchId": "MCH-100001",
       "did": "did:gov:nz:test-citizen-001",
       "name": "Alex Tane",
-      "heritage_sites": [
+      "heritageSites": [
         {
           "name": "Old St Paul's",
           "status": "Category 1 historic place",
@@ -23,10 +23,10 @@
       ]
     },
     {
-      "mch_id": "MCH-100002",
+      "mchId": "MCH-100002",
       "did": "did:gov:nz:test-citizen-002",
       "name": "Bree Kare",
-      "heritage_sites": [],
+      "heritageSites": [],
       "grants": []
     }
   ]

@@ -4,7 +4,7 @@
   "source": "mock",
   "citizens": [
     {
-      "treasury_id": "TRE-100001",
+      "treasuryId": "TRE-100001",
       "did": "did:gov:nz:test-citizen-001",
       "name": "Alex Tane",
       "budget": [
@@ -15,7 +15,7 @@
           "amount": 1200000000
         }
       ],
-      "economic_outlook": {
+      "economicOutlook": {
         "forecastYear": 2026,
         "gdpGrowthPct": 2.4,
         "inflationPct": 3.1,
@@ -23,11 +23,11 @@
       }
     },
     {
-      "treasury_id": "TRE-100002",
+      "treasuryId": "TRE-100002",
       "did": "did:gov:nz:test-citizen-002",
       "name": "Bree Kare",
       "budget": [],
-      "economic_outlook": null
+      "economicOutlook": null
     }
   ]
 }

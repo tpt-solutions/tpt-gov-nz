@@ -29,7 +29,7 @@ async fn fixture_parses_and_transforms() {
 fn missing_did_is_rejected() {
     let raw: RawNzdfBatch = serde_json::from_value(serde_json::json!({
         "batchId": "B", "generatedAt": "x", "source": "mock",
-        "citizens": [{ "nzdf_id": "NZDF-100001", "did": "", "service_records": [], "deployments": [] }]
+        "citizens": [{ "nzdfId": "NZDF-100001", "did": "", "serviceRecords": [], "deployments": [] }]
     }))
     .unwrap();
     assert!(transform_citizen(&raw.citizens[0]).is_err());

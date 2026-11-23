@@ -29,7 +29,7 @@ async fn fixture_parses_and_transforms() {
 fn missing_did_is_rejected() {
     let raw: RawGcsbBatch = serde_json::from_value(serde_json::json!({
         "batchId": "B", "generatedAt": "x", "source": "mock",
-        "citizens": [{ "gcsb_id": "GCSB-100001", "did": "", "mandates": [], "engagements": [] }]
+        "citizens": [{ "gcsbId": "GCSB-100001", "did": "", "mandates": [], "engagements": [] }]
     }))
     .unwrap();
     assert!(transform_citizen(&raw.citizens[0]).is_err());

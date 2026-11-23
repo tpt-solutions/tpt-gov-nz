@@ -4,10 +4,10 @@
   "source": "mock",
   "citizens": [
     {
-      "crownlaw_id": "CL-100001",
+      "crownlawId": "CL-100001",
       "did": "did:gov:nz:test-citizen-001",
       "name": "Alex Tane",
-      "legal_opinions": [
+      "legalOpinions": [
         {
           "reference": "CL-OP-2026-001",
           "topic": "Treaty settlement wording",
@@ -24,10 +24,10 @@
       ]
     },
     {
-      "crownlaw_id": "CL-100002",
+      "crownlawId": "CL-100002",
       "did": "did:gov:nz:test-citizen-002",
       "name": "Bree Kare",
-      "legal_opinions": [],
+      "legalOpinions": [],
       "litigation": []
     }
   ]

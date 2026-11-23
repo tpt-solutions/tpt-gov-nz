@@ -62,9 +62,13 @@ mod tests {
     use super::*;
 
     fn sample() -> RawWorksafeCitizen {
-        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/worksafe_batch.json")).unwrap();
-                let batch: crate::raw::RawWorksafeBatch = serde_json::from_slice(&bytes).unwrap();
-                batch.citizens.into_iter().next().unwrap()
+        let bytes = std::fs::read(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/fixtures/worksafe_batch.json"
+        ))
+        .unwrap();
+        let batch: crate::raw::RawWorksafeBatch = serde_json::from_slice(&bytes).unwrap();
+        batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]
@@ -74,10 +78,7 @@ mod tests {
         assert_eq!(t.citizen.worksafe_id, "WS-100001");
         let t = transform_citizen(&sample()).unwrap();
         assert_eq!(t.inspections.first().unwrap().reference, "WS-I-2026-003");
-        assert_eq!(
-            t.inspections.first().unwrap().site,
-            "Tane Construction Ltd"
-        );
+        assert_eq!(t.inspections.first().unwrap().site, "Tane Construction Ltd");
         assert_eq!(
             t.inspections.first().unwrap().inspection_date.to_string(),
             "2026-02-10"
@@ -92,10 +93,7 @@ mod tests {
             t.investigations.first().unwrap().reference,
             "WS-INV-2026-011"
         );
-        assert_eq!(
-            t.investigations.first().unwrap().matter,
-            "Fatality inquiry"
-        );
+        assert_eq!(t.investigations.first().unwrap().matter, "Fatality inquiry");
         assert_eq!(t.investigations.first().unwrap().status, "ongoing");
         assert_eq!(
             t.investigations.first().unwrap().opened_date.to_string(),

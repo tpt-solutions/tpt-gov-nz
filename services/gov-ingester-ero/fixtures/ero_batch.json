@@ -4,7 +4,7 @@
   "source": "mock",
   "citizens": [
     {
-      "ero_id": "ERO-100001",
+      "eroId": "ERO-100001",
       "did": "did:gov:nz:test-citizen-001",
       "name": "Alex Tane",
       "reviews": [
@@ -23,7 +23,7 @@
       ]
     },
     {
-      "ero_id": "ERO-100002",
+      "eroId": "ERO-100002",
       "did": "did:gov:nz:test-citizen-002",
       "name": "Bree Kare",
       "reviews": [],

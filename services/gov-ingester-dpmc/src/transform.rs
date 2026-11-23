@@ -29,7 +29,7 @@ pub fn transform_citizen(raw: &RawDpmcCitizen) -> Result<TransformedCitizen, Ing
         .iter()
         .map(|c| {
             Ok(HonoursEntity {
-                award_year: c.award_year.clone(),
+                award_year: c.award_year,
                 award: c.award.clone(),
                 status: c.status.clone(),
             })
@@ -60,9 +60,13 @@ mod tests {
     use super::*;
 
     fn sample() -> RawDpmcCitizen {
-        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/dpmc_batch.json")).unwrap();
-                let batch: crate::raw::RawDpmcBatch = serde_json::from_slice(&bytes).unwrap();
-                batch.citizens.into_iter().next().unwrap()
+        let bytes = std::fs::read(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/fixtures/dpmc_batch.json"
+        ))
+        .unwrap();
+        let batch: crate::raw::RawDpmcBatch = serde_json::from_slice(&bytes).unwrap();
+        batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]

@@ -4,16 +4,16 @@
   "source": "mock",
   "citizens": [
     {
-      "mfat_id": "MFAT-100001",
+      "mfatId": "MFAT-100001",
       "did": "did:gov:nz:test-citizen-001",
       "name": "Alex Tane",
-      "overseas_missions": [
+      "overseasMissions": [
         {
           "country": "Australia",
           "status": "active"
         }
       ],
-      "travel_advisories": [
+      "travelAdvisories": [
         {
           "country": "Indonesia",
           "level": "Exercise increased caution",
@@ -22,11 +22,11 @@
       ]
     },
     {
-      "mfat_id": "MFAT-100002",
+      "mfatId": "MFAT-100002",
       "did": "did:gov:nz:test-citizen-002",
       "name": "Bree Kare",
-      "overseas_missions": [],
-      "travel_advisories": []
+      "overseasMissions": [],
+      "travelAdvisories": []
     }
   ]
 }

@@ -4,7 +4,7 @@
   "source": "mock",
   "citizens": [
     {
-      "sfo_id": "SFO-100001",
+      "sfoId": "SFO-100001",
       "did": "did:gov:nz:test-citizen-001",
       "name": "Alex Tane",
       "investigations": [
@@ -24,7 +24,7 @@
       ]
     },
     {
-      "sfo_id": "SFO-100002",
+      "sfoId": "SFO-100002",
       "did": "did:gov:nz:test-citizen-002",
       "name": "Bree Kare",
       "investigations": [],

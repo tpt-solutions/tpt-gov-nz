@@ -40,7 +40,7 @@ pub fn transform_citizen(raw: &RawEqcCitizen) -> Result<TransformedCitizen, Inge
     let cover = match &raw.cover {
         Some(c) => Some(CoverEntity {
             property: c.property.clone(),
-            sum_insured: c.sum_insured.clone(),
+            sum_insured: c.sum_insured,
             valid_to: parse_date(&c.valid_to, "valid_to")?,
         }),
         None => None,
@@ -58,9 +58,13 @@ mod tests {
     use super::*;
 
     fn sample() -> RawEqcCitizen {
-        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/eqc_batch.json")).unwrap();
-                let batch: crate::raw::RawEqcBatch = serde_json::from_slice(&bytes).unwrap();
-                batch.citizens.into_iter().next().unwrap()
+        let bytes = std::fs::read(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/fixtures/eqc_batch.json"
+        ))
+        .unwrap();
+        let batch: crate::raw::RawEqcBatch = serde_json::from_slice(&bytes).unwrap();
+        batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]

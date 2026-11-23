@@ -29,7 +29,7 @@ async fn fixture_parses_and_transforms() {
 fn missing_did_is_rejected() {
     let raw: RawMchBatch = serde_json::from_value(serde_json::json!({
         "batchId": "B", "generatedAt": "x", "source": "mock",
-        "citizens": [{ "mch_id": "MCH-100001", "did": "", "heritage_sites": [], "grants": [] }]
+        "citizens": [{ "mchId": "MCH-100001", "did": "", "heritageSites": [], "grants": [] }]
     }))
     .unwrap();
     assert!(transform_citizen(&raw.citizens[0]).is_err());

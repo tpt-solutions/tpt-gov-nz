@@ -9,21 +9,21 @@
       "name": "Alex Tane",
       "income": {
         "assessmentYear": 2025,
-        "employmentIncome": 65000.00,
-        "selfEmploymentIncome": 0.00,
-        "rentalIncome": 0.00,
-        "otherIncome": 1200.00,
-        "totalDeductions": 0.00
+        "employmentIncome": 65000,
+        "selfEmploymentIncome": 0,
+        "rentalIncome": 0,
+        "otherIncome": 1200,
+        "totalDeductions": 0
       },
       "taxAssessment": {
         "assessmentYear": 2025,
         "taxCode": "M",
-        "totalIncome": 66200.00,
-        "taxableIncome": 66200.00,
-        "taxLiability": 14833.00,
-        "taxPaid": 15000.00,
-        "taxRefundDue": 167.00,
-        "taxOwing": 0.00,
+        "totalIncome": 66200,
+        "taxableIncome": 66200,
+        "taxLiability": 14833,
+        "taxPaid": 15000,
+        "taxRefundDue": 167,
+        "taxOwing": 0,
         "assessmentStatus": "final"
       },
       "gst": {
@@ -31,21 +31,21 @@
       },
       "kiwisaver": {
         "membershipStatus": "active",
-        "contributionRate": 3.0,
-        "employerContributionRate": 3.0,
+        "contributionRate": 3,
+        "employerContributionRate": 3,
         "scheme": "ANZ Default KiwiSaver Scheme",
-        "totalBalance": 18500.00,
+        "totalBalance": 18500,
         "governmentContributionEligible": true,
         "firstHomeBuyerEligible": true
       },
       "workingForFamilies": {
         "eligible": true,
         "numberOfDependantChildren": 2,
-        "incomeThreshold": 42700.00,
-        "familyTaxCredit": 127.00,
-        "inWorkTaxCredit": 72.50,
-        "bestStartPayment": 0.00,
-        "minimumFamilyTaxCredit": 0.00,
+        "incomeThreshold": 42700,
+        "familyTaxCredit": 127,
+        "inWorkTaxCredit": 72.5,
+        "bestStartPayment": 0,
+        "minimumFamilyTaxCredit": 0,
         "paymentFrequency": "weekly"
       }
     },
@@ -55,21 +55,21 @@
       "name": "Bree Kāre",
       "income": {
         "assessmentYear": 2025,
-        "employmentIncome": 42000.00,
-        "selfEmploymentIncome": 8000.00,
-        "rentalIncome": 0.00,
-        "otherIncome": 300.00,
-        "totalDeductions": 1200.00
+        "employmentIncome": 42000,
+        "selfEmploymentIncome": 8000,
+        "rentalIncome": 0,
+        "otherIncome": 300,
+        "totalDeductions": 1200
       },
       "taxAssessment": {
         "assessmentYear": 2025,
         "taxCode": "M",
-        "totalIncome": 50300.00,
-        "taxableIncome": 49100.00,
-        "taxLiability": 7325.00,
-        "taxPaid": 7100.00,
-        "taxRefundDue": 0.00,
-        "taxOwing": 225.00,
+        "totalIncome": 50300,
+        "taxableIncome": 49100,
+        "taxLiability": 7325,
+        "taxPaid": 7100,
+        "taxRefundDue": 0,
+        "taxOwing": 225,
         "assessmentStatus": "provisional"
       },
       "gst": {
@@ -79,19 +79,19 @@
       },
       "kiwisaver": {
         "membershipStatus": "active",
-        "contributionRate": 4.0,
-        "employerContributionRate": 4.0,
+        "contributionRate": 4,
+        "employerContributionRate": 4,
         "scheme": "Simplicity KiwiSaver",
-        "totalBalance": 9200.00,
+        "totalBalance": 9200,
         "governmentContributionEligible": true,
         "firstHomeBuyerEligible": true
       },
       "workingForFamilies": {
         "eligible": false,
         "numberOfDependantChildren": 0,
-        "incomeThreshold": 42700.00,
-        "familyTaxCredit": 0.00,
-        "inWorkTaxCredit": 0.00,
+        "incomeThreshold": 42700,
+        "familyTaxCredit": 0,
+        "inWorkTaxCredit": 0,
         "paymentFrequency": "weekly"
       }
     }

@@ -60,9 +60,13 @@ mod tests {
     use super::*;
 
     fn sample() -> RawTearawhitiCitizen {
-        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/tearawhiti_batch.json")).unwrap();
-                let batch: crate::raw::RawTearawhitiBatch = serde_json::from_slice(&bytes).unwrap();
-                batch.citizens.into_iter().next().unwrap()
+        let bytes = std::fs::read(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/fixtures/tearawhiti_batch.json"
+        ))
+        .unwrap();
+        let batch: crate::raw::RawTearawhitiBatch = serde_json::from_slice(&bytes).unwrap();
+        batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]
@@ -83,10 +87,7 @@ mod tests {
         );
 
         let t = transform_citizen(&sample()).unwrap();
-        assert_eq!(
-            t.engagements.first().unwrap().topic,
-            "Crown engagement hui"
-        );
+        assert_eq!(t.engagements.first().unwrap().topic, "Crown engagement hui");
         assert_eq!(
             t.engagements.first().unwrap().engagement_date.to_string(),
             "2026-04-15"

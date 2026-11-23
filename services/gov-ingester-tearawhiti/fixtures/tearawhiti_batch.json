@@ -4,10 +4,10 @@
   "source": "mock",
   "citizens": [
     {
-      "tearawhiti_id": "TAW-100001",
+      "tearawhitiId": "TAW-100001",
       "did": "did:gov:nz:test-citizen-001",
       "name": "Alex Tane",
-      "treaty_settlements": [
+      "treatySettlements": [
         {
           "iwi": "Ngāti Toa",
           "status": "settled",
@@ -23,10 +23,10 @@
       ]
     },
     {
-      "tearawhiti_id": "TAW-100002",
+      "tearawhitiId": "TAW-100002",
       "did": "did:gov:nz:test-citizen-002",
       "name": "Bree Kare",
-      "treaty_settlements": [],
+      "treatySettlements": [],
       "engagements": []
     }
   ]

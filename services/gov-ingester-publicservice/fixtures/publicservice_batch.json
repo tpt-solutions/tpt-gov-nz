@@ -4,7 +4,7 @@
   "source": "mock",
   "citizens": [
     {
-      "psc_id": "PSC-100001",
+      "pscId": "PSC-100001",
       "did": "did:gov:nz:test-citizen-001",
       "name": "Alex Tane",
       "workforce": [
@@ -14,7 +14,7 @@
           "headcount": 4200
         }
       ],
-      "agency_ratings": [
+      "agencyRatings": [
         {
           "agency": "Department of Internal Affairs",
           "rating": "Good",
@@ -23,11 +23,11 @@
       ]
     },
     {
-      "psc_id": "PSC-100002",
+      "pscId": "PSC-100002",
       "did": "did:gov:nz:test-citizen-002",
       "name": "Bree Kare",
       "workforce": [],
-      "agency_ratings": []
+      "agencyRatings": []
     }
   ]
 }

@@ -24,14 +24,11 @@ pub fn transform_citizen(raw: &RawMoeCitizen) -> Result<TransformedCitizen, Inge
         moe_id: raw.moe_id.clone(),
     };
 
-    let enrolment = match &raw.enrolment {
-        Some(c) => Some(EnrolmentEntity {
-            school: c.school.clone(),
-            year_level: c.year_level.clone(),
-            status: c.status.clone(),
-        }),
-        None => None,
-    };
+    let enrolment = raw.enrolment.as_ref().map(|c| EnrolmentEntity {
+        school: c.school.clone(),
+        year_level: c.year_level,
+        status: c.status.clone(),
+    });
 
     let student_support = raw
         .student_support
@@ -57,9 +54,13 @@ mod tests {
     use super::*;
 
     fn sample() -> RawMoeCitizen {
-        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/moe_batch.json")).unwrap();
-                let batch: crate::raw::RawMoeBatch = serde_json::from_slice(&bytes).unwrap();
-                batch.citizens.into_iter().next().unwrap()
+        let bytes = std::fs::read(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/fixtures/moe_batch.json"
+        ))
+        .unwrap();
+        let batch: crate::raw::RawMoeBatch = serde_json::from_slice(&bytes).unwrap();
+        batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]

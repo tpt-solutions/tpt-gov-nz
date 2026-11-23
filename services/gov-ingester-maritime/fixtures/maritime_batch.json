@@ -4,7 +4,7 @@
   "source": "mock",
   "citizens": [
     {
-      "maritime_id": "MAR-100001",
+      "maritimeId": "MAR-100001",
       "did": "did:gov:nz:test-citizen-001",
       "name": "Alex Tane",
       "vessels": [
@@ -24,7 +24,7 @@
       ]
     },
     {
-      "maritime_id": "MAR-100002",
+      "maritimeId": "MAR-100002",
       "did": "did:gov:nz:test-citizen-002",
       "name": "Bree Kare",
       "vessels": [],

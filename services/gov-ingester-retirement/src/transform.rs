@@ -26,8 +26,8 @@ pub fn transform_citizen(raw: &RawRetirementCitizen) -> Result<TransformedCitize
 
     let retirement_plan = match &raw.retirement_plan {
         Some(c) => Some(RetirementPlanEntity {
-            has_plan: c.has_plan.clone(),
-            retirement_age: c.retirement_age.clone(),
+            has_plan: c.has_plan,
+            retirement_age: c.retirement_age,
             last_review: parse_date(&c.last_review, "last_review")?,
         }),
         None => None,
@@ -57,9 +57,13 @@ mod tests {
     use super::*;
 
     fn sample() -> RawRetirementCitizen {
-        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/retirement_batch.json")).unwrap();
-                let batch: crate::raw::RawRetirementBatch = serde_json::from_slice(&bytes).unwrap();
-                batch.citizens.into_iter().next().unwrap()
+        let bytes = std::fs::read(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/fixtures/retirement_batch.json"
+        ))
+        .unwrap();
+        let batch: crate::raw::RawRetirementBatch = serde_json::from_slice(&bytes).unwrap();
+        batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]
@@ -68,7 +72,7 @@ mod tests {
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.retirement_id, "RET-100001");
         let t = transform_citizen(&sample()).unwrap();
-        assert_eq!(t.retirement_plan.as_ref().unwrap().has_plan, true);
+        assert!(t.retirement_plan.as_ref().unwrap().has_plan);
         assert_eq!(t.retirement_plan.as_ref().unwrap().retirement_age, 65);
         assert_eq!(
             t.retirement_plan.as_ref().unwrap().last_review.to_string(),

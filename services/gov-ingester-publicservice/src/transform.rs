@@ -6,11 +6,6 @@ use crate::{
     raw::RawPublicserviceCitizen,
 };
 
-fn parse_date(s: &str, field: &str) -> Result<chrono::NaiveDate, IngestError> {
-    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d")
-        .map_err(|e| IngestError::Transform(format!("invalid {field} date '{s}': {e}")))
-}
-
 pub fn transform_citizen(raw: &RawPublicserviceCitizen) -> Result<TransformedCitizen, IngestError> {
     if raw.did.trim().is_empty() {
         return Err(IngestError::Transform(format!(
@@ -29,9 +24,9 @@ pub fn transform_citizen(raw: &RawPublicserviceCitizen) -> Result<TransformedCit
         .iter()
         .map(|c| {
             Ok(WorkforceEntity {
-                report_year: c.report_year.clone(),
+                report_year: c.report_year,
                 agency: c.agency.clone(),
-                headcount: c.headcount.clone(),
+                headcount: c.headcount,
             })
         })
         .collect::<Result<Vec<_>, IngestError>>()?;
@@ -43,7 +38,7 @@ pub fn transform_citizen(raw: &RawPublicserviceCitizen) -> Result<TransformedCit
             Ok(AgencyRatingsEntity {
                 agency: c.agency.clone(),
                 rating: c.rating.clone(),
-                rating_year: c.rating_year.clone(),
+                rating_year: c.rating_year,
             })
         })
         .collect::<Result<Vec<_>, IngestError>>()?;
@@ -60,9 +55,13 @@ mod tests {
     use super::*;
 
     fn sample() -> RawPublicserviceCitizen {
-        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/publicservice_batch.json")).unwrap();
-                let batch: crate::raw::RawPublicserviceBatch = serde_json::from_slice(&bytes).unwrap();
-                batch.citizens.into_iter().next().unwrap()
+        let bytes = std::fs::read(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/fixtures/publicservice_batch.json"
+        ))
+        .unwrap();
+        let batch: crate::raw::RawPublicserviceBatch = serde_json::from_slice(&bytes).unwrap();
+        batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]

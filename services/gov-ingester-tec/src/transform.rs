@@ -6,11 +6,6 @@ use crate::{
     raw::RawTecCitizen,
 };
 
-fn parse_date(s: &str, field: &str) -> Result<chrono::NaiveDate, IngestError> {
-    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d")
-        .map_err(|e| IngestError::Transform(format!("invalid {field} date '{s}': {e}")))
-}
-
 pub fn transform_citizen(raw: &RawTecCitizen) -> Result<TransformedCitizen, IngestError> {
     if raw.did.trim().is_empty() {
         return Err(IngestError::Transform(format!(
@@ -30,8 +25,8 @@ pub fn transform_citizen(raw: &RawTecCitizen) -> Result<TransformedCitizen, Inge
         .map(|c| {
             Ok(FundingEntity {
                 provider: c.provider.clone(),
-                amount: c.amount.clone(),
-                year: c.year.clone(),
+                amount: c.amount,
+                year: c.year,
             })
         })
         .collect::<Result<Vec<_>, IngestError>>()?;
@@ -60,9 +55,13 @@ mod tests {
     use super::*;
 
     fn sample() -> RawTecCitizen {
-        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/tec_batch.json")).unwrap();
-                let batch: crate::raw::RawTecBatch = serde_json::from_slice(&bytes).unwrap();
-                batch.citizens.into_iter().next().unwrap()
+        let bytes = std::fs::read(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/fixtures/tec_batch.json"
+        ))
+        .unwrap();
+        let batch: crate::raw::RawTecBatch = serde_json::from_slice(&bytes).unwrap();
+        batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]

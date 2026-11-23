@@ -18,7 +18,7 @@ async fn fixture_parses_and_transforms() {
     assert_eq!(first.retirement_id, "RET-100001");
     let t = transform_citizen(&batch.citizens[0]).unwrap();
     assert!(t.retirement_plan.is_some());
-    assert_eq!(t.retirement_plan.as_ref().unwrap().has_plan, true);
+    assert!(t.retirement_plan.as_ref().unwrap().has_plan);
 
     let t = transform_citizen(&batch.citizens[0]).unwrap();
     assert_eq!(t.guidance.len(), 1);
@@ -29,7 +29,7 @@ async fn fixture_parses_and_transforms() {
 fn missing_did_is_rejected() {
     let raw: RawRetirementBatch = serde_json::from_value(serde_json::json!({
         "batchId": "B", "generatedAt": "x", "source": "mock",
-        "citizens": [{ "retirement_id": "RET-100001", "did": "", "retirement_plan": null, "guidance": [] }]
+        "citizens": [{ "retirementId": "RET-100001", "did": "", "retirementPlan": null, "guidance": [] }]
     }))
     .unwrap();
     assert!(transform_citizen(&raw.citizens[0]).is_err());

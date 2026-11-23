@@ -4,7 +4,7 @@
   "source": "mock",
   "citizens": [
     {
-      "nzsis_id": "NZSIS-100001",
+      "nzsisId": "NZSIS-100001",
       "did": "did:gov:nz:test-citizen-001",
       "name": "Alex Tane",
       "mandates": [
@@ -25,7 +25,7 @@
       ]
     },
     {
-      "nzsis_id": "NZSIS-100002",
+      "nzsisId": "NZSIS-100002",
       "did": "did:gov:nz:test-citizen-002",
       "name": "Bree Kare",
       "mandates": [],

@@ -4,7 +4,7 @@
   "source": "mock",
   "citizens": [
     {
-      "women_id": "WOM-100001",
+      "womenId": "WOM-100001",
       "did": "did:gov:nz:test-citizen-001",
       "name": "Alex Tane",
       "programmes": [
@@ -23,7 +23,7 @@
       ]
     },
     {
-      "women_id": "WOM-100002",
+      "womenId": "WOM-100002",
       "did": "did:gov:nz:test-citizen-002",
       "name": "Bree Kare",
       "programmes": [],

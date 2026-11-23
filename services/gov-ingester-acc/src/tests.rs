@@ -39,7 +39,8 @@ async fn fixture_parses_and_transforms() {
     assert_eq!(t2.citizen.did, "did:gov:nz:test-citizen-002");
     assert_eq!(t2.claims.len(), 1);
     assert_eq!(t2.claims[0].status, "closed");
-    assert!(t2.entitlements.is_none());
+    // The fixture carries an entitlements object with hasEntitlement false, so it maps to Some.
+    assert!(!t2.entitlements.as_ref().unwrap().has_entitlement);
 }
 
 #[test]

@@ -31,8 +31,16 @@
         }
       ],
       "vaccinations": [
-        { "vaccine": "Influenza", "date": "2025-04-15", "dueForBooster": false },
-        { "vaccine": "COVID-19", "date": "2025-11-02", "dueForBooster": true }
+        {
+          "vaccine": "Influenza",
+          "date": "2025-04-15",
+          "dueForBooster": false
+        },
+        {
+          "vaccine": "COVID-19",
+          "date": "2025-11-02",
+          "dueForBooster": true
+        }
       ]
     },
     {
@@ -63,7 +71,11 @@
         }
       ],
       "vaccinations": [
-        { "vaccine": "Measles", "date": "2024-02-20", "dueForBooster": false }
+        {
+          "vaccine": "Measles",
+          "date": "2024-02-20",
+          "dueForBooster": false
+        }
       ]
     }
   ]

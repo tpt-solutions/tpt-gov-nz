@@ -31,7 +31,7 @@ pub fn transform_citizen(raw: &RawWomenCitizen) -> Result<TransformedCitizen, In
             Ok(ProgrammesEntity {
                 programme_name: c.programme_name.clone(),
                 status: c.status.clone(),
-                year: c.year.clone(),
+                year: c.year,
             })
         })
         .collect::<Result<Vec<_>, IngestError>>()?;
@@ -60,9 +60,13 @@ mod tests {
     use super::*;
 
     fn sample() -> RawWomenCitizen {
-        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/women_batch.json")).unwrap();
-                let batch: crate::raw::RawWomenBatch = serde_json::from_slice(&bytes).unwrap();
-                batch.citizens.into_iter().next().unwrap()
+        let bytes = std::fs::read(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/fixtures/women_batch.json"
+        ))
+        .unwrap();
+        let batch: crate::raw::RawWomenBatch = serde_json::from_slice(&bytes).unwrap();
+        batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]

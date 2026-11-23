@@ -6,11 +6,6 @@ use crate::{
     raw::RawMotCitizen,
 };
 
-fn parse_date(s: &str, field: &str) -> Result<chrono::NaiveDate, IngestError> {
-    chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d")
-        .map_err(|e| IngestError::Transform(format!("invalid {field} date '{s}': {e}")))
-}
-
 pub fn transform_citizen(raw: &RawMotCitizen) -> Result<TransformedCitizen, IngestError> {
     if raw.did.trim().is_empty() {
         return Err(IngestError::Transform(format!(
@@ -30,7 +25,7 @@ pub fn transform_citizen(raw: &RawMotCitizen) -> Result<TransformedCitizen, Inge
         .map(|c| {
             Ok(StrategiesEntity {
                 title: c.title.clone(),
-                year: c.year.clone(),
+                year: c.year,
                 status: c.status.clone(),
             })
         })
@@ -42,7 +37,7 @@ pub fn transform_citizen(raw: &RawMotCitizen) -> Result<TransformedCitizen, Inge
         .map(|c| {
             Ok(ProgrammesEntity {
                 name: c.name.clone(),
-                budget: c.budget.clone(),
+                budget: c.budget,
                 status: c.status.clone(),
             })
         })
@@ -60,9 +55,13 @@ mod tests {
     use super::*;
 
     fn sample() -> RawMotCitizen {
-        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/mot_batch.json")).unwrap();
-                let batch: crate::raw::RawMotBatch = serde_json::from_slice(&bytes).unwrap();
-                batch.citizens.into_iter().next().unwrap()
+        let bytes = std::fs::read(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/fixtures/mot_batch.json"
+        ))
+        .unwrap();
+        let batch: crate::raw::RawMotBatch = serde_json::from_slice(&bytes).unwrap();
+        batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]
@@ -76,10 +75,7 @@ mod tests {
         assert_eq!(t.strategies.first().unwrap().status, "active");
 
         let t = transform_citizen(&sample()).unwrap();
-        assert_eq!(
-            t.programmes.first().unwrap().name,
-            "Road maintenance boost"
-        );
+        assert_eq!(t.programmes.first().unwrap().name, "Road maintenance boost");
         assert_eq!(t.programmes.first().unwrap().budget, 800000000.0);
         assert_eq!(t.programmes.first().unwrap().status, "funded");
     }
