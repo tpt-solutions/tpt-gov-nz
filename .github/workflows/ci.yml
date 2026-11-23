@@ -46,20 +46,51 @@ jobs:
       - name: Test policies
         run: opa test policies examples
 
+  supply-chain:
+    name: Supply chain (cargo-deny)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Advisories (RustSec), licences, banned crates and allowed sources. Config: deny.toml.
+      - uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          command: check advisories licenses bans sources
+
   secrets-scan:
-    name: Secret scan
+    name: Secret scan (gitleaks CLI, MIT)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # The gitleaks CLI runs from its official image, so no licensed GitHub Action is needed.
+      # Pinned version: bump deliberately.
+      - name: Scan history and working tree
+        run: |
+          docker run --rm -v "${GITHUB_WORKSPACE}:/repo" \
+            ghcr.io/gitleaks/gitleaks:v8.18.4 \
+            detect --source=/repo --redact --verbose --exit-code=1
 
   rust:
-    name: Rust (build, unit tests)
+    name: Rust (build, unit and database tests)
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      # Compile-time query macros use the committed .sqlx caches (no database needed to build).
+      SQLX_OFFLINE: "true"
+      # #[sqlx::test] cases create their own databases on this server at run time.
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -72,6 +103,6 @@ jobs:
         run: cargo clippy --workspace --all-targets -- -D warnings
       - name: Build
         run: cargo build --workspace
-      - name: Unit tests
-        # Library unit tests only; integration tests require a database service.
+      - name: Unit and database tests
+        # Library tests, including the #[sqlx::test] cases that run against the Postgres service.
         run: cargo test --workspace --lib

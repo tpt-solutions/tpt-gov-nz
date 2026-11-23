@@ -1,0 +1,8 @@
+# Reviewed false positives for gitleaks. Each line is a finding fingerprint (commit:file:rule:line).
+# Do not add real credentials here: rotate them instead.
+
+# Test-only signing secret constant in the staff portal's Edge JWT test.
+6aa0fa429710b4311f596fddd7d47f545f5be413:apps/portal-staff/app/lib/jwt-edge.test.ts:generic-api-key:5
+
+# did:key string used as an invalid input in a negative schema test.
+0956c9f274268889afcc1d1751798f0eb3b96c43:packages/@tpt/gov-schema/src/__tests__/identity.test.ts:generic-api-key:17

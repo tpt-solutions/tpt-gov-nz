@@ -285,16 +285,28 @@ pub async fn resolve_by_did(pool: &PgPool, did: &str) -> sqlx::Result<Option<Cit
     .await
 }
 
-pub async fn log_action(
-    pool: &PgPool,
-    citizen_id: Uuid,
-    action_type: &str,
-    parameters: serde_json::Value,
-    performed_by: &str,
-    ai_level: Option<&str>,
-    result_success: bool,
-    result_message: Option<&str>,
-) -> sqlx::Result<()> {
+/// One row for \`actions_log\`.
+#[derive(Debug)]
+pub struct ActionLogEntry<'a> {
+    pub citizen_id: Uuid,
+    pub action_type: &'a str,
+    pub parameters: serde_json::Value,
+    pub performed_by: &'a str,
+    pub ai_level: Option<&'a str>,
+    pub result_success: bool,
+    pub result_message: Option<&'a str>,
+}
+
+pub async fn log_action(pool: &PgPool, entry: ActionLogEntry<'_>) -> sqlx::Result<()> {
+    let ActionLogEntry {
+        citizen_id,
+        action_type,
+        parameters,
+        performed_by,
+        ai_level,
+        result_success,
+        result_message,
+    } = entry;
     sqlx::query!(
         r#"INSERT INTO actions_log (citizen_id, action_type, parameters, performed_by, ai_level, result_success, result_message)
            VALUES ($1, $2, $3, $4, $5, $6, $7)"#,
@@ -544,13 +556,15 @@ ${actionMatch}
 
     db::log_action(
         pool,
-        citizen_id,
-        action_type,
-        parameters.clone(),
-        performed_by,
-        ai_level,
-        success,
-        message.as_deref(),
+        db::ActionLogEntry {
+            citizen_id,
+            action_type,
+            parameters: parameters.clone(),
+            performed_by,
+            ai_level,
+            result_success: success,
+            result_message: message.as_deref(),
+        },
     )
     .await?;
 
@@ -668,7 +682,7 @@ mod tests {
             requesting,
             "${id}",
             scopes,
-            3600,
+            ttl,
         )
     }
 
@@ -723,7 +737,9 @@ mod tests {
   W(`${svc}/src/opa.rs`, `//! Optional OPA sidecar client for the ${d.name} node.
 
 use crate::consent::ConsentInput;
+#[cfg(feature = "opa")]
 use gov_identity_core::DataGrantCredential;
+#[cfg(feature = "opa")]
 use serde::Serialize;
 
 #[cfg(feature = "opa")]
