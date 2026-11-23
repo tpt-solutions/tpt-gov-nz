@@ -18,7 +18,7 @@
     "doctor": "node scripts/doctor.mjs"
   },
   "devDependencies": {
-    "turbo": "^2.5.4",
+    "turbo": "^2.11.13",
     "typescript": "^5.8.3",
     "prettier": "^3.5.3",
     "@types/node": "^22.15.29"
