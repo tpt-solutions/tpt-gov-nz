@@ -1,4 +1,6 @@
+import { secureCookies } from "./config";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { STAFF_CONFIG } from "./config";
 import { verifyJwt, signJwt } from "./jwt";
 
@@ -30,6 +32,13 @@ export async function getStaffSession(): Promise<StaffSessionClaims | null> {
   };
 }
 
+/** Guard for server actions that write data: redirects to login when there is no valid session. */
+export async function requireStaffSession(): Promise<StaffSessionClaims> {
+  const session = await getStaffSession();
+  if (!session) redirect("/login");
+  return session;
+}
+
 /** Build a signed staff session JWT string (does not set the cookie). */
 export function createStaffSessionToken(claims: Omit<StaffSessionClaims, "issuedAt" | "expiresAt">): string {
   return signJwt(
@@ -50,7 +59,7 @@ export async function setStaffSessionCookie(token: string): Promise<void> {
   store.set(STAFF_CONFIG.sessionCookieName, token, {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: secureCookies(),
     path: "/",
     maxAge: STAFF_CONFIG.sessionTtlSeconds,
   });

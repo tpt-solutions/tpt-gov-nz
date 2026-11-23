@@ -1,3 +1,4 @@
+import { secureCookies } from "./config";
 import { cookies } from "next/headers";
 import { PORTAL_CONFIG } from "./config";
 import { verifyJwt, signJwt } from "./jwt";
@@ -57,7 +58,7 @@ export async function setSessionCookie(token: string): Promise<void> {
   store.set(PORTAL_CONFIG.sessionCookieName, token, {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: secureCookies(),
     path: "/",
     maxAge: PORTAL_CONFIG.sessionTtlSeconds,
   });

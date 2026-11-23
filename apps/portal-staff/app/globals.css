@@ -1,0 +1,15 @@
+/* Skip link: hidden until focused, so keyboard users can jump past the header. */
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 0;
+  background: #1f3a5f;
+  color: #ffffff;
+  padding: 0.5rem 1rem;
+  z-index: 1000;
+  border-radius: 0 0 4px 0;
+}
+
+.skip-link:focus {
+  left: 0;
+}

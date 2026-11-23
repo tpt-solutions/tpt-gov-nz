@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import "./globals.css";
 import Link from "next/link";
 import { getStaffSession } from "./lib/session";
 import { logoutStaff } from "./lib/auth-actions";
@@ -15,6 +16,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en-NZ">
       <body>
+        <a href="#main" className="skip-link">Skip to main content</a>
         <header
           style={{
             borderBottom: "2px solid #ccc",
@@ -32,7 +34,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               Read-only case worker view
             </span>
           </div>
-          <nav style={{ display: "flex", gap: "1rem", alignItems: "center", fontSize: "0.9rem" }}>
+          <nav aria-label="Main" style={{ display: "flex", gap: "1rem", alignItems: "center", fontSize: "0.9rem" }}>
             <Link href="/citizens">Citizen search</Link>
             <Link href="/referrals">Referrals</Link>
             {session ? (
@@ -57,7 +59,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             Demo mode — data is fictional. Consent is pre-granted for the demo citizen.
           </div>
         )}
-        {children}
+        <div id="main" tabIndex={-1}>
+          {children}
+        </div>
       </body>
     </html>
   );

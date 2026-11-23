@@ -1,3 +1,4 @@
+import { secureCookies } from "../../lib/config";
 import { NextRequest, NextResponse } from "next/server";
 import {
   buildAuthnRequest,
@@ -21,7 +22,7 @@ export async function GET(req: NextRequest) {
   res.cookies.set(REALME_STATE_COOKIE, state, {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: secureCookies(),
     path: "/login/realme",
     maxAge: cfg.requestTtlSeconds,
   });

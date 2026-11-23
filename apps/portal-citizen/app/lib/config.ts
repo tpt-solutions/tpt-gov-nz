@@ -508,3 +508,11 @@ export const DEPARTMENTS: DeptMeta[] = [
     href: "/dept/nzsis",
   },
 ];
+
+/**
+ * Session cookies are `Secure` unless explicitly disabled. Set
+ * `TPT__GOV__COOKIE_SECURE=false` only for plain-HTTP testing on a non-localhost host.
+ */
+export function secureCookies(): boolean {
+  return process.env.TPT__GOV__COOKIE_SECURE !== "false";
+}
