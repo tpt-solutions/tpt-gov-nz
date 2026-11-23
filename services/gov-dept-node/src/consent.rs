@@ -172,4 +172,31 @@ mod tests {
         let input = input("winz", "did:gov:nz:test-citizen-001", &scopes, &grants);
         assert!(!evaluate_allow(&input, "ird"));
     }
+
+    #[test]
+    fn grant_signed_by_another_issuer_is_rejected() {
+        // A forged grant: the attacker signs with their own key, and the node
+        // verifies against the identity server's pinned public key.
+        let real = issuer();
+        let attacker = issuer();
+        let forged = grant(&attacker, "winz", "ird", vec!["ird:income".into()], 3600);
+        let scopes = vec!["ird:income".into()];
+        let grants = [forged];
+        let input = input("winz", "did:gov:nz:test-citizen-001", &scopes, &grants);
+        // The scope check alone would pass; only the signature check rejects it.
+        assert!(evaluate_allow(&input, "ird"));
+        assert!(verify_access(&input, "ird", Some(&real.verifying_key())).is_err());
+    }
+
+    #[test]
+    fn grant_tampered_after_signing_is_rejected() {
+        // The attacker widens a valid grant's scopes after the identity server signed it.
+        let i = issuer();
+        let mut g = grant(&i, "winz", "ird", vec!["ird:income".into()], 3600);
+        g.scopes.push("ird:kiwisaver".into());
+        let scopes = vec!["ird:kiwisaver".into()];
+        let grants = [g];
+        let input = input("winz", "did:gov:nz:test-citizen-001", &scopes, &grants);
+        assert!(verify_access(&input, "ird", Some(&i.verifying_key())).is_err());
+    }
 }

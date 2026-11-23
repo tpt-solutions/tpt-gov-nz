@@ -76,6 +76,9 @@ impl VerifiableCredential {
 }
 
 /// Canonical JSON fields used for signing a DataGrantCredential.
+///
+/// `holder_public_key` is skipped when absent, so grants issued before holder binding
+/// existed hash exactly as they always did and keep verifying.
 #[derive(Serialize)]
 struct DgcSignPayload<'a> {
     id: &'a Uuid,
@@ -85,6 +88,8 @@ struct DgcSignPayload<'a> {
     scopes: &'a [String],
     issued_at: i64,
     expires_at: i64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    holder_public_key: Option<&'a str>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -97,6 +102,10 @@ pub struct DataGrantCredential {
     pub issued_at: i64,
     pub expires_at: i64,
     pub signature: String,
+    /// Base64 Ed25519 public key of the holder, when the grant is bound to one. A holder
+    /// can delegate a narrower capability with it (see `capability.rs`). Absent on v1 grants.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub holder_public_key: Option<String>,
 }
 
 impl DataGrantCredential {
@@ -116,6 +125,7 @@ impl DataGrantCredential {
             scopes: &self.scopes,
             issued_at: self.issued_at,
             expires_at: self.expires_at,
+            holder_public_key: self.holder_public_key.as_deref(),
         };
         let json =
             serde_json::to_vec(&payload).expect("serialisation of sign payload must not fail");
@@ -228,6 +238,46 @@ impl CredentialIssuer {
         scopes: Vec<String>,
         ttl_secs: i64,
     ) -> DataGrantCredential {
+        self.issue_grant_with_holder(
+            citizen_did,
+            requesting_dept_id,
+            providing_dept_id,
+            scopes,
+            ttl_secs,
+            None,
+        )
+    }
+
+    /// Issue a DataGrantCredential bound to a holder's Ed25519 public key (base64). The
+    /// holder can then delegate attenuated capabilities with that key.
+    pub fn issue_holder_bound_data_grant(
+        &self,
+        citizen_did: GovDid,
+        requesting_dept_id: impl Into<String>,
+        providing_dept_id: impl Into<String>,
+        scopes: Vec<String>,
+        ttl_secs: i64,
+        holder_public_key: String,
+    ) -> DataGrantCredential {
+        self.issue_grant_with_holder(
+            citizen_did,
+            requesting_dept_id,
+            providing_dept_id,
+            scopes,
+            ttl_secs,
+            Some(holder_public_key),
+        )
+    }
+
+    fn issue_grant_with_holder(
+        &self,
+        citizen_did: GovDid,
+        requesting_dept_id: impl Into<String>,
+        providing_dept_id: impl Into<String>,
+        scopes: Vec<String>,
+        ttl_secs: i64,
+        holder_public_key: Option<String>,
+    ) -> DataGrantCredential {
         let now = chrono::Utc::now().timestamp();
         let mut dgc = DataGrantCredential {
             id: Uuid::new_v4(),
@@ -238,6 +288,7 @@ impl CredentialIssuer {
             issued_at: now,
             expires_at: now + ttl_secs,
             signature: String::new(),
+            holder_public_key,
         };
         dgc.signature = self.sign_hash(&dgc.payload_hash());
         dgc
