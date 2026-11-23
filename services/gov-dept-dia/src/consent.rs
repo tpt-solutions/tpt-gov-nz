@@ -68,7 +68,6 @@ pub fn verify_access(
     Ok(())
 }
 
-
 /// Enforce cross-department grant checks: verify each grant's Ed25519 signature
 /// against the identity server's issuer key (scope/expiry/party checks included),
 /// then confirm none of the presented grants has been revoked. Fails closed.
