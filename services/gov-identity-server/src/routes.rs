@@ -367,8 +367,9 @@ pub async fn register_did_with_proof(
 ) -> ApiResult<(StatusCode, Json<RegisterDidWithProofResponse>)> {
     // Fetch and validate challenge.
     #[derive(sqlx::FromRow)]
+    #[allow(dead_code)]
     struct ChallengeRow {
-        _id: Uuid,
+        id: Uuid,
         did: String,
         public_key_b64: String,
         challenge: String,

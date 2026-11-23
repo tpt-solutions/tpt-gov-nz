@@ -19,4 +19,4 @@ mod verify;
 
 pub use issuer::{decode_public_key, issuer_key_from_env};
 pub use revocation::RevocationClient;
-pub use verify::verify_grant;
+pub use verify::{verify_grant, verify_grants};
