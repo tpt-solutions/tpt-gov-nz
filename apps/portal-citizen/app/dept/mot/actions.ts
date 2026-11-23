@@ -5,6 +5,7 @@ import { askWithContext } from "../../ai/client";
 import { fetchDeptData } from "../../lib/data-access";
 import { getCitizenDid } from "../../lib/session";
 import { produceMotAiContext } from "./mot-ai";
+import { PORTAL_CONFIG } from "../../lib/config";
 
 const MOT_SERVICE_URL = process.env.MOT_SERVICE_URL ?? "http://localhost:8135";
 
@@ -16,7 +17,7 @@ export async function submitMotAction(
   type: string,
   parameters: Record<string, unknown>
 ): Promise<{ success: boolean; message?: string }> {
-  if (process.env.NEXT_PUBLIC_DEMO_MODE === "true") {
+  if (PORTAL_CONFIG.demoMode) {
     return { success: true, message: "Demo mode: action recorded locally (no live service)." };
   }
 

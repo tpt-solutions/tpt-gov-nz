@@ -9,6 +9,7 @@ import {
 } from "./session";
 import { randomToken } from "./jwt";
 import { clearFailures, isLocked, recordFailure } from "./login-limiter";
+import { STAFF_CONFIG } from "./config";
 
 /** Compare secrets in constant time (hashing first so lengths never leak). */
 function passwordMatches(given: string, expected: string): boolean {
@@ -23,7 +24,7 @@ function passwordMatches(given: string, expected: string): boolean {
  * is on; enforced here on the server, not just by hiding the button.
  */
 export async function loginStaffDemo() {
-  if (process.env.NEXT_PUBLIC_DEMO_MODE !== "true") redirect("/login");
+  if (!STAFF_CONFIG.demoMode) redirect("/login");
   const token = createStaffSessionToken({
     staffId: "staff-demo",
     displayName: "Demo Case Worker",

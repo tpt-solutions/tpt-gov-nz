@@ -5,6 +5,7 @@ import { askWithContext } from "../../ai/client";
 import { fetchDeptData } from "../../lib/data-access";
 import { getCitizenDid } from "../../lib/session";
 import { produceWorksafeAiContext } from "./worksafe-ai";
+import { PORTAL_CONFIG } from "../../lib/config";
 
 const WORKSAFE_SERVICE_URL = process.env.WORKSAFE_SERVICE_URL ?? "http://localhost:8131";
 
@@ -16,7 +17,7 @@ export async function submitWorksafeAction(
   type: string,
   parameters: Record<string, unknown>
 ): Promise<{ success: boolean; message?: string }> {
-  if (process.env.NEXT_PUBLIC_DEMO_MODE === "true") {
+  if (PORTAL_CONFIG.demoMode) {
     return { success: true, message: "Demo mode: action recorded locally (no live service)." };
   }
 
