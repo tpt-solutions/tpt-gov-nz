@@ -1,0 +1,11 @@
+[package]
+name = "gov-test-support"
+description = "Test-only helpers: one shared identity issuer and a mock grant-status server for department tests"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+gov-identity-core = { path = "../gov-identity-core" }
+serde_json = { workspace = true }
