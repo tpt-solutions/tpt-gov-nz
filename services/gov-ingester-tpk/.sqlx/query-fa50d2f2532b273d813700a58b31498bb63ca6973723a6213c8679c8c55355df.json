@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO tpk_funding (citizen_id, grant_id, amount, purpose, status)\n           VALUES ($1, $2, $3, $4, $5)\n           ON CONFLICT (citizen_id, grant_id) DO UPDATE SET\n              amount = EXCLUDED.amount,\n              purpose = EXCLUDED.purpose,\n              status = EXCLUDED.status\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Int4",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "fa50d2f2532b273d813700a58b31498bb63ca6973723a6213c8679c8c55355df"
+}

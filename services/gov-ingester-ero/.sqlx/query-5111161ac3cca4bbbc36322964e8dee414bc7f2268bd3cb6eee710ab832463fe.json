@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO ero_reports (citizen_id, title, published)\n           VALUES ($1, $2, $3)\n           ON CONFLICT (citizen_id, title) DO UPDATE SET\n              title = EXCLUDED.title, published = EXCLUDED.published\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Date"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "5111161ac3cca4bbbc36322964e8dee414bc7f2268bd3cb6eee710ab832463fe"
+}

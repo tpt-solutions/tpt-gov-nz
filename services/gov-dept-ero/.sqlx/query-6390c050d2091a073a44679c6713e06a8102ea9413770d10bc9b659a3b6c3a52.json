@@ -1,0 +1,46 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, school, rating, review_date, next_review FROM ero_reviews WHERE citizen_id = $1 ORDER BY created_at DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "school",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "rating",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "review_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 4,
+        "name": "next_review",
+        "type_info": "Date"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "6390c050d2091a073a44679c6713e06a8102ea9413770d10bc9b659a3b6c3a52"
+}

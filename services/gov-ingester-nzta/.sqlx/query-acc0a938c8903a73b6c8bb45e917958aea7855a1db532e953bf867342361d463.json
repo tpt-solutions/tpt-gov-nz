@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO citizens (did, driver_licence_number)\n           VALUES ($1, $2)\n           ON CONFLICT (did) DO UPDATE SET driver_licence_number = EXCLUDED.driver_licence_number\n           RETURNING id, (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      null
+    ]
+  },
+  "hash": "acc0a938c8903a73b6c8bb45e917958aea7855a1db532e953bf867342361d463"
+}

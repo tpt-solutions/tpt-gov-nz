@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, property, grade, last_inspection FROM fenz_fire_safety WHERE citizen_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "property",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "grade",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "last_inspection",
+        "type_info": "Date"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "cfdbaf95f9c1bd9f1dcb48bd42d1fd64ed53d248b676ac9ba98b4ec87d5e80e2"
+}

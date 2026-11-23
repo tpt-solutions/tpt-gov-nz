@@ -1,0 +1,27 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO acc_rehabilitation (citizen_id, plan_id, description, status, provider, next_review)\n           VALUES ($1, $2, $3, $4, $5, $6)\n           ON CONFLICT (citizen_id, plan_id) DO UPDATE SET\n              description = EXCLUDED.description,\n              status = EXCLUDED.status,\n              provider = EXCLUDED.provider,\n              next_review = EXCLUDED.next_review\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Date"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "a03b2e88ccf33970a52a826b1e780454e95d8302accf36b9e2d4908a0ee5c239"
+}

@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO acc_entitlements (citizen_id, has_entitlement, type, weekly_amount, remaining_weeks)\n           VALUES ($1, $2, $3, $4, $5)\n           ON CONFLICT (citizen_id) DO UPDATE SET\n              has_entitlement = EXCLUDED.has_entitlement,\n              type = EXCLUDED.type,\n              weekly_amount = EXCLUDED.weekly_amount,\n              remaining_weeks = EXCLUDED.remaining_weeks\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Bool",
+        "Text",
+        "Float8",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "4458c361935299668fe435800277191099160b579c4dc5a70ac4072588fdfc80"
+}

@@ -60,7 +60,9 @@ mod tests {
     use super::*;
 
     fn sample() -> RawPacificCitizen {
-        serde_json::from_value(serde_json::json!([object Object])).unwrap()
+        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/pacific_batch.json")).unwrap();
+                let batch: crate::raw::RawPacificBatch = serde_json::from_slice(&bytes).unwrap();
+                batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]
@@ -68,21 +70,21 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.pacific_id, "PAC-100001");
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        let t = transform_citizen(&sample()).unwrap();
         assert_eq!(
-            t.programmes.as_ref().unwrap().programme_name,
+            t.programmes.first().unwrap().programme_name,
             "Tokelau Language Week"
         );
-        assert_eq!(t.programmes.as_ref().unwrap().status, "enrolled");
-        assert_eq!(t.programmes.as_ref().unwrap().year, 2026);
+        assert_eq!(t.programmes.first().unwrap().status, "enrolled");
+        assert_eq!(t.programmes.first().unwrap().year, 2026);
 
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        let t = transform_citizen(&sample()).unwrap();
         assert_eq!(
-            t.language_services.as_ref().unwrap().service,
+            t.language_services.first().unwrap().service,
             "Gagana Samoa classes"
         );
-        assert_eq!(t.language_services.as_ref().unwrap().region, "Auckland");
-        assert_eq!(t.language_services.as_ref().unwrap().status, "available");
+        assert_eq!(t.language_services.first().unwrap().region, "Auckland");
+        assert_eq!(t.language_services.first().unwrap().status, "available");
     }
 
     #[test]

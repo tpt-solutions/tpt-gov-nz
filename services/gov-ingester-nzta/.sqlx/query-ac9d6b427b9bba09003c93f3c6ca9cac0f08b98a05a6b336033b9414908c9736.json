@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO vehicles (citizen_id, registration, make, model, year, fuel_type, registration_expiry)\n           VALUES ($1, $2, $3, $4, $5, $6, $7)\n           ON CONFLICT (citizen_id, registration) DO UPDATE SET\n              make = EXCLUDED.make,\n              model = EXCLUDED.model,\n              year = EXCLUDED.year,\n              fuel_type = EXCLUDED.fuel_type,\n              registration_expiry = EXCLUDED.registration_expiry\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Text",
+        "Int4",
+        "Text",
+        "Date"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "ac9d6b427b9bba09003c93f3c6ca9cac0f08b98a05a6b336033b9414908c9736"
+}

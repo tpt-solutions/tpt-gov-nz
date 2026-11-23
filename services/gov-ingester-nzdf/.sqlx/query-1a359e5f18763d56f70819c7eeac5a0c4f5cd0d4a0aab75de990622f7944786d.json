@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO nzdf_service_records (citizen_id, service_no, branch, status)\n           VALUES ($1, $2, $3, $4)\n           ON CONFLICT (citizen_id, service_no) DO UPDATE SET\n              service_no = EXCLUDED.service_no, branch = EXCLUDED.branch, status = EXCLUDED.status\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "1a359e5f18763d56f70819c7eeac5a0c4f5cd0d4a0aab75de990622f7944786d"
+}

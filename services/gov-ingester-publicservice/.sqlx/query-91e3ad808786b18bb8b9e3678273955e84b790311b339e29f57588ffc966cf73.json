@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO publicservice_agency_ratings (citizen_id, agency, rating, rating_year)\n           VALUES ($1, $2, $3, $4)\n           ON CONFLICT (citizen_id, agency) DO UPDATE SET\n              agency = EXCLUDED.agency, rating = EXCLUDED.rating, rating_year = EXCLUDED.rating_year\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "91e3ad808786b18bb8b9e3678273955e84b790311b339e29f57588ffc966cf73"
+}

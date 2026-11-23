@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO mfe_emissions (citizen_id, report_year, sector, tonnes_co2e)\n           VALUES ($1, $2, $3, $4)\n           ON CONFLICT (citizen_id, report_year) DO UPDATE SET\n              report_year = EXCLUDED.report_year, sector = EXCLUDED.sector, tonnes_co2e = EXCLUDED.tonnes_co2e\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Int4",
+        "Text",
+        "Float8"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "d866c3debb30f013359ea0e15b79257f9a2bb8044911cd9149c34e6332bb5578"
+}

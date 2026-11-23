@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO mfat_overseas_missions (citizen_id, country, status)\n           VALUES ($1, $2, $3)\n           ON CONFLICT (citizen_id, country) DO UPDATE SET\n              country = EXCLUDED.country, status = EXCLUDED.status\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "93ddfc62f447f5f4bbcaaa3a96247ed88a852085bbc976803157c3503439250e"
+}

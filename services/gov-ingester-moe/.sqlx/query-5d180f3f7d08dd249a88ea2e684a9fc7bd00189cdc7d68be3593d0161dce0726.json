@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO citizens (did, moe_id)\n           VALUES ($1, $2)\n           ON CONFLICT (did) DO UPDATE SET moe_id = EXCLUDED.moe_id\n           RETURNING id, (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      null
+    ]
+  },
+  "hash": "5d180f3f7d08dd249a88ea2e684a9fc7bd00189cdc7d68be3593d0161dce0726"
+}

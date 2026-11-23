@@ -58,7 +58,9 @@ mod tests {
     use super::*;
 
     fn sample() -> RawEqcCitizen {
-        serde_json::from_value(serde_json::json!([object Object])).unwrap()
+        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/eqc_batch.json")).unwrap();
+                let batch: crate::raw::RawEqcBatch = serde_json::from_slice(&bytes).unwrap();
+                batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]
@@ -66,24 +68,24 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.eqc_id, "EQC-100001");
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
-        assert_eq!(t.claims.as_ref().unwrap().reference, "EQC-2026-007");
+        let t = transform_citizen(&sample()).unwrap();
+        assert_eq!(t.claims.first().unwrap().reference, "EQC-2026-007");
         assert_eq!(
-            t.claims.as_ref().unwrap().property,
+            t.claims.first().unwrap().property,
             "12 Totara Street, Porirua"
         );
-        assert_eq!(t.claims.as_ref().unwrap().status, "assessed");
+        assert_eq!(t.claims.first().unwrap().status, "assessed");
         assert_eq!(
-            t.claims.as_ref().unwrap().lodged_date.to_string(),
+            t.claims.first().unwrap().lodged_date.to_string(),
             "2026-03-02"
         );
 
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        let t = transform_citizen(&sample()).unwrap();
         assert_eq!(
             t.cover.as_ref().unwrap().property,
             "12 Totara Street, Porirua"
         );
-        assert_eq!(t.cover.as_ref().unwrap().sum_insured, 350000);
+        assert_eq!(t.cover.as_ref().unwrap().sum_insured, 350000.0);
         assert_eq!(t.cover.as_ref().unwrap().valid_to.to_string(), "2027-01-01");
     }
 

@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO tec_courses (citizen_id, course_name, provider, status)\n           VALUES ($1, $2, $3, $4)\n           ON CONFLICT (citizen_id, course_name) DO UPDATE SET\n              course_name = EXCLUDED.course_name, provider = EXCLUDED.provider, status = EXCLUDED.status\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "8fe216c17eccd4f6bbd5af9cf412a2386149545ff702679c65229c8ab544926e"
+}

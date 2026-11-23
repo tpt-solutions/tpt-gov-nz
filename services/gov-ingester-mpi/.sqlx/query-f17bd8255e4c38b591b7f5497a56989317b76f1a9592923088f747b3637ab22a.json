@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO mpi_certifications (citizen_id, cert_number, category, issued_date, expires_date)\n           VALUES ($1, $2, $3, $4, $5)\n           ON CONFLICT (citizen_id, cert_number) DO UPDATE SET\n              category = EXCLUDED.category,\n              issued_date = EXCLUDED.issued_date,\n              expires_date = EXCLUDED.expires_date\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Date",
+        "Date"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "f17bd8255e4c38b591b7f5497a56989317b76f1a9592923088f747b3637ab22a"
+}

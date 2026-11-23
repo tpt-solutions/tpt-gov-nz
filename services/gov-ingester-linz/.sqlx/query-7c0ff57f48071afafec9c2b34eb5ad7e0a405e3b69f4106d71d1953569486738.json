@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO linz_titles (citizen_id, title_number, property_address, land_area_sqm, estate_type)\n           VALUES ($1, $2, $3, $4, $5)\n           ON CONFLICT (citizen_id, title_number) DO UPDATE SET\n              property_address = EXCLUDED.property_address,\n              land_area_sqm = EXCLUDED.land_area_sqm,\n              estate_type = EXCLUDED.estate_type\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Float8",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "7c0ff57f48071afafec9c2b34eb5ad7e0a405e3b69f4106d71d1953569486738"
+}

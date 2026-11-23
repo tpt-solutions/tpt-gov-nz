@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO hud_tenancies (citizen_id, tenancy_id, property_address, weekly_rent, income_related_rent, start_date, status)\n           VALUES ($1, $2, $3, $4, $5, $6, $7)\n           ON CONFLICT (citizen_id, tenancy_id) DO UPDATE SET\n              property_address = EXCLUDED.property_address,\n              weekly_rent = EXCLUDED.weekly_rent,\n              income_related_rent = EXCLUDED.income_related_rent,\n              start_date = EXCLUDED.start_date,\n              status = EXCLUDED.status\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Float8",
+        "Bool",
+        "Date",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "d93cf1a04b07b50a8a6e3f4479e5ffc73c25246eff8759d9c658ff14757d1025"
+}

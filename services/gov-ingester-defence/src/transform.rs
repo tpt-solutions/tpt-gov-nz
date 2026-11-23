@@ -60,7 +60,9 @@ mod tests {
     use super::*;
 
     fn sample() -> RawDefenceCitizen {
-        serde_json::from_value(serde_json::json!([object Object])).unwrap()
+        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/defence_batch.json")).unwrap();
+                let batch: crate::raw::RawDefenceBatch = serde_json::from_slice(&bytes).unwrap();
+                batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]
@@ -68,18 +70,18 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.defence_id, "DEF-100001");
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        let t = transform_citizen(&sample()).unwrap();
         assert_eq!(
-            t.procurements.as_ref().unwrap().programme,
+            t.procurements.first().unwrap().programme,
             "Frigate sustainment"
         );
-        assert_eq!(t.procurements.as_ref().unwrap().value, 450000000);
-        assert_eq!(t.procurements.as_ref().unwrap().status, "ongoing");
+        assert_eq!(t.procurements.first().unwrap().value, 450_000_000.0);
+        assert_eq!(t.procurements.first().unwrap().status, "ongoing");
 
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
-        assert_eq!(t.bases.as_ref().unwrap().name, "Trentham Military Camp");
-        assert_eq!(t.bases.as_ref().unwrap().location, "Upper Hutt");
-        assert_eq!(t.bases.as_ref().unwrap().status, "operational");
+        let t = transform_citizen(&sample()).unwrap();
+        assert_eq!(t.bases.first().unwrap().name, "Trentham Military Camp");
+        assert_eq!(t.bases.first().unwrap().location, "Upper Hutt");
+        assert_eq!(t.bases.first().unwrap().status, "operational");
     }
 
     #[test]

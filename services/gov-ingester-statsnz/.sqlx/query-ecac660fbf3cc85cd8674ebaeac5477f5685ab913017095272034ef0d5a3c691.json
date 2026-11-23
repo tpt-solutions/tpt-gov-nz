@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO statsnz_census (citizen_id, census_year, dwelling_type, household_size, region)\n           VALUES ($1, $2, $3, $4, $5)\n           ON CONFLICT (citizen_id, census_year) DO UPDATE SET\n              dwelling_type = EXCLUDED.dwelling_type,\n              household_size = EXCLUDED.household_size,\n              region = EXCLUDED.region\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Int4",
+        "Text",
+        "Int4",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "ecac660fbf3cc85cd8674ebaeac5477f5685ab913017095272034ef0d5a3c691"
+}

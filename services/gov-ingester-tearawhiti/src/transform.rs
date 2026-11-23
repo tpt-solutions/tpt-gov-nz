@@ -60,7 +60,9 @@ mod tests {
     use super::*;
 
     fn sample() -> RawTearawhitiCitizen {
-        serde_json::from_value(serde_json::json!([object Object])).unwrap()
+        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/tearawhiti_batch.json")).unwrap();
+                let batch: crate::raw::RawTearawhitiBatch = serde_json::from_slice(&bytes).unwrap();
+                batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]
@@ -68,29 +70,29 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.tearawhiti_id, "TAW-100001");
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
-        assert_eq!(t.treaty_settlements.as_ref().unwrap().iwi, "Ngāti Toa");
-        assert_eq!(t.treaty_settlements.as_ref().unwrap().status, "settled");
+        let t = transform_citizen(&sample()).unwrap();
+        assert_eq!(t.treaty_settlements.first().unwrap().iwi, "Ngāti Toa");
+        assert_eq!(t.treaty_settlements.first().unwrap().status, "settled");
         assert_eq!(
             t.treaty_settlements
-                .as_ref()
+                .first()
                 .unwrap()
                 .settled_date
                 .to_string(),
             "2024-07-01"
         );
 
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        let t = transform_citizen(&sample()).unwrap();
         assert_eq!(
-            t.engagements.as_ref().unwrap().topic,
+            t.engagements.first().unwrap().topic,
             "Crown engagement hui"
         );
         assert_eq!(
-            t.engagements.as_ref().unwrap().engagement_date.to_string(),
+            t.engagements.first().unwrap().engagement_date.to_string(),
             "2026-04-15"
         );
         assert_eq!(
-            t.engagements.as_ref().unwrap().outcome,
+            t.engagements.first().unwrap().outcome,
             "Recommendation agreed"
         );
     }

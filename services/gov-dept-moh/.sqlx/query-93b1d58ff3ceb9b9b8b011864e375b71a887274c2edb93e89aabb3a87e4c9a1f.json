@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, vaccine, vaccine_date, due_for_booster\n           FROM vaccinations\n           WHERE citizen_id = $1\n           ORDER BY vaccine_date DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "vaccine",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "vaccine_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 3,
+        "name": "due_for_booster",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "93b1d58ff3ceb9b9b8b011864e375b71a887274c2edb93e89aabb3a87e4c9a1f"
+}

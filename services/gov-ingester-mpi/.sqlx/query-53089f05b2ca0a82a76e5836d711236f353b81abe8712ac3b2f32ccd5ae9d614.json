@@ -1,0 +1,27 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO mpi_registrations (citizen_id, nzbn, business_name, type, status, registered_date)\n           VALUES ($1, $2, $3, $4, $5, $6)\n           ON CONFLICT (citizen_id, nzbn) DO UPDATE SET\n              business_name = EXCLUDED.business_name,\n              type = EXCLUDED.type,\n              status = EXCLUDED.status,\n              registered_date = EXCLUDED.registered_date\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Date"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "53089f05b2ca0a82a76e5836d711236f353b81abe8712ac3b2f32ccd5ae9d614"
+}

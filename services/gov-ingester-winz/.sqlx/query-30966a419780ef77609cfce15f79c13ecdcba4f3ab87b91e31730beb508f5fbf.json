@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO payments (citizen_id, benefit_type, payment_date, amount, method)\n           VALUES ($1, $2, $3, $4, $5)\n           ON CONFLICT (citizen_id, benefit_type, payment_date, amount) DO UPDATE SET\n              method = EXCLUDED.method\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Date",
+        "Numeric",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "30966a419780ef77609cfce15f79c13ecdcba4f3ab87b91e31730beb508f5fbf"
+}

@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO mch_grants (citizen_id, grant_name, amount, status)\n           VALUES ($1, $2, $3, $4)\n           ON CONFLICT (citizen_id, grant_name) DO UPDATE SET\n              grant_name = EXCLUDED.grant_name, amount = EXCLUDED.amount, status = EXCLUDED.status\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Float8",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "aaa8f3a0690d61d8c46e413acfc33cc6f7ae63e9a055a13fec3d5ef5ca2ab7df"
+}

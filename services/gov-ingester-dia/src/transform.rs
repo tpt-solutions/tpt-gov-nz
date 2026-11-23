@@ -26,18 +26,30 @@ pub fn transform_citizen(raw: &RawDiaCitizen) -> Result<TransformedCitizen, Inge
         passport_number: raw.passport_number.clone(),
     };
 
-    let passport = raw.passport.as_ref().map(|p| PassportEntity {
-        passport_number: raw.passport_number.clone(),
-        expiry_date: parse_date(&p.expiry_date, "expiry date")?,
-        renewable: p.renewable,
-    });
+    let passport = raw
+        .passport
+        .as_ref()
+        .map(|p| -> Result<PassportEntity, IngestError> {
+            Ok(PassportEntity {
+                passport_number: raw.passport_number.clone(),
+                expiry_date: parse_date(&p.expiry_date, "expiry date")?,
+                renewable: p.renewable,
+            })
+        })
+        .transpose()?;
 
-    let birth_cert = raw.birth_cert.as_ref().map(|b| BirthCertEntity {
-        certificate_number: b.certificate_number.clone(),
-        date_of_birth: parse_date(&b.date_of_birth, "date of birth")?,
-        place_of_birth: b.place_of_birth.clone(),
-        parents: b.parents.clone(),
-    });
+    let birth_cert = raw
+        .birth_cert
+        .as_ref()
+        .map(|b| -> Result<BirthCertEntity, IngestError> {
+            Ok(BirthCertEntity {
+                certificate_number: b.certificate_number.clone(),
+                date_of_birth: parse_date(&b.date_of_birth, "date of birth")?,
+                place_of_birth: b.place_of_birth.clone(),
+                parents: b.parents.clone(),
+            })
+        })
+        .transpose()?;
 
     let citizenship = raw.citizenship.as_ref().map(|c| CitizenshipEntity {
         status: c.status.clone(),

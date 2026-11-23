@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO gp_enrolments (citizen_id, practice_name, address, phone, enrolled_at)\n           VALUES ($1, $2, $3, $4, $5)\n           ON CONFLICT (citizen_id, practice_name) DO UPDATE SET\n              address = EXCLUDED.address,\n              phone = EXCLUDED.phone,\n              enrolled_at = EXCLUDED.enrolled_at\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Text",
+        "Date"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "245137037c00f328cfafec68f874e10a55d480fb26cf9d8e47f76e6eb50773fe"
+}

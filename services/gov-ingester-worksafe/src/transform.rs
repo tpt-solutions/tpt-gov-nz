@@ -62,7 +62,9 @@ mod tests {
     use super::*;
 
     fn sample() -> RawWorksafeCitizen {
-        serde_json::from_value(serde_json::json!([object Object])).unwrap()
+        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/worksafe_batch.json")).unwrap();
+                let batch: crate::raw::RawWorksafeBatch = serde_json::from_slice(&bytes).unwrap();
+                batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]
@@ -70,33 +72,33 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.worksafe_id, "WS-100001");
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
-        assert_eq!(t.inspections.as_ref().unwrap().reference, "WS-I-2026-003");
+        let t = transform_citizen(&sample()).unwrap();
+        assert_eq!(t.inspections.first().unwrap().reference, "WS-I-2026-003");
         assert_eq!(
-            t.inspections.as_ref().unwrap().site,
+            t.inspections.first().unwrap().site,
             "Tane Construction Ltd"
         );
         assert_eq!(
-            t.inspections.as_ref().unwrap().inspection_date.to_string(),
+            t.inspections.first().unwrap().inspection_date.to_string(),
             "2026-02-10"
         );
         assert_eq!(
-            t.inspections.as_ref().unwrap().outcome,
+            t.inspections.first().unwrap().outcome,
             "Compliance order issued"
         );
 
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        let t = transform_citizen(&sample()).unwrap();
         assert_eq!(
-            t.investigations.as_ref().unwrap().reference,
+            t.investigations.first().unwrap().reference,
             "WS-INV-2026-011"
         );
         assert_eq!(
-            t.investigations.as_ref().unwrap().matter,
+            t.investigations.first().unwrap().matter,
             "Fatality inquiry"
         );
-        assert_eq!(t.investigations.as_ref().unwrap().status, "ongoing");
+        assert_eq!(t.investigations.first().unwrap().status, "ongoing");
         assert_eq!(
-            t.investigations.as_ref().unwrap().opened_date.to_string(),
+            t.investigations.first().unwrap().opened_date.to_string(),
             "2026-01-15"
         );
     }

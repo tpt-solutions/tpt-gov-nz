@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO regulation_proposals (citizen_id, title, status)\n           VALUES ($1, $2, $3)\n           ON CONFLICT (citizen_id, title) DO UPDATE SET\n              title = EXCLUDED.title, status = EXCLUDED.status\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "c8934b24c2433bc7fe28d96fe269f7f1e3eeca2c3d7aef551812f689930ea4b0"
+}

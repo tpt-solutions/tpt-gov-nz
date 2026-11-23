@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO tpk_programmes (citizen_id, programme_name, status, region)\n           VALUES ($1, $2, $3, $4)\n           ON CONFLICT (citizen_id, programme_name) DO UPDATE SET\n              status = EXCLUDED.status,\n              region = EXCLUDED.region\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "2b9f6a5e19b39927cb00a5a658874b14e86f1c3af5d84dafc5b1f89bd1e2b49d"
+}

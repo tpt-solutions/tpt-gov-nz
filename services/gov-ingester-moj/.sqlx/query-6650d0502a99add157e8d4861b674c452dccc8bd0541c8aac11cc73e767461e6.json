@@ -1,0 +1,27 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO moj_court_records (citizen_id, case_number, case_type, status, next_hearing_date, description)\n           VALUES ($1, $2, $3, $4, $5, $6)\n           ON CONFLICT (citizen_id, case_number) DO UPDATE SET\n              case_type = EXCLUDED.case_type,\n              status = EXCLUDED.status,\n              next_hearing_date = EXCLUDED.next_hearing_date,\n              description = EXCLUDED.description\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Text",
+        "Date",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "6650d0502a99add157e8d4861b674c452dccc8bd0541c8aac11cc73e767461e6"
+}

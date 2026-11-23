@@ -58,7 +58,9 @@ mod tests {
     use super::*;
 
     fn sample() -> RawFenzCitizen {
-        serde_json::from_value(serde_json::json!([object Object])).unwrap()
+        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/fenz_batch.json")).unwrap();
+                let batch: crate::raw::RawFenzBatch = serde_json::from_slice(&bytes).unwrap();
+                batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]
@@ -66,7 +68,7 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.fenz_id, "FENZ-100001");
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        let t = transform_citizen(&sample()).unwrap();
         assert_eq!(
             t.fire_safety.as_ref().unwrap().property,
             "12 Totara Street, Porirua"
@@ -77,17 +79,17 @@ mod tests {
             "2025-11-12"
         );
 
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
-        assert_eq!(t.incidents.as_ref().unwrap().reference, "FENZ-2026-050");
+        let t = transform_citizen(&sample()).unwrap();
+        assert_eq!(t.incidents.first().unwrap().reference, "FENZ-2026-050");
         assert_eq!(
-            t.incidents.as_ref().unwrap().incident_type,
+            t.incidents.first().unwrap().incident_type,
             "Structure fire"
         );
         assert_eq!(
-            t.incidents.as_ref().unwrap().incident_date.to_string(),
+            t.incidents.first().unwrap().incident_date.to_string(),
             "2026-01-30"
         );
-        assert_eq!(t.incidents.as_ref().unwrap().status, "closed");
+        assert_eq!(t.incidents.first().unwrap().status, "closed");
     }
 
     #[test]

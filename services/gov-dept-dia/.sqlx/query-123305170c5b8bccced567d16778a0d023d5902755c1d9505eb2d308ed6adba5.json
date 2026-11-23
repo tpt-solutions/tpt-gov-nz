@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO actions_log (citizen_id, action_type, parameters, performed_by, result_success, result_message) VALUES ($1, $2, $3, 'citizen', true, $4)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Jsonb",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "123305170c5b8bccced567d16778a0d023d5902755c1d9505eb2d308ed6adba5"
+}

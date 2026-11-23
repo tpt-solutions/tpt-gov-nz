@@ -60,7 +60,9 @@ mod tests {
     use super::*;
 
     fn sample() -> RawRegulationCitizen {
-        serde_json::from_value(serde_json::json!([object Object])).unwrap()
+        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/regulation_batch.json")).unwrap();
+                let batch: crate::raw::RawRegulationBatch = serde_json::from_slice(&bytes).unwrap();
+                batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]
@@ -68,21 +70,21 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.regulation_id, "REG-100001");
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        let t = transform_citizen(&sample()).unwrap();
         assert_eq!(
-            t.regulatory_reviews.as_ref().unwrap().topic,
+            t.regulatory_reviews.first().unwrap().topic,
             "Building consenting"
         );
-        assert_eq!(t.regulatory_reviews.as_ref().unwrap().agency, "MBIE");
-        assert_eq!(t.regulatory_reviews.as_ref().unwrap().status, "in-progress");
-        assert_eq!(t.regulatory_reviews.as_ref().unwrap().review_year, 2026);
+        assert_eq!(t.regulatory_reviews.first().unwrap().agency, "MBIE");
+        assert_eq!(t.regulatory_reviews.first().unwrap().status, "in-progress");
+        assert_eq!(t.regulatory_reviews.first().unwrap().review_year, 2026);
 
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        let t = transform_citizen(&sample()).unwrap();
         assert_eq!(
-            t.proposals.as_ref().unwrap().title,
+            t.proposals.first().unwrap().title,
             "Reduce duplicate reporting"
         );
-        assert_eq!(t.proposals.as_ref().unwrap().status, "consultation");
+        assert_eq!(t.proposals.first().unwrap().status, "consultation");
     }
 
     #[test]

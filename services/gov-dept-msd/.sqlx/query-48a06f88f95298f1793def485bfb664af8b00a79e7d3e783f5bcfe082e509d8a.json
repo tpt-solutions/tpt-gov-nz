@@ -1,0 +1,70 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, citizen_id, has_student_loan, loan_balance, repayment_plan, has_allowance, allowance_type, next_payment_date, weekly_amount FROM msd_studylink WHERE citizen_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "citizen_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "has_student_loan",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 3,
+        "name": "loan_balance",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 4,
+        "name": "repayment_plan",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "has_allowance",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 6,
+        "name": "allowance_type",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 7,
+        "name": "next_payment_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 8,
+        "name": "weekly_amount",
+        "type_info": "Numeric"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "48a06f88f95298f1793def485bfb664af8b00a79e7d3e783f5bcfe082e509d8a"
+}

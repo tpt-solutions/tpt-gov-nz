@@ -60,7 +60,9 @@ mod tests {
     use super::*;
 
     fn sample() -> RawPublicserviceCitizen {
-        serde_json::from_value(serde_json::json!([object Object])).unwrap()
+        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/publicservice_batch.json")).unwrap();
+                let batch: crate::raw::RawPublicserviceBatch = serde_json::from_slice(&bytes).unwrap();
+                batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]
@@ -68,21 +70,21 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.psc_id, "PSC-100001");
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
-        assert_eq!(t.workforce.as_ref().unwrap().report_year, 2025);
+        let t = transform_citizen(&sample()).unwrap();
+        assert_eq!(t.workforce.first().unwrap().report_year, 2025);
         assert_eq!(
-            t.workforce.as_ref().unwrap().agency,
+            t.workforce.first().unwrap().agency,
             "Department of Internal Affairs"
         );
-        assert_eq!(t.workforce.as_ref().unwrap().headcount, 4200);
+        assert_eq!(t.workforce.first().unwrap().headcount, 4200);
 
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        let t = transform_citizen(&sample()).unwrap();
         assert_eq!(
-            t.agency_ratings.as_ref().unwrap().agency,
+            t.agency_ratings.first().unwrap().agency,
             "Department of Internal Affairs"
         );
-        assert_eq!(t.agency_ratings.as_ref().unwrap().rating, "Good");
-        assert_eq!(t.agency_ratings.as_ref().unwrap().rating_year, 2025);
+        assert_eq!(t.agency_ratings.first().unwrap().rating, "Good");
+        assert_eq!(t.agency_ratings.first().unwrap().rating_year, 2025);
     }
 
     #[test]

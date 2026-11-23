@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO eqc_claims (citizen_id, reference, property, status, lodged_date)\n           VALUES ($1, $2, $3, $4, $5)\n           ON CONFLICT (citizen_id, reference) DO UPDATE SET\n              reference = EXCLUDED.reference, property = EXCLUDED.property, status = EXCLUDED.status, lodged_date = EXCLUDED.lodged_date\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Text",
+        "Date"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "e1f4fe7785cc6c956a0da6193f1c9d8a6cb4dc1e52e482b008cac170a548a94f"
+}

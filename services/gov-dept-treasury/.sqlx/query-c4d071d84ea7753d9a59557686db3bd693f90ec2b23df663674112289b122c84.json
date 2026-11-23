@@ -1,0 +1,46 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, fiscal_year, portfolio, appropriation, amount FROM treasury_budget WHERE citizen_id = $1 ORDER BY created_at DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "fiscal_year",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 2,
+        "name": "portfolio",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "appropriation",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "amount",
+        "type_info": "Float8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "c4d071d84ea7753d9a59557686db3bd693f90ec2b23df663674112289b122c84"
+}

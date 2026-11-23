@@ -63,14 +63,14 @@ async fn fetch_data_claims_scope(pool: PgPool) {
     assert_eq!(claims[0]["claimNumber"], "ACC-5001");
     assert_eq!(claims[0]["claimType"], "work");
     assert_eq!(claims[0]["status"], "open");
-    assert_eq!(claims[0]["weeklyCompensation"], 420);
+    assert_eq!(claims[0]["weeklyCompensation"], 420.0);
 }
 
 #[sqlx::test]
 async fn fetch_data_entitlements_scope(pool: PgPool) {
     let data = fetch_data(&pool, &["acc:entitlements"]).await;
     assert_eq!(data["entitlements"]["hasEntitlement"], true);
-    assert_eq!(data["entitlements"]["weeklyAmount"], 420);
+    assert_eq!(data["entitlements"]["weeklyAmount"], 420.0);
     assert_eq!(data["entitlements"]["remainingWeeks"], 18);
 }
 

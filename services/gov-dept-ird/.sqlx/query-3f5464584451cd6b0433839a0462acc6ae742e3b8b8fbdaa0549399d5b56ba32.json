@@ -1,0 +1,70 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT assessment_year, tax_code, total_income, taxable_income,\n                  tax_liability, tax_paid, tax_refund_due, tax_owing, assessment_status\n           FROM tax_assessments\n           WHERE citizen_id = $1\n           ORDER BY assessment_year DESC\n           LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "assessment_year",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "tax_code",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "total_income",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 3,
+        "name": "taxable_income",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 4,
+        "name": "tax_liability",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 5,
+        "name": "tax_paid",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 6,
+        "name": "tax_refund_due",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 7,
+        "name": "tax_owing",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 8,
+        "name": "assessment_status",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "3f5464584451cd6b0433839a0462acc6ae742e3b8b8fbdaa0549399d5b56ba32"
+}

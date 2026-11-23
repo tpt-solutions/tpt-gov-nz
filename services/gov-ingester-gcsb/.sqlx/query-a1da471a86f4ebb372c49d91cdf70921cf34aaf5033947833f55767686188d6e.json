@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO gcsb_engagements (citizen_id, partner, engagement_type, engagement_date)\n           VALUES ($1, $2, $3, $4)\n           ON CONFLICT (citizen_id, partner) DO UPDATE SET\n              partner = EXCLUDED.partner, engagement_type = EXCLUDED.engagement_type, engagement_date = EXCLUDED.engagement_date\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Date"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "a1da471a86f4ebb372c49d91cdf70921cf34aaf5033947833f55767686188d6e"
+}

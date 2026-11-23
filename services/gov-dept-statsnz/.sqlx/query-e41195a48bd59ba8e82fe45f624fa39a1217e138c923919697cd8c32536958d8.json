@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, data_summary, record_count, last_updated FROM statsnz_profile WHERE citizen_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "data_summary",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "record_count",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 3,
+        "name": "last_updated",
+        "type_info": "Date"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "e41195a48bd59ba8e82fe45f624fa39a1217e138c923919697cd8c32536958d8"
+}

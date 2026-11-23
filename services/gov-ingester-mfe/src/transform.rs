@@ -60,7 +60,9 @@ mod tests {
     use super::*;
 
     fn sample() -> RawMfeCitizen {
-        serde_json::from_value(serde_json::json!([object Object])).unwrap()
+        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/mfe_batch.json")).unwrap();
+                let batch: crate::raw::RawMfeBatch = serde_json::from_slice(&bytes).unwrap();
+                batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]
@@ -68,21 +70,21 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.mfe_id, "MFE-100001");
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
-        assert_eq!(t.emissions.as_ref().unwrap().report_year, 2025);
-        assert_eq!(t.emissions.as_ref().unwrap().sector, "Transport");
-        assert_eq!(t.emissions.as_ref().unwrap().tonnes_co2e, 3200.5);
+        let t = transform_citizen(&sample()).unwrap();
+        assert_eq!(t.emissions.first().unwrap().report_year, 2025);
+        assert_eq!(t.emissions.first().unwrap().sector, "Transport");
+        assert_eq!(t.emissions.first().unwrap().tonnes_co2e, 3200.5);
 
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        let t = transform_citizen(&sample()).unwrap();
         assert_eq!(
-            t.reports.as_ref().unwrap().title,
+            t.reports.first().unwrap().title,
             "Aotearoa New Zealand's Environment 2026"
         );
         assert_eq!(
-            t.reports.as_ref().unwrap().published.to_string(),
+            t.reports.first().unwrap().published.to_string(),
             "2026-05-01"
         );
-        assert_eq!(t.reports.as_ref().unwrap().status, "published");
+        assert_eq!(t.reports.first().unwrap().status, "published");
     }
 
     #[test]

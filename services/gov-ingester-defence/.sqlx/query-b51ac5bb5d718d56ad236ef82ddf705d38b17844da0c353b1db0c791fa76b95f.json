@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO defence_bases (citizen_id, name, location, status)\n           VALUES ($1, $2, $3, $4)\n           ON CONFLICT (citizen_id, name) DO UPDATE SET\n              name = EXCLUDED.name, location = EXCLUDED.location, status = EXCLUDED.status\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "b51ac5bb5d718d56ad236ef82ddf705d38b17844da0c353b1db0c791fa76b95f"
+}

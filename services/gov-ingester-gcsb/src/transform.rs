@@ -61,7 +61,9 @@ mod tests {
     use super::*;
 
     fn sample() -> RawGcsbCitizen {
-        serde_json::from_value(serde_json::json!([object Object])).unwrap()
+        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/gcsb_batch.json")).unwrap();
+                let batch: crate::raw::RawGcsbBatch = serde_json::from_slice(&bytes).unwrap();
+                batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]
@@ -69,23 +71,23 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.gcsb_id, "GCSB-100001");
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
-        assert_eq!(t.mandates.as_ref().unwrap().reference, "GCSB-M-2026-001");
-        assert_eq!(t.mandates.as_ref().unwrap().agency, "NZSIS");
-        assert_eq!(t.mandates.as_ref().unwrap().status, "active");
+        let t = transform_citizen(&sample()).unwrap();
+        assert_eq!(t.mandates.first().unwrap().reference, "GCSB-M-2026-001");
+        assert_eq!(t.mandates.first().unwrap().agency, "NZSIS");
+        assert_eq!(t.mandates.first().unwrap().status, "active");
         assert_eq!(
-            t.mandates.as_ref().unwrap().issued_date.to_string(),
+            t.mandates.first().unwrap().issued_date.to_string(),
             "2026-01-05"
         );
 
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
-        assert_eq!(t.engagements.as_ref().unwrap().partner, "CERT NZ");
+        let t = transform_citizen(&sample()).unwrap();
+        assert_eq!(t.engagements.first().unwrap().partner, "CERT NZ");
         assert_eq!(
-            t.engagements.as_ref().unwrap().engagement_type,
+            t.engagements.first().unwrap().engagement_type,
             "Cyber threat briefing"
         );
         assert_eq!(
-            t.engagements.as_ref().unwrap().engagement_date.to_string(),
+            t.engagements.first().unwrap().engagement_date.to_string(),
             "2026-02-20"
         );
     }

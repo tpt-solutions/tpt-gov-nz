@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, property, sum_insured, valid_to FROM eqc_cover WHERE citizen_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "property",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "sum_insured",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 3,
+        "name": "valid_to",
+        "type_info": "Date"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "8b97ec0f2a2cba9ac7a02855081cbe53b8a93b077ed5d5d2afbb134f3b3a71c5"
+}

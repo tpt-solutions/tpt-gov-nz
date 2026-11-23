@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO appointments (citizen_id, provider, appt_date, type, status)\n           VALUES ($1, $2, $3, $4, 'booked')",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Timestamptz",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "d833915fd2691704b0327e41708a78146ff945516b50a85a0dd7ac87b16d5519"
+}

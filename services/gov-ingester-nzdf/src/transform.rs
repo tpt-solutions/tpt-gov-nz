@@ -60,7 +60,9 @@ mod tests {
     use super::*;
 
     fn sample() -> RawNzdfCitizen {
-        serde_json::from_value(serde_json::json!([object Object])).unwrap()
+        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/nzdf_batch.json")).unwrap();
+                let batch: crate::raw::RawNzdfBatch = serde_json::from_slice(&bytes).unwrap();
+                batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]
@@ -68,18 +70,18 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.nzdf_id, "NZDF-100001");
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
-        assert_eq!(t.service_records.as_ref().unwrap().service_no, "NZDF-55821");
-        assert_eq!(t.service_records.as_ref().unwrap().branch, "Army");
-        assert_eq!(t.service_records.as_ref().unwrap().status, "active");
+        let t = transform_citizen(&sample()).unwrap();
+        assert_eq!(t.service_records.first().unwrap().service_no, "NZDF-55821");
+        assert_eq!(t.service_records.first().unwrap().branch, "Army");
+        assert_eq!(t.service_records.first().unwrap().status, "active");
 
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        let t = transform_citizen(&sample()).unwrap();
         assert_eq!(
-            t.deployments.as_ref().unwrap().operation,
+            t.deployments.first().unwrap().operation,
             "Burnham readiness"
         );
-        assert_eq!(t.deployments.as_ref().unwrap().country, "NZ");
-        assert_eq!(t.deployments.as_ref().unwrap().year, 2025);
+        assert_eq!(t.deployments.first().unwrap().country, "NZ");
+        assert_eq!(t.deployments.first().unwrap().year, 2025);
     }
 
     #[test]

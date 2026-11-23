@@ -1,0 +1,34 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT registered, gst_number, filing_frequency FROM gst_registrations WHERE citizen_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "registered",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 1,
+        "name": "gst_number",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "filing_frequency",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      true,
+      true
+    ]
+  },
+  "hash": "57a34fb70a09b74a1ca1d527881cb90163ffa45ce39fe7769637a5bb9171bede"
+}

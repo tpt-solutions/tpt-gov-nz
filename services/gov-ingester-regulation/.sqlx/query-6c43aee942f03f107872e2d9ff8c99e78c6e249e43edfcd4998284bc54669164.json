@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO regulation_regulatory_reviews (citizen_id, topic, agency, status, review_year)\n           VALUES ($1, $2, $3, $4, $5)\n           ON CONFLICT (citizen_id, topic) DO UPDATE SET\n              topic = EXCLUDED.topic, agency = EXCLUDED.agency, status = EXCLUDED.status, review_year = EXCLUDED.review_year\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Text",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "6c43aee942f03f107872e2d9ff8c99e78c6e249e43edfcd4998284bc54669164"
+}

@@ -1,0 +1,58 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, dispute_number, claim_type, status, amount_claimed, hearing_date, description FROM moj_disputes WHERE citizen_id = $1 ORDER BY hearing_date NULLS LAST",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "dispute_number",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "claim_type",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "status",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "amount_claimed",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 5,
+        "name": "hearing_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 6,
+        "name": "description",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  "hash": "e66de54de13f14ae65fb7a6fb12ad6ed0cbc57dfaf605ad86f38b05235e91266"
+}

@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO gst_registrations (citizen_id, registered, gst_number, filing_frequency)\n           VALUES ($1, $2, $3, $4)\n           ON CONFLICT (citizen_id) DO UPDATE SET\n              registered = EXCLUDED.registered,\n              gst_number = EXCLUDED.gst_number,\n              filing_frequency = EXCLUDED.filing_frequency\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Bool",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "b988b3dba213b2e9331e45cf4cd201e2cd308ff1afbef5454c7c8cd4c1c2511a"
+}

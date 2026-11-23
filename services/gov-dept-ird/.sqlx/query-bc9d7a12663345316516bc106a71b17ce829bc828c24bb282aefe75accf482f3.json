@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO gst_periods (citizen_id, period_start, period_end, filing_due, status)\n           VALUES ($1, '2025-01-01', '2025-02-28', '2025-03-28', 'due')\n           RETURNING id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "bc9d7a12663345316516bc106a71b17ce829bc828c24bb282aefe75accf482f3"
+}

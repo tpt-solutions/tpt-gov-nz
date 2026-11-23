@@ -61,7 +61,9 @@ mod tests {
     use super::*;
 
     fn sample() -> RawMaritimeCitizen {
-        serde_json::from_value(serde_json::json!([object Object])).unwrap()
+        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/maritime_batch.json")).unwrap();
+                let batch: crate::raw::RawMaritimeBatch = serde_json::from_slice(&bytes).unwrap();
+                batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]
@@ -69,19 +71,19 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.maritime_id, "MAR-100001");
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
-        assert_eq!(t.vessels.as_ref().unwrap().vessel_name, "MV Tane Moana");
-        assert_eq!(t.vessels.as_ref().unwrap().flag, "NZ");
-        assert_eq!(t.vessels.as_ref().unwrap().status, "registered");
+        let t = transform_citizen(&sample()).unwrap();
+        assert_eq!(t.vessels.first().unwrap().vessel_name, "MV Tane Moana");
+        assert_eq!(t.vessels.first().unwrap().flag, "NZ");
+        assert_eq!(t.vessels.first().unwrap().status, "registered");
 
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
-        assert_eq!(t.incidents.as_ref().unwrap().reference, "MAR-2026-02");
-        assert_eq!(t.incidents.as_ref().unwrap().incident_type, "Pollution");
+        let t = transform_citizen(&sample()).unwrap();
+        assert_eq!(t.incidents.first().unwrap().reference, "MAR-2026-02");
+        assert_eq!(t.incidents.first().unwrap().incident_type, "Pollution");
         assert_eq!(
-            t.incidents.as_ref().unwrap().incident_date.to_string(),
+            t.incidents.first().unwrap().incident_date.to_string(),
             "2026-02-14"
         );
-        assert_eq!(t.incidents.as_ref().unwrap().status, "resolved");
+        assert_eq!(t.incidents.first().unwrap().status, "resolved");
     }
 
     #[test]

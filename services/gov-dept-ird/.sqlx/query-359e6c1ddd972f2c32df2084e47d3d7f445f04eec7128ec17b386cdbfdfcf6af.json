@@ -1,0 +1,70 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, period_start, period_end, filing_due, status,\n                  sales_income, gst_on_sales, gst_on_purchases, refund_or_payment\n           FROM gst_periods\n           WHERE citizen_id = $1\n           ORDER BY period_start DESC\n           LIMIT 12",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "period_start",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 2,
+        "name": "period_end",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 3,
+        "name": "filing_due",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 4,
+        "name": "status",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "sales_income",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 6,
+        "name": "gst_on_sales",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 7,
+        "name": "gst_on_purchases",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 8,
+        "name": "refund_or_payment",
+        "type_info": "Numeric"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "359e6c1ddd972f2c32df2084e47d3d7f445f04eec7128ec17b386cdbfdfcf6af"
+}

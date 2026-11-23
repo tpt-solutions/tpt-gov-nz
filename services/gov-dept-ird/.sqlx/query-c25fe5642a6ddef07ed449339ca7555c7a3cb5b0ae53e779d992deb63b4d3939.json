@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE kiwisaver_memberships SET contribution_rate = $1, updated_at = NOW() WHERE citizen_id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Numeric",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "c25fe5642a6ddef07ed449339ca7555c7a3cb5b0ae53e779d992deb63b4d3939"
+}

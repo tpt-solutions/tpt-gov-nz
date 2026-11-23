@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO mbie_directorships (citizen_id, nzbn, entity_name, role, appointed_date)\n           VALUES ($1, $2, $3, $4, $5)\n           ON CONFLICT (citizen_id, nzbn, appointed_date) DO UPDATE SET\n              entity_name = EXCLUDED.entity_name,\n              role = EXCLUDED.role\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Text",
+        "Date"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "7948fb3036c013e84f7224542baefcb98435705c5b9c0b0074df64e3590a96de"
+}

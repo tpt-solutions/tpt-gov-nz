@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO pacific_programmes (citizen_id, programme_name, status, year)\n           VALUES ($1, $2, $3, $4)\n           ON CONFLICT (citizen_id, programme_name) DO UPDATE SET\n              programme_name = EXCLUDED.programme_name, status = EXCLUDED.status, year = EXCLUDED.year\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "467de8e6a4143294513e83a6e80e421c728b6990976935a3a0e3cec79acf1e06"
+}

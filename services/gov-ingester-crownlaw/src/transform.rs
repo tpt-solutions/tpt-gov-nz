@@ -61,7 +61,9 @@ mod tests {
     use super::*;
 
     fn sample() -> RawCrownlawCitizen {
-        serde_json::from_value(serde_json::json!([object Object])).unwrap()
+        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/crownlaw_batch.json")).unwrap();
+                let batch: crate::raw::RawCrownlawBatch = serde_json::from_slice(&bytes).unwrap();
+                batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]
@@ -69,25 +71,25 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.crownlaw_id, "CL-100001");
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        let t = transform_citizen(&sample()).unwrap();
         assert_eq!(
-            t.legal_opinions.as_ref().unwrap().reference,
+            t.legal_opinions.first().unwrap().reference,
             "CL-OP-2026-001"
         );
         assert_eq!(
-            t.legal_opinions.as_ref().unwrap().topic,
+            t.legal_opinions.first().unwrap().topic,
             "Treaty settlement wording"
         );
         assert_eq!(
-            t.legal_opinions.as_ref().unwrap().issued_date.to_string(),
+            t.legal_opinions.first().unwrap().issued_date.to_string(),
             "2026-02-18"
         );
-        assert_eq!(t.legal_opinions.as_ref().unwrap().status, "final");
+        assert_eq!(t.legal_opinions.first().unwrap().status, "final");
 
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
-        assert_eq!(t.litigation.as_ref().unwrap().case_name, "Re Crown assets");
-        assert_eq!(t.litigation.as_ref().unwrap().crown_role, "Defendant");
-        assert_eq!(t.litigation.as_ref().unwrap().status, "ongoing");
+        let t = transform_citizen(&sample()).unwrap();
+        assert_eq!(t.litigation.first().unwrap().case_name, "Re Crown assets");
+        assert_eq!(t.litigation.first().unwrap().crown_role, "Defendant");
+        assert_eq!(t.litigation.first().unwrap().status, "ongoing");
     }
 
     #[test]

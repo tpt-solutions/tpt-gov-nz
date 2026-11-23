@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO caa_licences (citizen_id, licence_no, category, status, expires)\n           VALUES ($1, $2, $3, $4, $5)\n           ON CONFLICT (citizen_id, licence_no) DO UPDATE SET\n              licence_no = EXCLUDED.licence_no, category = EXCLUDED.category, status = EXCLUDED.status, expires = EXCLUDED.expires\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Text",
+        "Date"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "2ac9d5e8e9dbf0dc0126a30ab183eac8b2cf09da78ead5d19d7dd4f982901973"
+}

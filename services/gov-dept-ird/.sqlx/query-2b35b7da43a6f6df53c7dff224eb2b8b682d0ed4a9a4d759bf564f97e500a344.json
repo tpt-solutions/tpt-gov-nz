@@ -1,0 +1,70 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT eligible, number_of_dependant_children, income_threshold,\n                  family_tax_credit, in_work_tax_credit, best_start_payment,\n                  minimum_family_tax_credit, payment_frequency, next_review_date\n           FROM wff_entitlements\n           WHERE citizen_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "eligible",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 1,
+        "name": "number_of_dependant_children",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 2,
+        "name": "income_threshold",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 3,
+        "name": "family_tax_credit",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 4,
+        "name": "in_work_tax_credit",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 5,
+        "name": "best_start_payment",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 6,
+        "name": "minimum_family_tax_credit",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 7,
+        "name": "payment_frequency",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 8,
+        "name": "next_review_date",
+        "type_info": "Date"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "2b35b7da43a6f6df53c7dff224eb2b8b682d0ed4a9a4d759bf564f97e500a344"
+}

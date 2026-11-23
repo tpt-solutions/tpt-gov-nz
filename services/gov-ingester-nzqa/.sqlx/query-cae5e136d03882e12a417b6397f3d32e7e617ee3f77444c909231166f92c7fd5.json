@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO nzqa_transcripts (citizen_id, record_summary, total_credits, credit_summary)\n           VALUES ($1, $2, $3, $4)\n           ON CONFLICT (citizen_id) DO UPDATE SET\n              record_summary = EXCLUDED.record_summary,\n              total_credits = EXCLUDED.total_credits,\n              credit_summary = EXCLUDED.credit_summary\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Int4",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "cae5e136d03882e12a417b6397f3d32e7e617ee3f77444c909231166f92c7fd5"
+}

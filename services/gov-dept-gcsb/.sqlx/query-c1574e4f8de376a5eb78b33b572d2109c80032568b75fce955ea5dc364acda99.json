@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, partner, engagement_type, engagement_date FROM gcsb_engagements WHERE citizen_id = $1 ORDER BY created_at DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "partner",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "engagement_type",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "engagement_date",
+        "type_info": "Date"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "c1574e4f8de376a5eb78b33b572d2109c80032568b75fce955ea5dc364acda99"
+}

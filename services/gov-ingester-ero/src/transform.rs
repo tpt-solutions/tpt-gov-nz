@@ -60,7 +60,9 @@ mod tests {
     use super::*;
 
     fn sample() -> RawEroCitizen {
-        serde_json::from_value(serde_json::json!([object Object])).unwrap()
+        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/ero_batch.json")).unwrap();
+                let batch: crate::raw::RawEroBatch = serde_json::from_slice(&bytes).unwrap();
+                batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]
@@ -68,25 +70,25 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.ero_id, "ERO-100001");
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
-        assert_eq!(t.reviews.as_ref().unwrap().school, "Porirua College");
-        assert_eq!(t.reviews.as_ref().unwrap().rating, "Developing");
+        let t = transform_citizen(&sample()).unwrap();
+        assert_eq!(t.reviews.first().unwrap().school, "Porirua College");
+        assert_eq!(t.reviews.first().unwrap().rating, "Developing");
         assert_eq!(
-            t.reviews.as_ref().unwrap().review_date.to_string(),
+            t.reviews.first().unwrap().review_date.to_string(),
             "2025-09-01"
         );
         assert_eq!(
-            t.reviews.as_ref().unwrap().next_review.to_string(),
+            t.reviews.first().unwrap().next_review.to_string(),
             "2027-09-01"
         );
 
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        let t = transform_citizen(&sample()).unwrap();
         assert_eq!(
-            t.reports.as_ref().unwrap().title,
+            t.reports.first().unwrap().title,
             "Porirua College annual report"
         );
         assert_eq!(
-            t.reports.as_ref().unwrap().published.to_string(),
+            t.reports.first().unwrap().published.to_string(),
             "2025-10-15"
         );
     }

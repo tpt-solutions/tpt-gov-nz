@@ -60,7 +60,9 @@ mod tests {
     use super::*;
 
     fn sample() -> RawDpmcCitizen {
-        serde_json::from_value(serde_json::json!([object Object])).unwrap()
+        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/dpmc_batch.json")).unwrap();
+                let batch: crate::raw::RawDpmcBatch = serde_json::from_slice(&bytes).unwrap();
+                batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]
@@ -68,21 +70,21 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.dpmc_id, "DPMC-100001");
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
-        assert_eq!(t.honours.as_ref().unwrap().award_year, 2025);
-        assert_eq!(t.honours.as_ref().unwrap().award, "Queen's Service Medal");
-        assert_eq!(t.honours.as_ref().unwrap().status, "nominated");
+        let t = transform_citizen(&sample()).unwrap();
+        assert_eq!(t.honours.first().unwrap().award_year, 2025);
+        assert_eq!(t.honours.first().unwrap().award, "Queen's Service Medal");
+        assert_eq!(t.honours.first().unwrap().status, "nominated");
 
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        let t = transform_citizen(&sample()).unwrap();
         assert_eq!(
-            t.engagements.as_ref().unwrap().event_name,
+            t.engagements.first().unwrap().event_name,
             "Citizens' Honours Reception"
         );
         assert_eq!(
-            t.engagements.as_ref().unwrap().event_date.to_string(),
+            t.engagements.first().unwrap().event_date.to_string(),
             "2026-05-12"
         );
-        assert_eq!(t.engagements.as_ref().unwrap().location, "Wellington");
+        assert_eq!(t.engagements.first().unwrap().location, "Wellington");
     }
 
     #[test]

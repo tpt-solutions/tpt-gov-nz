@@ -60,7 +60,9 @@ mod tests {
     use super::*;
 
     fn sample() -> RawOrangaCitizen {
-        serde_json::from_value(serde_json::json!([object Object])).unwrap()
+        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/oranga_batch.json")).unwrap();
+                let batch: crate::raw::RawOrangaBatch = serde_json::from_slice(&bytes).unwrap();
+                batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]
@@ -68,25 +70,25 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.oranga_id, "OT-100001");
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        let t = transform_citizen(&sample()).unwrap();
         assert_eq!(
-            t.care_placements.as_ref().unwrap().placement_type,
+            t.care_placements.first().unwrap().placement_type,
             "Whānau placement"
         );
         assert_eq!(
-            t.care_placements.as_ref().unwrap().start_date.to_string(),
+            t.care_placements.first().unwrap().start_date.to_string(),
             "2025-08-01"
         );
-        assert_eq!(t.care_placements.as_ref().unwrap().region, "Waikato");
+        assert_eq!(t.care_placements.first().unwrap().region, "Waikato");
 
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        let t = transform_citizen(&sample()).unwrap();
         assert_eq!(
-            t.support_services.as_ref().unwrap().service,
+            t.support_services.first().unwrap().service,
             "Intensive support"
         );
-        assert_eq!(t.support_services.as_ref().unwrap().status, "active");
+        assert_eq!(t.support_services.first().unwrap().status, "active");
         assert_eq!(
-            t.support_services.as_ref().unwrap().next_review.to_string(),
+            t.support_services.first().unwrap().next_review.to_string(),
             "2026-09-01"
         );
     }

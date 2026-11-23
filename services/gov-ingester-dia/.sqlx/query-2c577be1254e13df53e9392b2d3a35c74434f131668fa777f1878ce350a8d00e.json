@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO passports (citizen_id, passport_number, expiry_date, renewable)\n           VALUES ($1, $2, $3, $4)\n           ON CONFLICT (citizen_id, passport_number) DO UPDATE SET\n              expiry_date = EXCLUDED.expiry_date,\n              renewable = EXCLUDED.renewable\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Date",
+        "Bool"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "2c577be1254e13df53e9392b2d3a35c74434f131668fa777f1878ce350a8d00e"
+}

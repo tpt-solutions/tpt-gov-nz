@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO fenz_incidents (citizen_id, reference, incident_type, incident_date, status)\n           VALUES ($1, $2, $3, $4, $5)\n           ON CONFLICT (citizen_id, reference) DO UPDATE SET\n              reference = EXCLUDED.reference, incident_type = EXCLUDED.incident_type, incident_date = EXCLUDED.incident_date, status = EXCLUDED.status\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Date",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "9370cd02c4fa3a31fe3e548475f536c3d62d95f8f18fb04a462535d86c4252ee"
+}

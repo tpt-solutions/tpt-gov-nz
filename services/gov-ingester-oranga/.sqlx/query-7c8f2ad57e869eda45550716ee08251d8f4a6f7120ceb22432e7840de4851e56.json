@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO oranga_care_placements (citizen_id, placement_type, start_date, region)\n           VALUES ($1, $2, $3, $4)\n           ON CONFLICT (citizen_id, placement_type) DO UPDATE SET\n              placement_type = EXCLUDED.placement_type, start_date = EXCLUDED.start_date, region = EXCLUDED.region\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Date",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "7c8f2ad57e869eda45550716ee08251d8f4a6f7120ceb22432e7840de4851e56"
+}

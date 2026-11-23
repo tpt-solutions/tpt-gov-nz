@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT weekly_amount FROM benefits WHERE citizen_id = $1 AND benefit_type = 'sole-parent'",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "weekly_amount",
+        "type_info": "Numeric"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "a99c9bac5dc23b9bca31279af913c246ccdf9811887ba130af9522686795d19b"
+}

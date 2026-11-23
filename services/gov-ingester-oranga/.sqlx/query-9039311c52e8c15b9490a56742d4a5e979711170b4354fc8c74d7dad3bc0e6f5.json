@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO oranga_support_services (citizen_id, service, status, next_review)\n           VALUES ($1, $2, $3, $4)\n           ON CONFLICT (citizen_id, service) DO UPDATE SET\n              service = EXCLUDED.service, status = EXCLUDED.status, next_review = EXCLUDED.next_review\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Date"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "9039311c52e8c15b9490a56742d4a5e979711170b4354fc8c74d7dad3bc0e6f5"
+}

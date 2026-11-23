@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO tearawhiti_engagements (citizen_id, topic, engagement_date, outcome)\n           VALUES ($1, $2, $3, $4)\n           ON CONFLICT (citizen_id, topic) DO UPDATE SET\n              topic = EXCLUDED.topic, engagement_date = EXCLUDED.engagement_date, outcome = EXCLUDED.outcome\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Date",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "532cb0f422dcea23ee0da6db0a0137e99d5f06946e42a3facb979c62c1402f5d"
+}

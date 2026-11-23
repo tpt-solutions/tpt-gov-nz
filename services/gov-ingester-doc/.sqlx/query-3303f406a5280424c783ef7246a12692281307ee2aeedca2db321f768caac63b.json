@@ -1,0 +1,27 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO doc_concessions (citizen_id, concession_id, type, holder, start_date, end_date)\n           VALUES ($1, $2, $3, $4, $5, $6)\n           ON CONFLICT (citizen_id, concession_id) DO UPDATE SET\n              type = EXCLUDED.type,\n              holder = EXCLUDED.holder,\n              start_date = EXCLUDED.start_date,\n              end_date = EXCLUDED.end_date\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Text",
+        "Date",
+        "Date"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "3303f406a5280424c783ef7246a12692281307ee2aeedca2db321f768caac63b"
+}

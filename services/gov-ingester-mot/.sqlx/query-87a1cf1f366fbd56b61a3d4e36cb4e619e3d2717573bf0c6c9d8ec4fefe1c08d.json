@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO mot_strategies (citizen_id, title, year, status)\n           VALUES ($1, $2, $3, $4)\n           ON CONFLICT (citizen_id, title) DO UPDATE SET\n              title = EXCLUDED.title, year = EXCLUDED.year, status = EXCLUDED.status\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Int4",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "87a1cf1f366fbd56b61a3d4e36cb4e619e3d2717573bf0c6c9d8ec4fefe1c08d"
+}

@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO statsnz_profile (citizen_id, data_summary, record_count, last_updated)\n           VALUES ($1, $2, $3, $4)\n           ON CONFLICT (citizen_id) DO UPDATE SET\n              data_summary = EXCLUDED.data_summary,\n              record_count = EXCLUDED.record_count,\n              last_updated = EXCLUDED.last_updated\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Int4",
+        "Date"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "6eb44dff5bf40a8ef3e9f634625a6547162278a8ced3dbfcdedc37de924bce6f"
+}

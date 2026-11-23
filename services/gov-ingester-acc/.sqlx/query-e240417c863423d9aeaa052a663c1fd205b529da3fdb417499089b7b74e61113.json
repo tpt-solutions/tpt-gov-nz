@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO acc_claims (citizen_id, claim_number, claim_type, status, injury_date, description, weekly_compensation)\n           VALUES ($1, $2, $3, $4, $5, $6, $7)\n           ON CONFLICT (citizen_id, claim_number) DO UPDATE SET\n              claim_type = EXCLUDED.claim_type,\n              status = EXCLUDED.status,\n              injury_date = EXCLUDED.injury_date,\n              description = EXCLUDED.description,\n              weekly_compensation = EXCLUDED.weekly_compensation\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Text",
+        "Date",
+        "Text",
+        "Float8"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "e240417c863423d9aeaa052a663c1fd205b529da3fdb417499089b7b74e61113"
+}

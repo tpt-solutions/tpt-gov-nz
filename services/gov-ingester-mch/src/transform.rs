@@ -60,7 +60,9 @@ mod tests {
     use super::*;
 
     fn sample() -> RawMchCitizen {
-        serde_json::from_value(serde_json::json!([object Object])).unwrap()
+        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/mch_batch.json")).unwrap();
+                let batch: crate::raw::RawMchBatch = serde_json::from_slice(&bytes).unwrap();
+                batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]
@@ -68,21 +70,21 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.mch_id, "MCH-100001");
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
-        assert_eq!(t.heritage_sites.as_ref().unwrap().name, "Old St Paul's");
+        let t = transform_citizen(&sample()).unwrap();
+        assert_eq!(t.heritage_sites.first().unwrap().name, "Old St Paul's");
         assert_eq!(
-            t.heritage_sites.as_ref().unwrap().status,
+            t.heritage_sites.first().unwrap().status,
             "Category 1 historic place"
         );
-        assert_eq!(t.heritage_sites.as_ref().unwrap().region, "Wellington");
+        assert_eq!(t.heritage_sites.first().unwrap().region, "Wellington");
 
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        let t = transform_citizen(&sample()).unwrap();
         assert_eq!(
-            t.grants.as_ref().unwrap().grant_name,
+            t.grants.first().unwrap().grant_name,
             "Cultural Innovation Fund"
         );
-        assert_eq!(t.grants.as_ref().unwrap().amount, 15000);
-        assert_eq!(t.grants.as_ref().unwrap().status, "approved");
+        assert_eq!(t.grants.first().unwrap().amount, 15000.0);
+        assert_eq!(t.grants.first().unwrap().status, "approved");
     }
 
     #[test]

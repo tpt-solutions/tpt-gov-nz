@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO treasury_economic_outlook (citizen_id, forecast_year, gdp_growth_pct, inflation_pct, net_debt_pct)\n           VALUES ($1, $2, $3, $4, $5)\n           ON CONFLICT (citizen_id) DO UPDATE SET\n              forecast_year = EXCLUDED.forecast_year, gdp_growth_pct = EXCLUDED.gdp_growth_pct, inflation_pct = EXCLUDED.inflation_pct, net_debt_pct = EXCLUDED.net_debt_pct\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Int4",
+        "Float8",
+        "Float8",
+        "Float8"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "13b65b591b552171665024a346edd512264f9db2a892c61452a479903f5b75cc"
+}

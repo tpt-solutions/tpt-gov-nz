@@ -22,7 +22,7 @@ async fn resolve_found(pool: PgPool) {
     let row = crate::db::resolve_by_did(&pool, TEST_DID).await.unwrap();
     let row = row.expect("seed migration should create the test citizen");
     assert_eq!(row.did, TEST_DID);
-    assert_eq!(row.passport_number, "XA123456");
+    assert_eq!(row.passport_number.as_deref(), Some("XA123456"));
 }
 
 #[sqlx::test]

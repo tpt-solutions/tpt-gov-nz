@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO nzsis_threats (citizen_id, reference, category, status, assessed_date)\n           VALUES ($1, $2, $3, $4, $5)\n           ON CONFLICT (citizen_id, reference) DO UPDATE SET\n              reference = EXCLUDED.reference, category = EXCLUDED.category, status = EXCLUDED.status, assessed_date = EXCLUDED.assessed_date\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Text",
+        "Date"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "b02bb26325c1f56e6dc59a0c974cb86ca0a89562e40cd42043ccac55831610a1"
+}

@@ -1,0 +1,27 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO prescriptions (citizen_id, medication, dose, repeats_total, repeats_remaining, issued_at)\n           VALUES ($1, $2, $3, $4, $5, $6)\n           ON CONFLICT (citizen_id, medication, issued_at) DO UPDATE SET\n              dose = EXCLUDED.dose,\n              repeats_total = EXCLUDED.repeats_total,\n              repeats_remaining = EXCLUDED.repeats_remaining\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Int4",
+        "Int4",
+        "Date"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "1b1e35c9e3ed29b441c6643bc9efb416b5e24cbcbb734b12a39922d1057b6b17"
+}

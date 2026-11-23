@@ -60,7 +60,9 @@ mod tests {
     use super::*;
 
     fn sample() -> RawMotCitizen {
-        serde_json::from_value(serde_json::json!([object Object])).unwrap()
+        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/mot_batch.json")).unwrap();
+                let batch: crate::raw::RawMotBatch = serde_json::from_slice(&bytes).unwrap();
+                batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]
@@ -68,18 +70,18 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.mot_id, "MOT-100001");
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
-        assert_eq!(t.strategies.as_ref().unwrap().title, "Te Tangi a Te Manu");
-        assert_eq!(t.strategies.as_ref().unwrap().year, 2026);
-        assert_eq!(t.strategies.as_ref().unwrap().status, "active");
+        let t = transform_citizen(&sample()).unwrap();
+        assert_eq!(t.strategies.first().unwrap().title, "Te Tangi a Te Manu");
+        assert_eq!(t.strategies.first().unwrap().year, 2026);
+        assert_eq!(t.strategies.first().unwrap().status, "active");
 
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        let t = transform_citizen(&sample()).unwrap();
         assert_eq!(
-            t.programmes.as_ref().unwrap().name,
+            t.programmes.first().unwrap().name,
             "Road maintenance boost"
         );
-        assert_eq!(t.programmes.as_ref().unwrap().budget, 800000000);
-        assert_eq!(t.programmes.as_ref().unwrap().status, "funded");
+        assert_eq!(t.programmes.first().unwrap().budget, 800000000.0);
+        assert_eq!(t.programmes.first().unwrap().status, "funded");
     }
 
     #[test]

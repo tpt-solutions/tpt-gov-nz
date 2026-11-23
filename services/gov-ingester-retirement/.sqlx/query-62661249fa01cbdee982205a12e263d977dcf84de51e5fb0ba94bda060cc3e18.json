@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO retirement_guidance (citizen_id, topic, summary, published)\n           VALUES ($1, $2, $3, $4)\n           ON CONFLICT (citizen_id, topic) DO UPDATE SET\n              topic = EXCLUDED.topic, summary = EXCLUDED.summary, published = EXCLUDED.published\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Date"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "62661249fa01cbdee982205a12e263d977dcf84de51e5fb0ba94bda060cc3e18"
+}

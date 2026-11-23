@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO msd_case_history (citizen_id, event_id, event_date, service_line, summary)\n           VALUES ($1, $2, $3, $4, $5)\n           ON CONFLICT (citizen_id, event_id) DO UPDATE SET\n              event_date = EXCLUDED.event_date,\n              service_line = EXCLUDED.service_line,\n              summary = EXCLUDED.summary\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Date",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "3d11148a494e8021ad5b3c0227014c779c2a2dbdb337246625679d79a7abc3b1"
+}

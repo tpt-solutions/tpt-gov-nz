@@ -1,0 +1,27 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO mbie_business_registrations (citizen_id, nzbn, entity_name, entity_type, status, registered_date)\n           VALUES ($1, $2, $3, $4, $5, $6)\n           ON CONFLICT (citizen_id, nzbn) DO UPDATE SET\n              entity_name = EXCLUDED.entity_name,\n              entity_type = EXCLUDED.entity_type,\n              status = EXCLUDED.status,\n              registered_date = EXCLUDED.registered_date\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Date"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "937ba692d76248cbb811cb25b0dd81432272fbdb64de1158cc0b46e680d3cdf3"
+}

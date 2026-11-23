@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO linz_ownership (citizen_id, title_number, ownership_share, registered_owners)\n           VALUES ($1, $2, $3, $4)\n           ON CONFLICT (citizen_id, title_number) DO UPDATE SET\n              ownership_share = EXCLUDED.ownership_share,\n              registered_owners = EXCLUDED.registered_owners\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Jsonb"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "294db965319f794dc21bc270c4db2fe5f6a14359d52fbd396733db861d7b8cb3"
+}

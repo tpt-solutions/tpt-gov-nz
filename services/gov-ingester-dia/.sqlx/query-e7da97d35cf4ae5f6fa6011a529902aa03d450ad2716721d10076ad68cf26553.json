@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO citizenship_records (citizen_id, status, certificate_number, granted_at)\n           VALUES ($1, $2, $3, $4)\n           ON CONFLICT (citizen_id, status) DO UPDATE SET\n              certificate_number = EXCLUDED.certificate_number,\n              granted_at = EXCLUDED.granted_at\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Date"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "e7da97d35cf4ae5f6fa6011a529902aa03d450ad2716721d10076ad68cf26553"
+}

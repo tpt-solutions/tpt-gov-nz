@@ -27,7 +27,7 @@ pub fn transform_citizen(raw: &RawCustomsCitizen) -> Result<TransformedCitizen, 
     let travel = raw
         .travel
         .as_ref()
-        .map(|t| {
+        .map(|t| -> Result<TravelEntity, IngestError> {
             Ok(TravelEntity {
                 passport_number: t.passport_number.clone(),
                 last_arrival: parse_date(&t.last_arrival, "last arrival")?,

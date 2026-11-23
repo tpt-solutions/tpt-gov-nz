@@ -57,7 +57,9 @@ mod tests {
     use super::*;
 
     fn sample() -> RawRetirementCitizen {
-        serde_json::from_value(serde_json::json!([object Object])).unwrap()
+        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/retirement_batch.json")).unwrap();
+                let batch: crate::raw::RawRetirementBatch = serde_json::from_slice(&bytes).unwrap();
+                batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]
@@ -65,7 +67,7 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.retirement_id, "RET-100001");
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        let t = transform_citizen(&sample()).unwrap();
         assert_eq!(t.retirement_plan.as_ref().unwrap().has_plan, true);
         assert_eq!(t.retirement_plan.as_ref().unwrap().retirement_age, 65);
         assert_eq!(
@@ -73,17 +75,17 @@ mod tests {
             "2025-12-01"
         );
 
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        let t = transform_citizen(&sample()).unwrap();
         assert_eq!(
-            t.guidance.as_ref().unwrap().topic,
+            t.guidance.first().unwrap().topic,
             "KiwiSaver contribution rate"
         );
         assert_eq!(
-            t.guidance.as_ref().unwrap().summary,
+            t.guidance.first().unwrap().summary,
             "Consider increasing to 6%."
         );
         assert_eq!(
-            t.guidance.as_ref().unwrap().published.to_string(),
+            t.guidance.first().unwrap().published.to_string(),
             "2026-02-20"
         );
     }

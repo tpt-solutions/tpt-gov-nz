@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO sfo_outcomes (citizen_id, reference, result, result_date)\n           VALUES ($1, $2, $3, $4)\n           ON CONFLICT (citizen_id, reference) DO UPDATE SET\n              reference = EXCLUDED.reference, result = EXCLUDED.result, result_date = EXCLUDED.result_date\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Date"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "2e05928dc9932c8417fba9424ea0aac767567286a6c3c1de99aa86d3eaa18b4b"
+}

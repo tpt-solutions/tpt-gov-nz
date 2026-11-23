@@ -24,13 +24,19 @@ pub fn transform_citizen(raw: &RawNztaCitizen) -> Result<TransformedCitizen, Ing
         driver_licence_number: raw.driver_licence_number.clone(),
     };
 
-    let driver_licence = raw.driver_licence.as_ref().map(|p| DriverLicenceEntity {
-        licence_number: raw.driver_licence_number.clone(),
-        full_name: p.full_name.clone(),
-        licence_class: p.licence_class.clone(),
-        expiry_date: parse_date(&p.expiry_date, "expiry date")?,
-        conditions: p.conditions.clone(),
-    });
+    let driver_licence = raw
+        .driver_licence
+        .as_ref()
+        .map(|p| -> Result<DriverLicenceEntity, IngestError> {
+            Ok(DriverLicenceEntity {
+                licence_number: raw.driver_licence_number.clone(),
+                full_name: p.full_name.clone(),
+                licence_class: p.licence_class.clone(),
+                expiry_date: parse_date(&p.expiry_date, "expiry date")?,
+                conditions: p.conditions.clone(),
+            })
+        })
+        .transpose()?;
 
     let vehicles = raw
         .vehicles

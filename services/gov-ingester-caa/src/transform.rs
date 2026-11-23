@@ -61,7 +61,9 @@ mod tests {
     use super::*;
 
     fn sample() -> RawCaaCitizen {
-        serde_json::from_value(serde_json::json!([object Object])).unwrap()
+        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/caa_batch.json")).unwrap();
+                let batch: crate::raw::RawCaaBatch = serde_json::from_slice(&bytes).unwrap();
+                batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]
@@ -69,19 +71,19 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.caa_id, "CAA-100001");
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
-        assert_eq!(t.licences.as_ref().unwrap().licence_no, "CAA-P-55821");
-        assert_eq!(t.licences.as_ref().unwrap().category, "Private Pilot");
-        assert_eq!(t.licences.as_ref().unwrap().status, "current");
+        let t = transform_citizen(&sample()).unwrap();
+        assert_eq!(t.licences.first().unwrap().licence_no, "CAA-P-55821");
+        assert_eq!(t.licences.first().unwrap().category, "Private Pilot");
+        assert_eq!(t.licences.first().unwrap().status, "current");
         assert_eq!(
-            t.licences.as_ref().unwrap().expires.to_string(),
+            t.licences.first().unwrap().expires.to_string(),
             "2027-06-30"
         );
 
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
-        assert_eq!(t.aircraft.as_ref().unwrap().registration, "ZK-TAN");
-        assert_eq!(t.aircraft.as_ref().unwrap().aircraft_type, "Cessna 172");
-        assert_eq!(t.aircraft.as_ref().unwrap().status, "registered");
+        let t = transform_citizen(&sample()).unwrap();
+        assert_eq!(t.aircraft.first().unwrap().registration, "ZK-TAN");
+        assert_eq!(t.aircraft.first().unwrap().aircraft_type, "Cessna 172");
+        assert_eq!(t.aircraft.first().unwrap().status, "registered");
     }
 
     #[test]

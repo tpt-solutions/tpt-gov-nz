@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO tearawhiti_treaty_settlements (citizen_id, iwi, status, settled_date)\n           VALUES ($1, $2, $3, $4)\n           ON CONFLICT (citizen_id, iwi) DO UPDATE SET\n              iwi = EXCLUDED.iwi, status = EXCLUDED.status, settled_date = EXCLUDED.settled_date\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Date"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "2ec328abdb39ab8c18a862ffcbd965ee21505d14b2b40b9c8027b4e4b30e9509"
+}

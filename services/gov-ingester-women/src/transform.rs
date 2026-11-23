@@ -60,7 +60,9 @@ mod tests {
     use super::*;
 
     fn sample() -> RawWomenCitizen {
-        serde_json::from_value(serde_json::json!([object Object])).unwrap()
+        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/women_batch.json")).unwrap();
+                let batch: crate::raw::RawWomenBatch = serde_json::from_slice(&bytes).unwrap();
+                batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]
@@ -68,22 +70,22 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.women_id, "WOM-100001");
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        let t = transform_citizen(&sample()).unwrap();
         assert_eq!(
-            t.programmes.as_ref().unwrap().programme_name,
+            t.programmes.first().unwrap().programme_name,
             "Women in Governance"
         );
-        assert_eq!(t.programmes.as_ref().unwrap().status, "enrolled");
-        assert_eq!(t.programmes.as_ref().unwrap().year, 2026);
+        assert_eq!(t.programmes.first().unwrap().status, "enrolled");
+        assert_eq!(t.programmes.first().unwrap().year, 2026);
 
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
-        assert_eq!(t.insights.as_ref().unwrap().topic, "Pay equity");
+        let t = transform_citizen(&sample()).unwrap();
+        assert_eq!(t.insights.first().unwrap().topic, "Pay equity");
         assert_eq!(
-            t.insights.as_ref().unwrap().summary,
+            t.insights.first().unwrap().summary,
             "Progress on gender pay gap reporting."
         );
         assert_eq!(
-            t.insights.as_ref().unwrap().published.to_string(),
+            t.insights.first().unwrap().published.to_string(),
             "2026-03-08"
         );
     }

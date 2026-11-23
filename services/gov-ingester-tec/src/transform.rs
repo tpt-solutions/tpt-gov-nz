@@ -60,7 +60,9 @@ mod tests {
     use super::*;
 
     fn sample() -> RawTecCitizen {
-        serde_json::from_value(serde_json::json!([object Object])).unwrap()
+        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/tec_batch.json")).unwrap();
+                let batch: crate::raw::RawTecBatch = serde_json::from_slice(&bytes).unwrap();
+                batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]
@@ -68,18 +70,18 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.tec_id, "TEC-100001");
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
-        assert_eq!(t.funding.as_ref().unwrap().provider, "Whitireia");
-        assert_eq!(t.funding.as_ref().unwrap().amount, 2200000);
-        assert_eq!(t.funding.as_ref().unwrap().year, 2026);
+        let t = transform_citizen(&sample()).unwrap();
+        assert_eq!(t.funding.first().unwrap().provider, "Whitireia");
+        assert_eq!(t.funding.first().unwrap().amount, 2200000.0);
+        assert_eq!(t.funding.first().unwrap().year, 2026);
 
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        let t = transform_citizen(&sample()).unwrap();
         assert_eq!(
-            t.courses.as_ref().unwrap().course_name,
+            t.courses.first().unwrap().course_name,
             "New Zealand Certificate in IT"
         );
-        assert_eq!(t.courses.as_ref().unwrap().provider, "Whitireia");
-        assert_eq!(t.courses.as_ref().unwrap().status, "approved");
+        assert_eq!(t.courses.first().unwrap().provider, "Whitireia");
+        assert_eq!(t.courses.first().unwrap().status, "approved");
     }
 
     #[test]

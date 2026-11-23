@@ -57,7 +57,9 @@ mod tests {
     use super::*;
 
     fn sample() -> RawMoeCitizen {
-        serde_json::from_value(serde_json::json!([object Object])).unwrap()
+        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/moe_batch.json")).unwrap();
+                let batch: crate::raw::RawMoeBatch = serde_json::from_slice(&bytes).unwrap();
+                batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]
@@ -65,19 +67,19 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.moe_id, "MOE-100001");
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        let t = transform_citizen(&sample()).unwrap();
         assert_eq!(t.enrolment.as_ref().unwrap().school, "Porirua College");
         assert_eq!(t.enrolment.as_ref().unwrap().year_level, 9);
         assert_eq!(t.enrolment.as_ref().unwrap().status, "enrolled");
 
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        let t = transform_citizen(&sample()).unwrap();
         assert_eq!(
-            t.student_support.as_ref().unwrap().service,
+            t.student_support.first().unwrap().service,
             "Learning support"
         );
-        assert_eq!(t.student_support.as_ref().unwrap().status, "active");
+        assert_eq!(t.student_support.first().unwrap().status, "active");
         assert_eq!(
-            t.student_support.as_ref().unwrap().next_review.to_string(),
+            t.student_support.first().unwrap().next_review.to_string(),
             "2026-08-01"
         );
     }

@@ -29,15 +29,17 @@ pub fn transform_citizen(raw: &RawAccCitizen) -> Result<TransformedCitizen, Inge
     let claims = raw
         .claims
         .iter()
-        .map(|c| ClaimEntity {
-            claim_number: c.claim_number.clone(),
-            claim_type: c.claim_type.clone(),
-            status: c.status.clone(),
-            injury_date: parse_date(&c.injury_date, "injury date")?,
-            description: c.description.clone(),
-            weekly_compensation: c.weekly_compensation,
+        .map(|c| {
+            Ok(ClaimEntity {
+                claim_number: c.claim_number.clone(),
+                claim_type: c.claim_type.clone(),
+                status: c.status.clone(),
+                injury_date: parse_date(&c.injury_date, "injury date")?,
+                description: c.description.clone(),
+                weekly_compensation: c.weekly_compensation,
+            })
         })
-        .collect::<Vec<_>>();
+        .collect::<Result<Vec<_>, IngestError>>()?;
 
     let entitlements = raw.entitlements.as_ref().map(|e| EntitlementEntity {
         has_entitlement: e.has_entitlement,

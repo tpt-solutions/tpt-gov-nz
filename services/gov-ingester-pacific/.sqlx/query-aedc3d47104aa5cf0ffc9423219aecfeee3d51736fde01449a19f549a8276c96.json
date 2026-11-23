@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO pacific_language_services (citizen_id, service, region, status)\n           VALUES ($1, $2, $3, $4)\n           ON CONFLICT (citizen_id, service) DO UPDATE SET\n              service = EXCLUDED.service, region = EXCLUDED.region, status = EXCLUDED.status\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "aedc3d47104aa5cf0ffc9423219aecfeee3d51736fde01449a19f549a8276c96"
+}

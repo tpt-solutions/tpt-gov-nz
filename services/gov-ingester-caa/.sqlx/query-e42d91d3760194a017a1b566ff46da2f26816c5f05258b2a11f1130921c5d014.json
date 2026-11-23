@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO caa_aircraft (citizen_id, registration, aircraft_type, status)\n           VALUES ($1, $2, $3, $4)\n           ON CONFLICT (citizen_id, registration) DO UPDATE SET\n              registration = EXCLUDED.registration, aircraft_type = EXCLUDED.aircraft_type, status = EXCLUDED.status\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "e42d91d3760194a017a1b566ff46da2f26816c5f05258b2a11f1130921c5d014"
+}

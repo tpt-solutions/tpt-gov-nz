@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO customs_travel (citizen_id, passport_number, last_arrival, arrival_port, frequent_traveller)\n           VALUES ($1, $2, $3, $4, $5)\n           ON CONFLICT (citizen_id) DO UPDATE SET\n              passport_number = EXCLUDED.passport_number,\n              last_arrival = EXCLUDED.last_arrival,\n              arrival_port = EXCLUDED.arrival_port,\n              frequent_traveller = EXCLUDED.frequent_traveller\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Date",
+        "Text",
+        "Bool"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "3f90bebf2c0b4c43bd0883c7c8ea48b95ff694b5130a7e855473ceebd837754e"
+}

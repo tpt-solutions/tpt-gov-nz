@@ -1,0 +1,19 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE gst_periods\n           SET status = 'filed', sales_income = $1, gst_on_sales = $2,\n               gst_on_purchases = $3, refund_or_payment = $4, filed_at = NOW()\n           WHERE id = $5 AND citizen_id = $6 AND status IN ('due', 'overdue')",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Numeric",
+        "Numeric",
+        "Numeric",
+        "Numeric",
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "c23d14b8a23e67db43f78add20cbb2f3676ae6b53ea7b99d7922aaf1b6d8de9b"
+}

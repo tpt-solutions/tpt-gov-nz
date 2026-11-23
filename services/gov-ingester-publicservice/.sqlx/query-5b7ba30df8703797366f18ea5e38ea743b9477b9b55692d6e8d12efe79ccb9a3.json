@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO publicservice_workforce (citizen_id, report_year, agency, headcount)\n           VALUES ($1, $2, $3, $4)\n           ON CONFLICT (citizen_id, report_year) DO UPDATE SET\n              report_year = EXCLUDED.report_year, agency = EXCLUDED.agency, headcount = EXCLUDED.headcount\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Int4",
+        "Text",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "5b7ba30df8703797366f18ea5e38ea743b9477b9b55692d6e8d12efe79ccb9a3"
+}

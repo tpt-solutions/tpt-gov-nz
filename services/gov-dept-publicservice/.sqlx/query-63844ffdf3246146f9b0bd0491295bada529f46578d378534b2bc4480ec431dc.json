@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, report_year, agency, headcount FROM publicservice_workforce WHERE citizen_id = $1 ORDER BY created_at DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "report_year",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 2,
+        "name": "agency",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "headcount",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "63844ffdf3246146f9b0bd0491295bada529f46578d378534b2bc4480ec431dc"
+}

@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO dpmc_honours (citizen_id, award_year, award, status)\n           VALUES ($1, $2, $3, $4)\n           ON CONFLICT (citizen_id, award_year) DO UPDATE SET\n              award_year = EXCLUDED.award_year, award = EXCLUDED.award, status = EXCLUDED.status\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Int4",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "c36036f9e232f42389e22e4fc5a2b5899175b4387d00d450f6a5f2b4321c4fd8"
+}

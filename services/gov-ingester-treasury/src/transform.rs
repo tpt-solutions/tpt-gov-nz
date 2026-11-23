@@ -59,7 +59,9 @@ mod tests {
     use super::*;
 
     fn sample() -> RawTreasuryCitizen {
-        serde_json::from_value(serde_json::json!([object Object])).unwrap()
+        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/treasury_batch.json")).unwrap();
+                let batch: crate::raw::RawTreasuryBatch = serde_json::from_slice(&bytes).unwrap();
+                batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]
@@ -67,17 +69,17 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.treasury_id, "TRE-100001");
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
-        assert_eq!(t.budget.as_ref().unwrap().fiscal_year, 2026);
-        assert_eq!(t.budget.as_ref().unwrap().portfolio, "Health");
-        assert_eq!(t.budget.as_ref().unwrap().appropriation, "Vote Health");
-        assert_eq!(t.budget.as_ref().unwrap().amount, 1200000000);
+        let t = transform_citizen(&sample()).unwrap();
+        assert_eq!(t.budget.first().unwrap().fiscal_year, 2026);
+        assert_eq!(t.budget.first().unwrap().portfolio, "Health");
+        assert_eq!(t.budget.first().unwrap().appropriation, "Vote Health");
+        assert_eq!(t.budget.first().unwrap().amount, 1200000000.0);
 
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        let t = transform_citizen(&sample()).unwrap();
         assert_eq!(t.economic_outlook.as_ref().unwrap().forecast_year, 2026);
         assert_eq!(t.economic_outlook.as_ref().unwrap().gdp_growth_pct, 2.4);
         assert_eq!(t.economic_outlook.as_ref().unwrap().inflation_pct, 3.1);
-        assert_eq!(t.economic_outlook.as_ref().unwrap().net_debt_pct, 42);
+        assert_eq!(t.economic_outlook.as_ref().unwrap().net_debt_pct, 42.0);
     }
 
     #[test]

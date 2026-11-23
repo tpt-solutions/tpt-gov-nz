@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE prescriptions\n           SET repeats_remaining = repeats_remaining - 1\n           WHERE id = $1 AND citizen_id = $2 AND repeats_remaining > 0\n           RETURNING repeats_remaining",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "repeats_remaining",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "5f5adee5900ba3f5604642bba3d35e105fbb8a1ca1aa687dfe1d0bfe8247cedf"
+}

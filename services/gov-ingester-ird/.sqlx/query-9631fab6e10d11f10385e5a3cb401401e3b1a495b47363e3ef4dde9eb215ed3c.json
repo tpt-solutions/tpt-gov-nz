@@ -1,0 +1,31 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO tax_assessments\n              (citizen_id, assessment_year, tax_code, total_income, taxable_income,\n               tax_liability, tax_paid, tax_refund_due, tax_owing, assessment_status)\n           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)\n           ON CONFLICT (citizen_id, assessment_year) DO UPDATE SET\n              tax_code = EXCLUDED.tax_code,\n              total_income = EXCLUDED.total_income,\n              taxable_income = EXCLUDED.taxable_income,\n              tax_liability = EXCLUDED.tax_liability,\n              tax_paid = EXCLUDED.tax_paid,\n              tax_refund_due = EXCLUDED.tax_refund_due,\n              tax_owing = EXCLUDED.tax_owing,\n              assessment_status = EXCLUDED.assessment_status\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Int4",
+        "Text",
+        "Numeric",
+        "Numeric",
+        "Numeric",
+        "Numeric",
+        "Numeric",
+        "Numeric",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "9631fab6e10d11f10385e5a3cb401401e3b1a495b47363e3ef4dde9eb215ed3c"
+}

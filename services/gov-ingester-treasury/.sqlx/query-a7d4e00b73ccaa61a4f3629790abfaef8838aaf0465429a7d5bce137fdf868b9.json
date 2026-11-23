@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO treasury_budget (citizen_id, fiscal_year, portfolio, appropriation, amount)\n           VALUES ($1, $2, $3, $4, $5)\n           ON CONFLICT (citizen_id, fiscal_year) DO UPDATE SET\n              fiscal_year = EXCLUDED.fiscal_year, portfolio = EXCLUDED.portfolio, appropriation = EXCLUDED.appropriation, amount = EXCLUDED.amount\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Int4",
+        "Text",
+        "Text",
+        "Float8"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "a7d4e00b73ccaa61a4f3629790abfaef8838aaf0465429a7d5bce137fdf868b9"
+}

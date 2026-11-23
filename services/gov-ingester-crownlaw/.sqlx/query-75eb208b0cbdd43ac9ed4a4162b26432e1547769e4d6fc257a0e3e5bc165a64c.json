@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO crownlaw_legal_opinions (citizen_id, reference, topic, issued_date, status)\n           VALUES ($1, $2, $3, $4, $5)\n           ON CONFLICT (citizen_id, reference) DO UPDATE SET\n              reference = EXCLUDED.reference, topic = EXCLUDED.topic, issued_date = EXCLUDED.issued_date, status = EXCLUDED.status\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Date",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "75eb208b0cbdd43ac9ed4a4162b26432e1547769e4d6fc257a0e3e5bc165a64c"
+}

@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO kiwisaver_memberships\n              (citizen_id, membership_status, contribution_rate, employer_contribution_rate,\n               scheme, total_balance, government_contribution_eligible, first_home_buyer_eligible)\n           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)\n           ON CONFLICT (citizen_id) DO UPDATE SET\n              membership_status = EXCLUDED.membership_status,\n              contribution_rate = EXCLUDED.contribution_rate,\n              employer_contribution_rate = EXCLUDED.employer_contribution_rate,\n              scheme = EXCLUDED.scheme,\n              total_balance = EXCLUDED.total_balance,\n              government_contribution_eligible = EXCLUDED.government_contribution_eligible,\n              first_home_buyer_eligible = EXCLUDED.first_home_buyer_eligible\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Numeric",
+        "Numeric",
+        "Text",
+        "Numeric",
+        "Bool",
+        "Bool"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "4ec41cd2feadaf53ec407579f60b57b88df48661d1fd7c30de97c58a91145a04"
+}

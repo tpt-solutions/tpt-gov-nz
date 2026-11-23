@@ -60,7 +60,9 @@ mod tests {
     use super::*;
 
     fn sample() -> RawEthnicCitizen {
-        serde_json::from_value(serde_json::json!([object Object])).unwrap()
+        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/ethnic_batch.json")).unwrap();
+                let batch: crate::raw::RawEthnicBatch = serde_json::from_slice(&bytes).unwrap();
+                batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]
@@ -68,21 +70,21 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.ethnic_id, "ETH-100001");
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        let t = transform_citizen(&sample()).unwrap();
         assert_eq!(
-            t.programmes.as_ref().unwrap().programme_name,
+            t.programmes.first().unwrap().programme_name,
             "Ethnic Communities Graduate Programme"
         );
-        assert_eq!(t.programmes.as_ref().unwrap().status, "enrolled");
-        assert_eq!(t.programmes.as_ref().unwrap().year, 2026);
+        assert_eq!(t.programmes.first().unwrap().status, "enrolled");
+        assert_eq!(t.programmes.first().unwrap().year, 2026);
 
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
+        let t = transform_citizen(&sample()).unwrap();
         assert_eq!(
-            t.community_grants.as_ref().unwrap().grant_name,
+            t.community_grants.first().unwrap().grant_name,
             "Community-led response fund"
         );
-        assert_eq!(t.community_grants.as_ref().unwrap().amount, 5000);
-        assert_eq!(t.community_grants.as_ref().unwrap().status, "approved");
+        assert_eq!(t.community_grants.first().unwrap().amount, 5000.0);
+        assert_eq!(t.community_grants.first().unwrap().status, "approved");
     }
 
     #[test]

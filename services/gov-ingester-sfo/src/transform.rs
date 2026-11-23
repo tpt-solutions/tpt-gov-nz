@@ -61,7 +61,9 @@ mod tests {
     use super::*;
 
     fn sample() -> RawSfoCitizen {
-        serde_json::from_value(serde_json::json!([object Object])).unwrap()
+        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/sfo_batch.json")).unwrap();
+                let batch: crate::raw::RawSfoBatch = serde_json::from_slice(&bytes).unwrap();
+                batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]
@@ -69,26 +71,26 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.sfo_id, "SFO-100001");
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
-        assert_eq!(t.investigations.as_ref().unwrap().reference, "SFO-2026-014");
+        let t = transform_citizen(&sample()).unwrap();
+        assert_eq!(t.investigations.first().unwrap().reference, "SFO-2026-014");
         assert_eq!(
-            t.investigations.as_ref().unwrap().matter,
+            t.investigations.first().unwrap().matter,
             "Complex investment fraud"
         );
         assert_eq!(
-            t.investigations.as_ref().unwrap().status,
+            t.investigations.first().unwrap().status,
             "under-investigation"
         );
         assert_eq!(
-            t.investigations.as_ref().unwrap().opened_date.to_string(),
+            t.investigations.first().unwrap().opened_date.to_string(),
             "2026-01-22"
         );
 
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
-        assert_eq!(t.outcomes.as_ref().unwrap().reference, "SFO-2025-009");
-        assert_eq!(t.outcomes.as_ref().unwrap().result, "Prosecution commenced");
+        let t = transform_citizen(&sample()).unwrap();
+        assert_eq!(t.outcomes.first().unwrap().reference, "SFO-2025-009");
+        assert_eq!(t.outcomes.first().unwrap().result, "Prosecution commenced");
         assert_eq!(
-            t.outcomes.as_ref().unwrap().result_date.to_string(),
+            t.outcomes.first().unwrap().result_date.to_string(),
             "2025-11-03"
         );
     }

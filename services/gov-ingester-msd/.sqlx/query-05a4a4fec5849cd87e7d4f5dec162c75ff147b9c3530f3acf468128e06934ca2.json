@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO msd_studylink (citizen_id, has_student_loan, loan_balance, repayment_plan, has_allowance, allowance_type, next_payment_date, weekly_amount)\n           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)\n           ON CONFLICT (citizen_id) DO UPDATE SET\n              has_student_loan = EXCLUDED.has_student_loan,\n              loan_balance = EXCLUDED.loan_balance,\n              repayment_plan = EXCLUDED.repayment_plan,\n              has_allowance = EXCLUDED.has_allowance,\n              allowance_type = EXCLUDED.allowance_type,\n              next_payment_date = EXCLUDED.next_payment_date,\n              weekly_amount = EXCLUDED.weekly_amount\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Bool",
+        "Numeric",
+        "Text",
+        "Bool",
+        "Text",
+        "Date",
+        "Numeric"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "05a4a4fec5849cd87e7d4f5dec162c75ff147b9c3530f3acf468128e06934ca2"
+}

@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO mfe_reports (citizen_id, title, published, status)\n           VALUES ($1, $2, $3, $4)\n           ON CONFLICT (citizen_id, title) DO UPDATE SET\n              title = EXCLUDED.title, published = EXCLUDED.published, status = EXCLUDED.status\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Date",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "274cb4584b1cd22f85f03a2a3afea5a18f3faf9f30fd2dfd7de10bbb41477822"
+}

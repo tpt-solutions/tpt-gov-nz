@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO maritime_vessels (citizen_id, vessel_name, flag, status)\n           VALUES ($1, $2, $3, $4)\n           ON CONFLICT (citizen_id, vessel_name) DO UPDATE SET\n              vessel_name = EXCLUDED.vessel_name, flag = EXCLUDED.flag, status = EXCLUDED.status\n           RETURNING (xmax = 0) AS inserted",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inserted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "f2bcd639d9e437e99e289d19f441f9eb10860c9c1573c1f5d8dc594bcef64e7f"
+}

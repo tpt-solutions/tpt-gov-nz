@@ -1,0 +1,46 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, benefit_type, payment_date, amount, method\n           FROM payments\n           WHERE citizen_id = $1\n           ORDER BY payment_date DESC\n           LIMIT 24",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "benefit_type",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "payment_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 3,
+        "name": "amount",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 4,
+        "name": "method",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "21e20a7a52f22ff88a65f40991dab1a9b87bba7c54c44936e834a7fb6214992f"
+}

@@ -59,7 +59,9 @@ mod tests {
     use super::*;
 
     fn sample() -> RawMfatCitizen {
-        serde_json::from_value(serde_json::json!([object Object])).unwrap()
+        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/mfat_batch.json")).unwrap();
+                let batch: crate::raw::RawMfatBatch = serde_json::from_slice(&bytes).unwrap();
+                batch.citizens.into_iter().next().unwrap()
     }
 
     #[test]
@@ -67,18 +69,18 @@ mod tests {
         let raw = sample();
         let t = transform_citizen(&raw).unwrap();
         assert_eq!(t.citizen.mfat_id, "MFAT-100001");
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
-        assert_eq!(t.overseas_missions.as_ref().unwrap().country, "Australia");
-        assert_eq!(t.overseas_missions.as_ref().unwrap().status, "active");
+        let t = transform_citizen(&sample()).unwrap();
+        assert_eq!(t.overseas_missions.first().unwrap().country, "Australia");
+        assert_eq!(t.overseas_missions.first().unwrap().status, "active");
 
-        let t = transform_citizen(&batch.citizens[0]).unwrap();
-        assert_eq!(t.travel_advisories.as_ref().unwrap().country, "Indonesia");
+        let t = transform_citizen(&sample()).unwrap();
+        assert_eq!(t.travel_advisories.first().unwrap().country, "Indonesia");
         assert_eq!(
-            t.travel_advisories.as_ref().unwrap().level,
+            t.travel_advisories.first().unwrap().level,
             "Exercise increased caution"
         );
         assert_eq!(
-            t.travel_advisories.as_ref().unwrap().updated.to_string(),
+            t.travel_advisories.first().unwrap().updated.to_string(),
             "2026-03-10"
         );
     }
