@@ -1,0 +1,47 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT employment_income, self_employment_income, rental_income, other_income, total_deductions FROM income_records\n           WHERE citizen_id = $1 AND assessment_year = $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "employment_income",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 1,
+        "name": "self_employment_income",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 2,
+        "name": "rental_income",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 3,
+        "name": "other_income",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 4,
+        "name": "total_deductions",
+        "type_info": "Numeric"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "2bb465621b9c55b28c434709850a96ccfe822d42a9416a8db6e407ac19140728"
+}

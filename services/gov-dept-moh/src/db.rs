@@ -74,7 +74,7 @@ pub async fn fetch_prescriptions(
     sqlx::query_as!(
         PrescriptionRow,
         r#"SELECT id, medication, dose, repeats_total, repeats_remaining, issued_at
-           FROM prescriptions
+         FROM prescriptions
            WHERE citizen_id = $1
            ORDER BY issued_at DESC"#,
         citizen_id
@@ -90,7 +90,7 @@ pub async fn fetch_appointments(
     sqlx::query_as!(
         AppointmentRow,
         r#"SELECT id, provider, appt_date, type, status
-           FROM appointments
+         FROM appointments
            WHERE citizen_id = $1
            ORDER BY appt_date ASC"#,
         citizen_id
@@ -106,7 +106,7 @@ pub async fn fetch_vaccinations(
     sqlx::query_as!(
         VaccinationRow,
         r#"SELECT id, vaccine, vaccine_date, due_for_booster
-           FROM vaccinations
+         FROM vaccinations
            WHERE citizen_id = $1
            ORDER BY vaccine_date DESC"#,
         citizen_id
@@ -155,16 +155,28 @@ pub async fn decrement_prescription_repeat(
     Ok(row.map(|r| r.repeats_remaining))
 }
 
-pub async fn log_action(
-    pool: &PgPool,
-    citizen_id: Uuid,
-    action_type: &str,
-    parameters: serde_json::Value,
-    performed_by: &str,
-    ai_level: Option<&str>,
-    result_success: bool,
-    result_message: Option<&str>,
-) -> sqlx::Result<()> {
+/// One row for `actions_log`.
+#[derive(Debug)]
+pub struct ActionLogEntry<'a> {
+    pub citizen_id: Uuid,
+    pub action_type: &'a str,
+    pub parameters: serde_json::Value,
+    pub performed_by: &'a str,
+    pub ai_level: Option<&'a str>,
+    pub result_success: bool,
+    pub result_message: Option<&'a str>,
+}
+
+pub async fn log_action(pool: &PgPool, entry: ActionLogEntry<'_>) -> sqlx::Result<()> {
+    let ActionLogEntry {
+        citizen_id,
+        action_type,
+        parameters,
+        performed_by,
+        ai_level,
+        result_success,
+        result_message,
+    } = entry;
     sqlx::query!(
         r#"INSERT INTO actions_log (citizen_id, action_type, parameters, performed_by, ai_level, result_success, result_message)
            VALUES ($1, $2, $3, $4, $5, $6, $7)"#,

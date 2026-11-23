@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT id, benefit_type, payment_date, amount, method\n           FROM payments\n           WHERE citizen_id = $1\n           ORDER BY payment_date DESC\n           LIMIT 24",
+  "query": "SELECT id, provider, appt_date, type, status\n         FROM appointments\n           WHERE citizen_id = $1\n           ORDER BY appt_date ASC",
   "describe": {
     "columns": [
       {
@@ -10,22 +10,22 @@
       },
       {
         "ordinal": 1,
-        "name": "benefit_type",
+        "name": "provider",
         "type_info": "Text"
       },
       {
         "ordinal": 2,
-        "name": "payment_date",
-        "type_info": "Date"
+        "name": "appt_date",
+        "type_info": "Timestamptz"
       },
       {
         "ordinal": 3,
-        "name": "amount",
-        "type_info": "Numeric"
+        "name": "type",
+        "type_info": "Text"
       },
       {
         "ordinal": 4,
-        "name": "method",
+        "name": "status",
         "type_info": "Text"
       }
     ],
@@ -39,8 +39,8 @@
       false,
       false,
       false,
-      true
+      false
     ]
   },
-  "hash": "21e20a7a52f22ff88a65f40991dab1a9b87bba7c54c44936e834a7fb6214992f"
+  "hash": "e2b74d32a7af53c4e3a57799da75a859d8ef0e306229f5c32f9bde6412714512"
 }

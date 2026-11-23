@@ -1,0 +1,52 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, medication, dose, repeats_total, repeats_remaining, issued_at\n         FROM prescriptions\n           WHERE citizen_id = $1\n           ORDER BY issued_at DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "medication",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "dose",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "repeats_total",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
+        "name": "repeats_remaining",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "issued_at",
+        "type_info": "Date"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "dd402479f3fe2d5e492118d87a75ffeb4fd7a580995f8bdb4fe7bc8c54ba858e"
+}

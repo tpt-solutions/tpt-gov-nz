@@ -1,0 +1,64 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT membership_status, contribution_rate, employer_contribution_rate,\n                  scheme, total_balance, last_contribution_date,\n                  government_contribution_eligible, first_home_buyer_eligible\n        FROM kiwisaver_memberships\n           WHERE citizen_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "membership_status",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "contribution_rate",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 2,
+        "name": "employer_contribution_rate",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 3,
+        "name": "scheme",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "total_balance",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 5,
+        "name": "last_contribution_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 6,
+        "name": "government_contribution_eligible",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 7,
+        "name": "first_home_buyer_eligible",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      false,
+      true
+    ]
+  },
+  "hash": "468afc0c694cc7cb353e76b1131658c09dd73e60e5e90c2c6b15a18aa5a495f5"
+}

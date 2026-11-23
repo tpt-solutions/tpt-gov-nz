@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT certificate_number, date_of_birth, place_of_birth, parents FROM birth_certs WHERE citizen_id = $1 LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "certificate_number",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "date_of_birth",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 2,
+        "name": "place_of_birth",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "parents",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "ccf81c73019bc4a6446cd53c030b2eb72679d4173360d9582feddc8cfa156974"
+}

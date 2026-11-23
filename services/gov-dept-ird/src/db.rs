@@ -25,7 +25,6 @@ pub struct TaxAssessmentRow {
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct IncomeRow {
-    pub assessment_year: i32,
     pub employment_income: Option<sqlx::types::Decimal>,
     pub self_employment_income: Option<sqlx::types::Decimal>,
     pub rental_income: Option<sqlx::types::Decimal>,
@@ -36,8 +35,6 @@ pub struct IncomeRow {
 #[derive(Debug, sqlx::FromRow)]
 pub struct GstRegistrationRow {
     pub registered: bool,
-    pub gst_number: Option<String>,
-    pub filing_frequency: Option<String>,
 }
 
 #[derive(Debug, sqlx::FromRow)]
@@ -47,9 +44,6 @@ pub struct GstPeriodRow {
     pub period_end: chrono::NaiveDate,
     pub filing_due: chrono::NaiveDate,
     pub status: String,
-    pub sales_income: Option<sqlx::types::Decimal>,
-    pub gst_on_sales: Option<sqlx::types::Decimal>,
-    pub gst_on_purchases: Option<sqlx::types::Decimal>,
     pub refund_or_payment: Option<sqlx::types::Decimal>,
 }
 
@@ -96,7 +90,7 @@ pub async fn fetch_current_tax_assessment(
         TaxAssessmentRow,
         r#"SELECT assessment_year, tax_code, total_income, taxable_income,
                   tax_liability, tax_paid, tax_refund_due, tax_owing, assessment_status
-           FROM tax_assessments
+        FROM tax_assessments
            WHERE citizen_id = $1
            ORDER BY assessment_year DESC
            LIMIT 1"#,
@@ -114,7 +108,7 @@ pub async fn fetch_all_tax_assessments(
         TaxAssessmentRow,
         r#"SELECT assessment_year, tax_code, total_income, taxable_income,
                   tax_liability, tax_paid, tax_refund_due, tax_owing, assessment_status
-           FROM tax_assessments
+        FROM tax_assessments
            WHERE citizen_id = $1
            ORDER BY assessment_year DESC"#,
         citizen_id
@@ -130,9 +124,7 @@ pub async fn fetch_income_for_year(
 ) -> sqlx::Result<Option<IncomeRow>> {
     sqlx::query_as!(
         IncomeRow,
-        r#"SELECT assessment_year, employment_income, self_employment_income,
-                  rental_income, other_income, total_deductions
-           FROM income_records
+        r#"SELECT employment_income, self_employment_income, rental_income, other_income, total_deductions FROM income_records
            WHERE citizen_id = $1 AND assessment_year = $2"#,
         citizen_id,
         year
@@ -147,7 +139,7 @@ pub async fn fetch_gst_registration(
 ) -> sqlx::Result<Option<GstRegistrationRow>> {
     sqlx::query_as!(
         GstRegistrationRow,
-        "SELECT registered, gst_number, filing_frequency FROM gst_registrations WHERE citizen_id = $1",
+        "SELECT registered FROM gst_registrations WHERE citizen_id = $1",
         citizen_id
     )
     .fetch_optional(pool)
@@ -157,9 +149,7 @@ pub async fn fetch_gst_registration(
 pub async fn fetch_gst_periods(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<GstPeriodRow>> {
     sqlx::query_as!(
         GstPeriodRow,
-        r#"SELECT id, period_start, period_end, filing_due, status,
-                  sales_income, gst_on_sales, gst_on_purchases, refund_or_payment
-           FROM gst_periods
+        r#"SELECT id, period_start, period_end, filing_due, status, refund_or_payment FROM gst_periods
            WHERE citizen_id = $1
            ORDER BY period_start DESC
            LIMIT 12"#,
@@ -178,7 +168,7 @@ pub async fn fetch_kiwisaver(
         r#"SELECT membership_status, contribution_rate, employer_contribution_rate,
                   scheme, total_balance, last_contribution_date,
                   government_contribution_eligible, first_home_buyer_eligible
-           FROM kiwisaver_memberships
+        FROM kiwisaver_memberships
            WHERE citizen_id = $1"#,
         citizen_id
     )
@@ -192,7 +182,7 @@ pub async fn fetch_wff(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Option<W
         r#"SELECT eligible, number_of_dependant_children, income_threshold,
                   family_tax_credit, in_work_tax_credit, best_start_payment,
                   minimum_family_tax_credit, payment_frequency, next_review_date
-           FROM wff_entitlements
+        FROM wff_entitlements
            WHERE citizen_id = $1"#,
         citizen_id
     )
@@ -241,16 +231,28 @@ pub async fn file_gst_return(
     Ok(())
 }
 
-pub async fn log_action(
-    pool: &PgPool,
-    citizen_id: Uuid,
-    action_type: &str,
-    parameters: serde_json::Value,
-    performed_by: &str,
-    ai_level: Option<&str>,
-    result_success: bool,
-    result_message: Option<&str>,
-) -> sqlx::Result<()> {
+/// One row for `actions_log`.
+#[derive(Debug)]
+pub struct ActionLogEntry<'a> {
+    pub citizen_id: Uuid,
+    pub action_type: &'a str,
+    pub parameters: serde_json::Value,
+    pub performed_by: &'a str,
+    pub ai_level: Option<&'a str>,
+    pub result_success: bool,
+    pub result_message: Option<&'a str>,
+}
+
+pub async fn log_action(pool: &PgPool, entry: ActionLogEntry<'_>) -> sqlx::Result<()> {
+    let ActionLogEntry {
+        citizen_id,
+        action_type,
+        parameters,
+        performed_by,
+        ai_level,
+        result_success,
+        result_message,
+    } = entry;
     sqlx::query!(
         r#"INSERT INTO actions_log (citizen_id, action_type, parameters, performed_by, ai_level, result_success, result_message)
            VALUES ($1, $2, $3, $4, $5, $6, $7)"#,

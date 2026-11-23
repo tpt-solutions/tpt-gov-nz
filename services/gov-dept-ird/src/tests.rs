@@ -355,11 +355,11 @@ async fn http_round_trip(pool: PgPool) {
 
 // ── cross-department federation (consent-gated) ─────────────────────────────────
 
-use gov_identity_core::{CredentialIssuer, GovDid};
+use gov_identity_core::GovDid;
 
 #[sqlx::test]
 async fn cross_dept_winz_requests_ird_income_with_valid_grant(pool: PgPool) {
-    let issuer = CredentialIssuer::generate();
+    let issuer = gov_test_support::shared_issuer();
     let grant = issuer.issue_data_grant(
         GovDid::parse(TEST_DID).unwrap(),
         "winz",
@@ -413,7 +413,7 @@ async fn cross_dept_request_without_grant_is_forbidden(pool: PgPool) {
 
 #[sqlx::test]
 async fn cross_dept_request_for_scope_not_in_grant_is_forbidden(pool: PgPool) {
-    let issuer = CredentialIssuer::generate();
+    let issuer = gov_test_support::shared_issuer();
     let grant = issuer.issue_data_grant(
         GovDid::parse(TEST_DID).unwrap(),
         "winz",

@@ -263,11 +263,11 @@ async fn http_round_trip(pool: PgPool) {
 
 // ── cross-department federation (consent-gated) ─────────────────────────────────
 
-use gov_identity_core::{CredentialIssuer, GovDid};
+use gov_identity_core::GovDid;
 
 #[sqlx::test]
 async fn cross_dept_ird_requests_winz_benefits_with_valid_grant(pool: PgPool) {
-    let issuer = CredentialIssuer::generate();
+    let issuer = gov_test_support::shared_issuer();
     let grant = issuer.issue_data_grant(
         GovDid::parse(TEST_DID).unwrap(),
         "ird",
