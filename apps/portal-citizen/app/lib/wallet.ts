@@ -82,7 +82,10 @@ export function getWalletDid(): string | null {
   return getWallet()?.did ?? null;
 }
 
-/** Sign an arbitrary challenge string with the persisted private key. */
+/**
+ * Sign a base64url challenge from the identity server. The signature covers the
+ * decoded bytes, which is what `gov-identity-server` verifies.
+ */
 export async function signChallenge(challenge: string): Promise<string> {
   const wallet = getWallet();
   if (!wallet) throw new Error("No wallet found");
@@ -96,7 +99,7 @@ export async function signChallenge(challenge: string): Promise<string> {
   const sig = await window.crypto.subtle.sign(
     { name: "EdDSA" },
     privateKey,
-    new TextEncoder().encode(challenge) as BufferSource,
+    fromBase64Url(challenge) as BufferSource,
   );
   return toBase64Url(new Uint8Array(sig));
 }

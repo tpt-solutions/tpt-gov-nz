@@ -29,20 +29,39 @@ export function didMatchesPublicKey(did: string, publicKeyB64: string): boolean 
   }
 }
 
-export function verifyEd25519(
+/**
+ * Verify an Ed25519 signature over raw message bytes. The identity server signs
+ * the decoded bytes of its base64url challenge, so sign-in uses this form.
+ */
+export function verifyEd25519Raw(
   publicKeyB64: string,
-  challenge: string,
+  message: Buffer,
   signatureB64: string,
 ): boolean {
   try {
     const pubBytes = fromBase64Url(publicKeyB64);
+    if (pubBytes.length !== 32) return false;
     const pubKey = createPublicKey({
       key: { kty: "OKP", crv: "Ed25519", x: pubBytes.toString("base64url") },
       format: "jwk",
     });
     const sig = fromBase64Url(signatureB64);
-    return cryptoVerify(null, Buffer.from(challenge, "utf8"), pubKey, sig);
+    return cryptoVerify(null, message, pubKey, sig);
   } catch {
     return false;
   }
+}
+
+/** Verify an Ed25519 signature over the UTF-8 bytes of a string. */
+export function verifyEd25519(
+  publicKeyB64: string,
+  challenge: string,
+  signatureB64: string,
+): boolean {
+  return verifyEd25519Raw(publicKeyB64, Buffer.from(challenge, "utf8"), signatureB64);
+}
+
+/** Decode a base64url challenge into the bytes the wallet must sign. */
+export function challengeBytes(challengeB64Url: string): Buffer {
+  return fromBase64Url(challengeB64Url);
 }

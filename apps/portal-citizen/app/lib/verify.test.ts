@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { generateKeyPairSync, sign } from "node:crypto";
-import { didMatchesPublicKey, verifyEd25519 } from "./verify";
+import { challengeBytes, didMatchesPublicKey, verifyEd25519, verifyEd25519Raw } from "./verify";
 
 // Ed25519 key pairs from Node's crypto. The JWK `x` value is the unpadded
 // base64url encoding of the raw 32-byte public key, the same encoding the
@@ -53,6 +53,17 @@ describe("verifyEd25519", () => {
     const mallory = newIdentity();
     const sig = sign(null, Buffer.from("c", "utf8"), mallory.privateKey).toString("base64url");
     expect(verifyEd25519(alice.publicKeyB64, "c", sig)).toBe(false);
+  });
+
+  it("verifies a signature over the decoded challenge bytes, as the identity server does", () => {
+    const id = newIdentity();
+    // Identity challenges are base64url of random bytes; the wallet signs the decoded bytes.
+    const challenge = Buffer.from("random-challenge-bytes-0123456789").toString("base64url");
+    const sig = sign(null, challengeBytes(challenge), id.privateKey).toString("base64url");
+    expect(verifyEd25519Raw(id.publicKeyB64, challengeBytes(challenge), sig)).toBe(true);
+    // Signing the base64url text instead of its decoded bytes must not verify.
+    const wrong = sign(null, Buffer.from(challenge, "utf8"), id.privateKey).toString("base64url");
+    expect(verifyEd25519Raw(id.publicKeyB64, challengeBytes(challenge), wrong)).toBe(false);
   });
 
   it("returns false for malformed input rather than throwing", () => {

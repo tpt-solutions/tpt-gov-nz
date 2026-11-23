@@ -43,8 +43,15 @@ export default function LoginPage() {
     setBusy(true);
     setError(null);
     try {
-      const challengeRes = await fetch("/api/auth/challenge");
-      if (!challengeRes.ok) throw new Error("Could not start sign-in.");
+      const challengeRes = await fetch("/api/auth/challenge", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ did: wallet.did, publicKey: wallet.publicKeyB64 }),
+      });
+      if (!challengeRes.ok) {
+        const data = await challengeRes.json().catch(() => ({}));
+        throw new Error(data.error ?? "Could not start sign-in.");
+      }
       const { challenge } = await challengeRes.json();
       const signature = await signChallenge(challenge);
       const verifyRes = await fetch("/api/auth/verify", {
