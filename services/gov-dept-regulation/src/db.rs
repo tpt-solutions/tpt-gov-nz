@@ -10,7 +10,6 @@ pub struct CitizenRow {
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct RegulatoryReviewsRow {
-
     pub topic: String,
     pub agency: String,
     pub status: String,
@@ -32,7 +31,6 @@ pub async fn fetch_regulatory_reviews(
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct ProposalsRow {
-
     pub title: String,
     pub status: String,
 }

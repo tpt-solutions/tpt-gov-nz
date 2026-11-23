@@ -10,7 +10,6 @@ pub struct CitizenRow {
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct TitleRow {
-
     pub title_number: String,
     pub property_address: String,
     pub land_area_sqm: f64,
@@ -19,7 +18,6 @@ pub struct TitleRow {
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct OwnershipRow {
-
     pub title_number: String,
     pub ownership_share: String,
     pub registered_owners: serde_json::Value,

@@ -10,7 +10,6 @@ pub struct CitizenRow {
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct BudgetRow {
-
     pub fiscal_year: i32,
     pub portfolio: String,
     pub appropriation: String,
@@ -29,7 +28,6 @@ pub async fn fetch_budget(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<B
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct EconomicOutlookRow {
-
     pub forecast_year: i32,
     pub gdp_growth_pct: f64,
     pub inflation_pct: f64,

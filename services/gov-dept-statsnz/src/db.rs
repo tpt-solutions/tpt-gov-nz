@@ -10,7 +10,6 @@ pub struct CitizenRow {
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct CensusRow {
-
     pub census_year: i32,
     pub dwelling_type: String,
     pub household_size: i32,
@@ -19,7 +18,6 @@ pub struct CensusRow {
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct ProfileRow {
-
     pub data_summary: String,
     pub record_count: i32,
     pub last_updated: chrono::NaiveDate,

@@ -10,7 +10,6 @@ pub struct CitizenRow {
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct VesselsRow {
-
     pub vessel_name: String,
     pub flag: String,
     pub status: String,
@@ -28,7 +27,6 @@ pub async fn fetch_vessels(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Vec<
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct IncidentsRow {
-
     pub reference: String,
     pub incident_type: String,
     pub incident_date: chrono::NaiveDate,

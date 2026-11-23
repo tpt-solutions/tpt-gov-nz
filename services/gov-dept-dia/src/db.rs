@@ -10,7 +10,6 @@ pub struct CitizenRow {
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct PassportRow {
-
     pub passport_number: Option<String>,
     pub expiry_date: chrono::NaiveDate,
     pub renewable: bool,
@@ -18,7 +17,6 @@ pub struct PassportRow {
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct BirthCertRow {
-
     pub certificate_number: String,
     pub date_of_birth: chrono::NaiveDate,
     pub place_of_birth: String,
@@ -27,7 +25,6 @@ pub struct BirthCertRow {
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct CitizenshipRow {
-
     pub status: String,
     pub certificate_number: Option<String>,
     pub granted_at: Option<chrono::NaiveDate>,

@@ -10,7 +10,6 @@ pub struct CitizenRow {
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct InvestigationsRow {
-
     pub reference: String,
     pub matter: String,
     pub status: String,
@@ -32,7 +31,6 @@ pub async fn fetch_investigations(
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct OutcomesRow {
-
     pub reference: String,
     pub result: String,
     pub result_date: chrono::NaiveDate,

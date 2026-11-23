@@ -10,7 +10,6 @@ pub struct CitizenRow {
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct FineRow {
-
     pub fine_number: String,
     pub fine_type: String,
     pub status: String,
@@ -22,7 +21,6 @@ pub struct FineRow {
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct DisputeRow {
-
     pub dispute_number: String,
     pub claim_type: String,
     pub status: String,
@@ -33,7 +31,6 @@ pub struct DisputeRow {
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct CourtRecordRow {
-
     pub case_number: String,
     pub case_type: String,
     pub status: String,

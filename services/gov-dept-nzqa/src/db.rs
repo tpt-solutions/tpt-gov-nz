@@ -10,7 +10,6 @@ pub struct CitizenRow {
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct QualificationRow {
-
     pub qualification_id: String,
     pub title: String,
     pub level: i32,
@@ -20,7 +19,6 @@ pub struct QualificationRow {
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct TranscriptRow {
-
     pub record_summary: Option<String>,
     pub total_credits: Option<i32>,
     pub credit_summary: Option<String>,

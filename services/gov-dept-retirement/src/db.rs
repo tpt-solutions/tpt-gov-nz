@@ -10,7 +10,6 @@ pub struct CitizenRow {
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct RetirementPlanRow {
-
     pub has_plan: bool,
     pub retirement_age: i32,
     pub last_review: chrono::NaiveDate,
@@ -31,7 +30,6 @@ pub async fn fetch_retirement_plan(
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct GuidanceRow {
-
     pub topic: String,
     pub summary: String,
     pub published: chrono::NaiveDate,

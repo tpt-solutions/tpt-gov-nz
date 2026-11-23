@@ -10,7 +10,6 @@ pub struct CitizenRow {
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct ProcurementsRow {
-
     pub programme: String,
     pub value: f64,
     pub status: String,
@@ -31,7 +30,6 @@ pub async fn fetch_procurements(
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct BasesRow {
-
     pub name: String,
     pub location: String,
     pub status: String,

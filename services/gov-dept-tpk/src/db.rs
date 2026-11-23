@@ -10,7 +10,6 @@ pub struct CitizenRow {
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct ProgrammeRow {
-
     pub programme_name: String,
     pub status: String,
     pub region: String,
@@ -18,7 +17,6 @@ pub struct ProgrammeRow {
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct FundingRow {
-
     pub grant_id: String,
     pub amount: i32,
     pub purpose: String,

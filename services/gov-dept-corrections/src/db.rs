@@ -10,7 +10,6 @@ pub struct CitizenRow {
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct ProbationRow {
-
     pub status: String,
     pub officer_name: String,
     pub next_report_date: Option<chrono::NaiveDate>,
@@ -19,7 +18,6 @@ pub struct ProbationRow {
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct CaseRow {
-
     pub case_number: String,
     pub sentence_type: String,
     pub start_date: chrono::NaiveDate,

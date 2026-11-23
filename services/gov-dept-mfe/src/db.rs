@@ -10,7 +10,6 @@ pub struct CitizenRow {
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct EmissionsRow {
-
     pub report_year: i32,
     pub sector: String,
     pub tonnes_co2e: f64,
@@ -28,7 +27,6 @@ pub async fn fetch_emissions(pool: &PgPool, citizen_id: Uuid) -> sqlx::Result<Ve
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct ReportsRow {
-
     pub title: String,
     pub published: chrono::NaiveDate,
     pub status: String,

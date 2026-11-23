@@ -10,7 +10,6 @@ pub struct CitizenRow {
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct ServiceRecordsRow {
-
     pub service_no: String,
     pub branch: String,
     pub status: String,
@@ -31,7 +30,6 @@ pub async fn fetch_service_records(
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct DeploymentsRow {
-
     pub operation: String,
     pub country: String,
     pub year: i32,

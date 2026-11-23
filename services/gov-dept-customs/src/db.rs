@@ -10,7 +10,6 @@ pub struct CitizenRow {
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct TravelRow {
-
     pub passport_number: String,
     pub last_arrival: chrono::NaiveDate,
     pub arrival_port: String,
@@ -19,7 +18,6 @@ pub struct TravelRow {
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct DeclarationRow {
-
     pub declaration_id: String,
     pub date: chrono::NaiveDate,
     pub country_from: String,

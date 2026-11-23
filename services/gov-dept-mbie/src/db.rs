@@ -10,7 +10,6 @@ pub struct CitizenRow {
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct BusinessRow {
-
     pub nzbn: String,
     pub entity_name: String,
     pub entity_type: String,
@@ -20,7 +19,6 @@ pub struct BusinessRow {
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct DirectorshipRow {
-
     pub nzbn: String,
     pub entity_name: String,
     pub role: String,
