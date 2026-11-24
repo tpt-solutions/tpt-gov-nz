@@ -18,11 +18,26 @@ type Counts = BTreeMap<(&'static str, u16), u64>;
 
 static REQUESTS: Mutex<Counts> = Mutex::new(BTreeMap::new());
 
+/// Last readiness result per dependency (`identity-server`, `dept:<id>`).
+static DEPENDENCIES: Mutex<BTreeMap<String, bool>> = Mutex::new(BTreeMap::new());
+
 /// Lock the counters. A poisoned lock still holds valid counts, so recover it rather than panic.
 fn counts() -> MutexGuard<'static, Counts> {
     REQUESTS
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner())
+}
+
+fn dependencies() -> MutexGuard<'static, BTreeMap<String, bool>> {
+    DEPENDENCIES
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+}
+
+/// Record the result of a readiness probe. The gauge reflects the most recent
+/// `/ready` call, so it is only as fresh as the probes that run.
+pub fn record_dependency(target: &str, up: bool) {
+    dependencies().insert(target.to_string(), up);
 }
 
 /// Map a method to a fixed label; anything unusual is folded into `OTHER`.
@@ -63,6 +78,17 @@ pub fn render() -> String {
         let _ = writeln!(
             out,
             "gov_gateway_http_requests_total{{method=\"{method}\",status=\"{status}\"}} {count}"
+        );
+    }
+    out.push_str(
+        "# HELP gov_gateway_dependency_up 1 when the last /ready probe of the dependency succeeded.\n\
+         # TYPE gov_gateway_dependency_up gauge\n",
+    );
+    for (target, up) in dependencies().iter() {
+        let _ = writeln!(
+            out,
+            "gov_gateway_dependency_up{{target=\"{target}\"}} {}",
+            u8::from(*up)
         );
     }
     out
@@ -107,5 +133,16 @@ mod tests {
     #[test]
     fn render_never_includes_request_paths() {
         assert!(!render().contains("/v1/"));
+    }
+
+    #[test]
+    fn dependency_gauge_reflects_last_probe() {
+        record_dependency("dept:metrics-test", true);
+        assert!(render().contains("gov_gateway_dependency_up{target=\"dept:metrics-test\"} 1"));
+
+        record_dependency("dept:metrics-test", false);
+        let text = render();
+        assert!(text.contains("gov_gateway_dependency_up{target=\"dept:metrics-test\"} 0"));
+        assert!(!text.contains("gov_gateway_dependency_up{target=\"dept:metrics-test\"} 1"));
     }
 }

@@ -134,6 +134,9 @@ pub async fn ready(State(state): State<AppState>) -> Response {
         }
     }
     checks.sort_by(|a, b| a.name.cmp(&b.name));
+    for check in &checks {
+        crate::metrics::record_dependency(&check.name, check.ready);
+    }
 
     let (code, status) = summarize(&checks);
     (code, Json(ReadyResponse { status, checks })).into_response()
