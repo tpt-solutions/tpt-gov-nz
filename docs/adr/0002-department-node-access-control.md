@@ -1,6 +1,6 @@
 # 0002. Department node access control: mTLS from gateway and staff portal
 
-- **Status:** Accepted. Not yet implemented.
+- **Status:** Accepted. Partly implemented: step 1 and the IRD service (step 2, for IRD only).
 - **Date:** 2026-11-23
 - **Decides:** the "Remove `requesting_dept_id` self-assertion bypass" item in `TODO.md`
 
@@ -56,6 +56,19 @@ node can read its data, and no header or body field can be trusted to stop that.
 | Route staff through the gateway | Good long-term target, but it is a larger change to the staff portal than this decision needs. Can be done later, on top of mTLS. |
 
 ## Follow-up
+
+**Done:** (1) `gov-mtls::serve` serves an axum router over mTLS, exposes the peer certificate fingerprint to handlers, and enforces a caller allow-list (`restrict_to_peers`). `transport_from_env` refuses to start without mTLS unless `TPT__GOV__ENV=development`. The IRD service uses it; its dev compose entry sets the development flag. Tested with real TLS handshakes (`crates/gov-mtls/tests/serve_mtls.rs`).
+
+**Decision (amendment, 2026-11-24):** citizen-portal calls to department services go through the gateway, not directly. This replaces the earlier open question. The citizen portal is not a peer. Its requests carry a gateway token, which the gateway verifies, and the gateway is the only peer that calls the department.
+
+- The citizen portal mints a short-lived gateway token (HS256, `TPT__GOV__JWT_SECRET`) with `sub` = the citizen DID, `scopes` = the granted scopes, and `typ: "citizen"`. The portal's session token keeps its own secret and is not sent to the gateway.
+- The gateway sets `x-requesting-dept-id: citizen` for `typ: "citizen"` tokens, and `x-citizen-did` from `sub`. The scope check on the requested department still applies.
+- A department node treats `citizen` as self-access only when `x-citizen-did` equals the record being read. Otherwise it refuses with 403 and still writes the audit row. The IRD service does this now.
+
+Implemented so far: the gateway `typ` claim and requesting-department rule (with tests), and the IRD subject check (with tests). **Not yet done:** the portal token minting, routing the 94 portal call sites through `/v1/dept/{id}`, and the same subject check in the template and other services.
+
+**Not yet done:** the staff portal and gateway client side, compose wiring beyond IRD, the template and the other 46 services, and removing the direct-access branch.
+
 
 Implementation order: (1) TLS serving in `gov-mtls`, (2) dept node template and
 generator, (3) gateway and staff portal clients, (4) compose and env wiring, (5) remove
