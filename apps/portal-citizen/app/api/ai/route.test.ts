@@ -102,8 +102,10 @@ describe("POST /api/ai", () => {
     ]);
     await POST(request({ question: "What is my IRD number?" }));
     const [, , context] = mocks.chat.mock.calls[0] as [string, string, { content: string }[]];
-    expect(context[0].content).not.toContain("123-456-789");
-    expect(context[0].content).toContain("[IRD-REDACTED]");
+    const first = context[0];
+    expect(first).toBeDefined();
+    expect(first?.content).not.toContain("123-456-789");
+    expect(first?.content).toContain("[IRD-REDACTED]");
   });
 
   it("returns the answer on success", async () => {
