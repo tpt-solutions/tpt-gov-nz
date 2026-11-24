@@ -535,9 +535,10 @@ async fn citizen_cannot_read_another_citizens_record(pool: PgPool) {
     let resp = citizen_self_request(&pool, "did:gov:nz:someone-else").await;
     assert_eq!(resp.status(), StatusCode::FORBIDDEN);
 
-    let outcome: (String,) = sqlx::query_as("SELECT outcome FROM data_access_log ORDER BY id DESC LIMIT 1")
-        .fetch_one(&pool)
-        .await
-        .unwrap();
+    let outcome: (String,) =
+        sqlx::query_as("SELECT outcome FROM data_access_log ORDER BY id DESC LIMIT 1")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
     assert_eq!(outcome.0, "denied", "the refused attempt is still audited");
 }
