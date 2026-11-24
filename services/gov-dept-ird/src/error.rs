@@ -14,6 +14,9 @@ pub enum IrdError {
     #[error("Scope not granted: {0}")]
     ScopeNotGranted(String),
 
+    #[error("A citizen may only access their own data")]
+    SubjectMismatch,
+
     #[error("Database error: {0}")]
     Database(#[from] sqlx::Error),
 
@@ -29,6 +32,7 @@ impl IntoResponse for IrdError {
         let (status, message) = match &self {
             IrdError::CitizenNotFound => (StatusCode::NOT_FOUND, self.to_string()),
             IrdError::ScopeNotGranted(_) => (StatusCode::FORBIDDEN, self.to_string()),
+            IrdError::SubjectMismatch => (StatusCode::FORBIDDEN, self.to_string()),
             IrdError::Database(_) => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "Internal error".to_owned(),

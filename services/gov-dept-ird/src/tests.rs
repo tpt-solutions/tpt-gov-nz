@@ -506,3 +506,38 @@ async fn audit_log_rejects_updates(pool: PgPool) {
         .await;
     assert!(result.is_err(), "data_access_log is append-only");
 }
+
+// ── citizen self-access via the gateway ─────────────────────────────────────────
+
+async fn citizen_self_request(pool: &PgPool, subject: &str) -> axum::http::Response<Body> {
+    let app = build_app(pool.clone());
+    let req = Request::builder()
+        .method("POST")
+        .uri("/citizen/data")
+        .header("content-type", "application/json")
+        .header("x-requesting-dept-id", "citizen")
+        .header("x-citizen-did", subject)
+        .body(Body::from(
+            json!({ "did": TEST_DID, "scopes": ["ird:kiwisaver"] }).to_string(),
+        ))
+        .unwrap();
+    app.oneshot(req).await.unwrap()
+}
+
+#[sqlx::test]
+async fn citizen_reads_own_record_through_gateway(pool: PgPool) {
+    let resp = citizen_self_request(&pool, TEST_DID).await;
+    assert_eq!(resp.status(), StatusCode::OK);
+}
+
+#[sqlx::test]
+async fn citizen_cannot_read_another_citizens_record(pool: PgPool) {
+    let resp = citizen_self_request(&pool, "did:gov:nz:someone-else").await;
+    assert_eq!(resp.status(), StatusCode::FORBIDDEN);
+
+    let outcome: (String,) = sqlx::query_as("SELECT outcome FROM data_access_log ORDER BY id DESC LIMIT 1")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert_eq!(outcome.0, "denied", "the refused attempt is still audited");
+}

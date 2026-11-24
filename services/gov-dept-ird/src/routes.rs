@@ -95,7 +95,16 @@ pub async fn fetch_data(
     // requesting_dept_id comes from gateway-set header, not request body.
     let requesting_dept = extract_requesting_dept(&headers, &req.requesting_dept_id);
     let direct_access = is_direct_access(requesting_dept.as_deref());
-    let decision: Result<(), IrdError> = if direct_access {
+    let decision: Result<(), IrdError> = if requesting_dept.as_deref() == Some("citizen") {
+        // Self-access from the citizen portal: the gateway verified the token and set
+        // x-citizen-did from its subject. Only that citizen's own record may be read.
+        let subject = headers.get("x-citizen-did").and_then(|v| v.to_str().ok());
+        if subject == Some(citizen.did.as_str()) {
+            Ok(())
+        } else {
+            Err(IrdError::SubjectMismatch)
+        }
+    } else if direct_access {
         Ok(())
     } else {
         let input = consent::ConsentInput {
