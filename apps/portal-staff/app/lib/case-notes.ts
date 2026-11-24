@@ -69,7 +69,7 @@ function ensureSchema(): Promise<void> {
  */
 const demoStore: CaseNote[] = [];
 
-function useDemoStore(): boolean {
+function demoStoreActive(): boolean {
   if (staffDbConfigured()) return false;
   if (STAFF_CONFIG.demoMode) return true;
   throw new Error("Staff case notes require TPT__GOV__STAFF_DATABASE_URL");
@@ -95,7 +95,7 @@ function toNote(row: NoteRow): CaseNote {
 
 /** List a citizen's notes, newest first, recording the read against `viewer`. */
 export async function listCaseNotes(did: string, viewer: string): Promise<CaseNote[]> {
-  if (useDemoStore()) {
+  if (demoStoreActive()) {
     return demoStore
       .filter((n) => n.did === did)
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
@@ -133,7 +133,7 @@ export async function addCaseNote(did: string, author: string, note: string): Pr
     createdAt: new Date().toISOString(),
   };
 
-  if (useDemoStore()) {
+  if (demoStoreActive()) {
     demoStore.push(entry);
     return entry;
   }
