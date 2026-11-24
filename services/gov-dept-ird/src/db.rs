@@ -231,6 +231,33 @@ pub async fn file_gst_return(
     Ok(())
 }
 
+/// One row for `data_access_log`.
+#[derive(Debug)]
+pub struct DataAccessEntry<'a> {
+    pub citizen_id: Uuid,
+    pub requesting_dept_id: &'a str,
+    pub scopes: &'a [String],
+    pub direct_access: bool,
+    pub granted: bool,
+}
+
+/// Append a read-audit row. Callers must propagate the error: a request whose
+/// access cannot be recorded must not return data.
+pub async fn log_data_access(pool: &PgPool, entry: DataAccessEntry<'_>) -> sqlx::Result<()> {
+    sqlx::query(
+        r#"INSERT INTO data_access_log (citizen_id, requesting_dept_id, scopes, direct_access, outcome)
+           VALUES ($1, $2, $3, $4, $5)"#,
+    )
+    .bind(entry.citizen_id)
+    .bind(entry.requesting_dept_id)
+    .bind(entry.scopes)
+    .bind(entry.direct_access)
+    .bind(if entry.granted { "granted" } else { "denied" })
+    .execute(pool)
+    .await?;
+    Ok(())
+}
+
 /// One row for `actions_log`.
 #[derive(Debug)]
 pub struct ActionLogEntry<'a> {

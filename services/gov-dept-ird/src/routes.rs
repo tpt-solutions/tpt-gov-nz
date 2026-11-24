@@ -94,7 +94,10 @@ pub async fn fetch_data(
     // covering every requested scope (verified via OPA when available, else locally).
     // requesting_dept_id comes from gateway-set header, not request body.
     let requesting_dept = extract_requesting_dept(&headers, &req.requesting_dept_id);
-    if !is_direct_access(requesting_dept.as_deref()) {
+    let direct_access = is_direct_access(requesting_dept.as_deref());
+    let decision: Result<(), IrdError> = if direct_access {
+        Ok(())
+    } else {
         let input = consent::ConsentInput {
             requesting_dept_id: requesting_dept.as_deref().unwrap_or("unknown"),
             citizen_did: &citizen.did,
@@ -103,11 +106,26 @@ pub async fn fetch_data(
         };
 
         match opa::evaluate(&input).await {
-            Some(true) => {}
-            Some(false) => return Err(IrdError::ScopeNotGranted(req.scopes.join(","))),
-            None => consent::verify_access(&input).await?,
+            Some(true) => Ok(()),
+            Some(false) => Err(IrdError::ScopeNotGranted(req.scopes.join(","))),
+            None => consent::verify_access(&input).await,
         }
-    }
+    };
+
+    // Read audit: every attempt is recorded, granted or denied. If the row
+    // cannot be written, the request fails and no data is returned.
+    db::log_data_access(
+        &pool,
+        db::DataAccessEntry {
+            citizen_id: citizen.id,
+            requesting_dept_id: requesting_dept.as_deref().unwrap_or("unknown"),
+            scopes: &req.scopes,
+            direct_access,
+            granted: decision.is_ok(),
+        },
+    )
+    .await?;
+    decision?;
 
     let has_scope = |s: &str| req.scopes.contains(&s.to_owned());
 

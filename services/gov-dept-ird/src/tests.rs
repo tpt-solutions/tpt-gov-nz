@@ -450,3 +450,57 @@ async fn citizen_id(pool: &PgPool) -> uuid::Uuid {
         .expect("test citizen seeded")
         .id
 }
+
+// ── read audit ─────────────────────────────────────────────────────────────────
+
+#[sqlx::test]
+async fn direct_read_writes_granted_audit_row(pool: PgPool) {
+    let _ = fetch_data(&pool, &["ird:kiwisaver"]).await;
+
+    let rows: Vec<(String, bool, Vec<String>)> = sqlx::query_as(
+        "SELECT outcome, direct_access, scopes FROM data_access_log ORDER BY id",
+    )
+    .fetch_all(&pool)
+    .await
+    .unwrap();
+    assert_eq!(rows.len(), 1, "one audit row per read");
+    assert_eq!(rows[0].0, "granted");
+    assert!(rows[0].1, "portal reads are direct access");
+    assert_eq!(rows[0].2, vec!["ird:kiwisaver".to_string()]);
+}
+
+#[sqlx::test]
+async fn denied_cross_department_read_is_audited(pool: PgPool) {
+    let app = build_app(pool.clone());
+    let body = json!({
+        "did": TEST_DID,
+        "scopes": ["ird:income"],
+        "requesting_dept_id": "winz",
+    })
+    .to_string();
+    let req = Request::builder()
+        .method("POST")
+        .uri("/citizen/data")
+        .header("content-type", "application/json")
+        .body(Body::from(body))
+        .unwrap();
+    let resp = app.oneshot(req).await.unwrap();
+    assert_ne!(resp.status(), StatusCode::OK, "ungranted cross-department read must be refused");
+
+    let outcomes: Vec<(String, bool)> = sqlx::query_as(
+        "SELECT outcome, direct_access FROM data_access_log ORDER BY id",
+    )
+    .fetch_all(&pool)
+    .await
+    .unwrap();
+    assert_eq!(outcomes, vec![("denied".to_string(), false)]);
+}
+
+#[sqlx::test]
+async fn audit_log_rejects_updates(pool: PgPool) {
+    let _ = fetch_data(&pool, &["ird:kiwisaver"]).await;
+    let result = sqlx::query("UPDATE data_access_log SET outcome = 'granted'")
+        .execute(&pool)
+        .await;
+    assert!(result.is_err(), "data_access_log is append-only");
+}
