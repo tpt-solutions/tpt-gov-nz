@@ -1,5 +1,6 @@
 "use server";
 
+import { parseDid, parseScopes } from "@tpt/gov-schema";
 import type { PacificDataBundle } from "@tpt/gov-schema";
 
 const PACIFIC_SERVICE_URL = process.env.PACIFIC_SERVICE_URL ?? "http://localhost:8127";
@@ -11,6 +12,12 @@ export async function fetchPacificDataForCitizen(
   did: string,
   scopes: string[],
 ): Promise<PacificDataBundle | null> {
+  const validDid = parseDid(did);
+  if (!validDid) return null;
+  const validScopes = parseScopes(scopes);
+  if (!validScopes) return null;
+  did = validDid;
+  scopes = validScopes;
   if (!did) return null;
 
   try {

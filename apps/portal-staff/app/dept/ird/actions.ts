@@ -1,5 +1,6 @@
 "use server";
 
+import { parseDid, parseScopes } from "@tpt/gov-schema";
 import type { IRDDataBundle } from "@tpt/gov-schema";
 
 const IRD_SERVICE_URL = process.env.IRD_SERVICE_URL ?? "http://localhost:8090";
@@ -13,6 +14,12 @@ export async function fetchIrdDataForCitizen(
   did: string,
   scopes: string[],
 ): Promise<IRDDataBundle | null> {
+  const validDid = parseDid(did);
+  if (!validDid) return null;
+  const validScopes = parseScopes(scopes);
+  if (!validScopes) return null;
+  did = validDid;
+  scopes = validScopes;
   if (!did) return null;
 
   try {

@@ -1,5 +1,6 @@
 "use server";
 
+import { parseDid, parseScopes } from "@tpt/gov-schema";
 import type { HUDDataBundle } from "@tpt/gov-schema";
 
 const HUD_SERVICE_URL = process.env.HUD_SERVICE_URL ?? "http://localhost:8098";
@@ -11,6 +12,12 @@ export async function fetchHudDataForCitizen(
   did: string,
   scopes: string[],
 ): Promise<HUDDataBundle | null> {
+  const validDid = parseDid(did);
+  if (!validDid) return null;
+  const validScopes = parseScopes(scopes);
+  if (!validScopes) return null;
+  did = validDid;
+  scopes = validScopes;
   if (!did) return null;
 
   try {

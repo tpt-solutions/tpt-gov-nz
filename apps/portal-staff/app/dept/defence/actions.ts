@@ -1,5 +1,6 @@
 "use server";
 
+import { parseDid, parseScopes } from "@tpt/gov-schema";
 import type { DefenceDataBundle } from "@tpt/gov-schema";
 
 const DEFENCE_SERVICE_URL = process.env.DEFENCE_SERVICE_URL ?? "http://localhost:8144";
@@ -11,6 +12,12 @@ export async function fetchDefenceDataForCitizen(
   did: string,
   scopes: string[],
 ): Promise<DefenceDataBundle | null> {
+  const validDid = parseDid(did);
+  if (!validDid) return null;
+  const validScopes = parseScopes(scopes);
+  if (!validScopes) return null;
+  did = validDid;
+  scopes = validScopes;
   if (!did) return null;
 
   try {

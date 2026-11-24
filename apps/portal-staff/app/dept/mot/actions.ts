@@ -1,5 +1,6 @@
 "use server";
 
+import { parseDid, parseScopes } from "@tpt/gov-schema";
 import type { MotDataBundle } from "@tpt/gov-schema";
 
 const MOT_SERVICE_URL = process.env.MOT_SERVICE_URL ?? "http://localhost:8135";
@@ -11,6 +12,12 @@ export async function fetchMotDataForCitizen(
   did: string,
   scopes: string[],
 ): Promise<MotDataBundle | null> {
+  const validDid = parseDid(did);
+  if (!validDid) return null;
+  const validScopes = parseScopes(scopes);
+  if (!validScopes) return null;
+  did = validDid;
+  scopes = validScopes;
   if (!did) return null;
 
   try {

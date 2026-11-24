@@ -1,5 +1,6 @@
 "use server";
 
+import { parseDid, parseScopes } from "@tpt/gov-schema";
 import type { MaritimeDataBundle } from "@tpt/gov-schema";
 
 const MARITIME_SERVICE_URL = process.env.MARITIME_SERVICE_URL ?? "http://localhost:8137";
@@ -11,6 +12,12 @@ export async function fetchMaritimeDataForCitizen(
   did: string,
   scopes: string[],
 ): Promise<MaritimeDataBundle | null> {
+  const validDid = parseDid(did);
+  if (!validDid) return null;
+  const validScopes = parseScopes(scopes);
+  if (!validScopes) return null;
+  did = validDid;
+  scopes = validScopes;
   if (!did) return null;
 
   try {

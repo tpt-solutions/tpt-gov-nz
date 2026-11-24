@@ -1,5 +1,6 @@
 "use server";
 
+import { parseDid, parseScopes } from "@tpt/gov-schema";
 import type { MOJDataBundle } from "@tpt/gov-schema";
 
 const MOJ_SERVICE_URL = process.env.MOJ_SERVICE_URL ?? "http://localhost:8096";
@@ -11,6 +12,12 @@ export async function fetchMojDataForCitizen(
   did: string,
   scopes: string[],
 ): Promise<MOJDataBundle | null> {
+  const validDid = parseDid(did);
+  if (!validDid) return null;
+  const validScopes = parseScopes(scopes);
+  if (!validScopes) return null;
+  did = validDid;
+  scopes = validScopes;
   if (!did) return null;
 
   try {

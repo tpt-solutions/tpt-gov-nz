@@ -1,5 +1,6 @@
 "use server";
 
+import { parseDid, parseScopes } from "@tpt/gov-schema";
 import type { EroDataBundle } from "@tpt/gov-schema";
 
 const ERO_SERVICE_URL = process.env.ERO_SERVICE_URL ?? "http://localhost:8140";
@@ -11,6 +12,12 @@ export async function fetchEroDataForCitizen(
   did: string,
   scopes: string[],
 ): Promise<EroDataBundle | null> {
+  const validDid = parseDid(did);
+  if (!validDid) return null;
+  const validScopes = parseScopes(scopes);
+  if (!validScopes) return null;
+  did = validDid;
+  scopes = validScopes;
   if (!did) return null;
 
   try {

@@ -1,5 +1,6 @@
 "use server";
 
+import { parseDid, parseScopes } from "@tpt/gov-schema";
 import type { NzsisDataBundle } from "@tpt/gov-schema";
 
 const NZSIS_SERVICE_URL = process.env.NZSIS_SERVICE_URL ?? "http://localhost:8147";
@@ -11,6 +12,12 @@ export async function fetchNzsisDataForCitizen(
   did: string,
   scopes: string[],
 ): Promise<NzsisDataBundle | null> {
+  const validDid = parseDid(did);
+  if (!validDid) return null;
+  const validScopes = parseScopes(scopes);
+  if (!validScopes) return null;
+  did = validDid;
+  scopes = validScopes;
   if (!did) return null;
 
   try {

@@ -1,5 +1,6 @@
 "use server";
 
+import { parseDid, parseScopes } from "@tpt/gov-schema";
 import type { StatsNZDataBundle } from "@tpt/gov-schema";
 
 const STATSNZ_SERVICE_URL = process.env.STATSNZ_SERVICE_URL ?? "http://localhost:8103";
@@ -11,6 +12,12 @@ export async function fetchStatsnzDataForCitizen(
   did: string,
   scopes: string[],
 ): Promise<StatsNZDataBundle | null> {
+  const validDid = parseDid(did);
+  if (!validDid) return null;
+  const validScopes = parseScopes(scopes);
+  if (!validScopes) return null;
+  did = validDid;
+  scopes = validScopes;
   if (!did) return null;
 
   try {

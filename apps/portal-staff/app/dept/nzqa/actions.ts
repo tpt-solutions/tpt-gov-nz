@@ -1,5 +1,6 @@
 "use server";
 
+import { parseDid, parseScopes } from "@tpt/gov-schema";
 import type { NZQADataBundle } from "@tpt/gov-schema";
 
 const NZQA_SERVICE_URL = process.env.NZQA_SERVICE_URL ?? "http://localhost:8099";
@@ -11,6 +12,12 @@ export async function fetchNzqaDataForCitizen(
   did: string,
   scopes: string[],
 ): Promise<NZQADataBundle | null> {
+  const validDid = parseDid(did);
+  if (!validDid) return null;
+  const validScopes = parseScopes(scopes);
+  if (!validScopes) return null;
+  did = validDid;
+  scopes = validScopes;
   if (!did) return null;
 
   try {

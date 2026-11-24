@@ -1,5 +1,6 @@
 "use server";
 
+import { parseDid, parseScopes } from "@tpt/gov-schema";
 import type { SfoDataBundle } from "@tpt/gov-schema";
 
 const SFO_SERVICE_URL = process.env.SFO_SERVICE_URL ?? "http://localhost:8124";
@@ -11,6 +12,12 @@ export async function fetchSfoDataForCitizen(
   did: string,
   scopes: string[],
 ): Promise<SfoDataBundle | null> {
+  const validDid = parseDid(did);
+  if (!validDid) return null;
+  const validScopes = parseScopes(scopes);
+  if (!validScopes) return null;
+  did = validDid;
+  scopes = validScopes;
   if (!did) return null;
 
   try {

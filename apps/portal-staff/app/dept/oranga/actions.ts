@@ -1,5 +1,6 @@
 "use server";
 
+import { parseDid, parseScopes } from "@tpt/gov-schema";
 import type { OrangaDataBundle } from "@tpt/gov-schema";
 
 const ORANGA_SERVICE_URL = process.env.ORANGA_SERVICE_URL ?? "http://localhost:8125";
@@ -11,6 +12,12 @@ export async function fetchOrangaDataForCitizen(
   did: string,
   scopes: string[],
 ): Promise<OrangaDataBundle | null> {
+  const validDid = parseDid(did);
+  if (!validDid) return null;
+  const validScopes = parseScopes(scopes);
+  if (!validScopes) return null;
+  did = validDid;
+  scopes = validScopes;
   if (!did) return null;
 
   try {

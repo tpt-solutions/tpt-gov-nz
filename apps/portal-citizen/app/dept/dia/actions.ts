@@ -1,5 +1,6 @@
 "use server";
 
+import { parseScopes, parseActionRequest, parseQuestion } from "@tpt/gov-schema";
 import type { DIADataBundle } from "@tpt/gov-schema";
 import { askWithContext } from "../../ai/client";
 import { fetchDeptData } from "../../lib/data-access";
@@ -10,6 +11,9 @@ import { PORTAL_CONFIG } from "../../lib/config";
 const DIA_SERVICE_URL = process.env.DIA_SERVICE_URL ?? "http://localhost:8093";
 
 export async function fetchDiaData(scopes: string[]): Promise<DIADataBundle | null> {
+  const validScopes = parseScopes(scopes);
+  if (!validScopes) return null;
+  scopes = validScopes;
   return (await fetchDeptData("dia", scopes)) as DIADataBundle | null;
 }
 
@@ -17,6 +21,10 @@ export async function submitDiaAction(
   type: string,
   parameters: Record<string, unknown>
 ): Promise<{ success: boolean; message?: string }> {
+  const request = parseActionRequest(type, parameters);
+  if (!request) return { success: false, message: "Invalid request." };
+  type = request.type;
+  parameters = request.parameters;
   if (PORTAL_CONFIG.demoMode) {
     return { success: true, message: "Demo mode: action recorded locally (no live service)." };
   }
@@ -45,6 +53,9 @@ export async function submitDiaAction(
 // ── AI: "my passport is expiring, what do I do?" (Stage 6) ──────────────────────
 
 export async function askDia(question: string): Promise<{ answer: string; enabled: boolean }> {
+  const validQuestion = parseQuestion(question);
+  if (!validQuestion) return { answer: "Please enter a question.", enabled: false };
+  question = validQuestion;
   const data = await fetchDiaData(["dia:passport", "dia:citizenship"]);
   if (!data) {
     return { answer: "Unable to load your DIA information.", enabled: false };

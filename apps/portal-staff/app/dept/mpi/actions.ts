@@ -1,5 +1,6 @@
 "use server";
 
+import { parseDid, parseScopes } from "@tpt/gov-schema";
 import type { MPIDataBundle } from "@tpt/gov-schema";
 
 const MPI_SERVICE_URL = process.env.MPI_SERVICE_URL ?? "http://localhost:8106";
@@ -11,6 +12,12 @@ export async function fetchMpiDataForCitizen(
   did: string,
   scopes: string[],
 ): Promise<MPIDataBundle | null> {
+  const validDid = parseDid(did);
+  if (!validDid) return null;
+  const validScopes = parseScopes(scopes);
+  if (!validScopes) return null;
+  did = validDid;
+  scopes = validScopes;
   if (!did) return null;
 
   try {

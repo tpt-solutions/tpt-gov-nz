@@ -1,5 +1,6 @@
 "use server";
 
+import { parseDid, parseScopes } from "@tpt/gov-schema";
 import type { WINZDataBundle } from "@tpt/gov-schema";
 
 const WINZ_SERVICE_URL = process.env.WINZ_SERVICE_URL ?? "http://localhost:8091";
@@ -12,6 +13,12 @@ export async function fetchWinzDataForCitizen(
   did: string,
   scopes: string[],
 ): Promise<WINZDataBundle | null> {
+  const validDid = parseDid(did);
+  if (!validDid) return null;
+  const validScopes = parseScopes(scopes);
+  if (!validScopes) return null;
+  did = validDid;
+  scopes = validScopes;
   if (!did) return null;
 
   try {

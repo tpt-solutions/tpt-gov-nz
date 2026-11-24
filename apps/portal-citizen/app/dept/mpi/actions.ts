@@ -1,5 +1,6 @@
 "use server";
 
+import { parseScopes, parseActionRequest, parseQuestion } from "@tpt/gov-schema";
 import type { MPIDataBundle } from "@tpt/gov-schema";
 import { askWithContext } from "../../ai/client";
 import { fetchDeptData } from "../../lib/data-access";
@@ -10,6 +11,9 @@ import { PORTAL_CONFIG } from "../../lib/config";
 const MPI_SERVICE_URL = process.env.MPI_SERVICE_URL ?? "http://localhost:8106";
 
 export async function fetchMpiData(scopes: string[]): Promise<MPIDataBundle | null> {
+  const validScopes = parseScopes(scopes);
+  if (!validScopes) return null;
+  scopes = validScopes;
   return (await fetchDeptData("mpi", scopes)) as MPIDataBundle | null;
 }
 
@@ -17,6 +21,10 @@ export async function submitMpiAction(
   type: string,
   parameters: Record<string, unknown>
 ): Promise<{ success: boolean; message?: string }> {
+  const request = parseActionRequest(type, parameters);
+  if (!request) return { success: false, message: "Invalid request." };
+  type = request.type;
+  parameters = request.parameters;
   if (PORTAL_CONFIG.demoMode) {
     return { success: true, message: "Demo mode: action recorded locally (no live service)." };
   }
@@ -45,6 +53,9 @@ export async function submitMpiAction(
 // ── AI: "what certifications do I hold?" (Stage 6) ─────────────
 
 export async function askMpi(question: string): Promise<{ answer: string; enabled: boolean }> {
+  const validQuestion = parseQuestion(question);
+  if (!validQuestion) return { answer: "Please enter a question.", enabled: false };
+  question = validQuestion;
   const data = await fetchMpiData(["mpi:registrations", "mpi:certifications"]);
   if (!data) {
     return { answer: "Unable to load your MPI information.", enabled: false };

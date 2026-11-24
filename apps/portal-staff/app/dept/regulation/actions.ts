@@ -1,5 +1,6 @@
 "use server";
 
+import { parseDid, parseScopes } from "@tpt/gov-schema";
 import type { RegulationDataBundle } from "@tpt/gov-schema";
 
 const REGULATION_SERVICE_URL = process.env.REGULATION_SERVICE_URL ?? "http://localhost:8130";
@@ -11,6 +12,12 @@ export async function fetchRegulationDataForCitizen(
   did: string,
   scopes: string[],
 ): Promise<RegulationDataBundle | null> {
+  const validDid = parseDid(did);
+  if (!validDid) return null;
+  const validScopes = parseScopes(scopes);
+  if (!validScopes) return null;
+  did = validDid;
+  scopes = validScopes;
   if (!did) return null;
 
   try {

@@ -1,5 +1,6 @@
 "use server";
 
+import { parseDid, parseScopes } from "@tpt/gov-schema";
 import type { NzdfDataBundle } from "@tpt/gov-schema";
 
 const NZDF_SERVICE_URL = process.env.NZDF_SERVICE_URL ?? "http://localhost:8145";
@@ -11,6 +12,12 @@ export async function fetchNzdfDataForCitizen(
   did: string,
   scopes: string[],
 ): Promise<NzdfDataBundle | null> {
+  const validDid = parseDid(did);
+  if (!validDid) return null;
+  const validScopes = parseScopes(scopes);
+  if (!validScopes) return null;
+  did = validDid;
+  scopes = validScopes;
   if (!did) return null;
 
   try {

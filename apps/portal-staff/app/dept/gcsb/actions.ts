@@ -1,5 +1,6 @@
 "use server";
 
+import { parseDid, parseScopes } from "@tpt/gov-schema";
 import type { GcsbDataBundle } from "@tpt/gov-schema";
 
 const GCSB_SERVICE_URL = process.env.GCSB_SERVICE_URL ?? "http://localhost:8146";
@@ -11,6 +12,12 @@ export async function fetchGcsbDataForCitizen(
   did: string,
   scopes: string[],
 ): Promise<GcsbDataBundle | null> {
+  const validDid = parseDid(did);
+  if (!validDid) return null;
+  const validScopes = parseScopes(scopes);
+  if (!validScopes) return null;
+  did = validDid;
+  scopes = validScopes;
   if (!did) return null;
 
   try {

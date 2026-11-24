@@ -1,5 +1,6 @@
 "use server";
 
+import { parseDid, parseScopes } from "@tpt/gov-schema";
 import type { MfatDataBundle } from "@tpt/gov-schema";
 
 const MFAT_SERVICE_URL = process.env.MFAT_SERVICE_URL ?? "http://localhost:8143";
@@ -11,6 +12,12 @@ export async function fetchMfatDataForCitizen(
   did: string,
   scopes: string[],
 ): Promise<MfatDataBundle | null> {
+  const validDid = parseDid(did);
+  if (!validDid) return null;
+  const validScopes = parseScopes(scopes);
+  if (!validScopes) return null;
+  did = validDid;
+  scopes = validScopes;
   if (!did) return null;
 
   try {

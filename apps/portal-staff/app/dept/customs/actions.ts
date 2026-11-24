@@ -1,5 +1,6 @@
 "use server";
 
+import { parseDid, parseScopes } from "@tpt/gov-schema";
 import type { CUSTOMSDataBundle } from "@tpt/gov-schema";
 
 const CUSTOMS_SERVICE_URL = process.env.CUSTOMS_SERVICE_URL ?? "http://localhost:8105";
@@ -11,6 +12,12 @@ export async function fetchCustomsDataForCitizen(
   did: string,
   scopes: string[],
 ): Promise<CUSTOMSDataBundle | null> {
+  const validDid = parseDid(did);
+  if (!validDid) return null;
+  const validScopes = parseScopes(scopes);
+  if (!validScopes) return null;
+  did = validDid;
+  scopes = validScopes;
   if (!did) return null;
 
   try {

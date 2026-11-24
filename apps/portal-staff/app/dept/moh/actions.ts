@@ -1,5 +1,6 @@
 "use server";
 
+import { parseDid, parseScopes } from "@tpt/gov-schema";
 import type { MOHDataBundle } from "@tpt/gov-schema";
 
 const MOH_SERVICE_URL = process.env.MOH_SERVICE_URL ?? "http://localhost:8092";
@@ -11,6 +12,12 @@ export async function fetchMohDataForCitizen(
   did: string,
   scopes: string[],
 ): Promise<MOHDataBundle | null> {
+  const validDid = parseDid(did);
+  if (!validDid) return null;
+  const validScopes = parseScopes(scopes);
+  if (!validScopes) return null;
+  did = validDid;
+  scopes = validScopes;
   if (!did) return null;
 
   try {

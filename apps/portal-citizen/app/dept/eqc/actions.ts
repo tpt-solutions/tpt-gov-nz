@@ -1,5 +1,6 @@
 "use server";
 
+import { parseScopes, parseActionRequest, parseQuestion } from "@tpt/gov-schema";
 import type { EqcDataBundle } from "@tpt/gov-schema";
 import { askWithContext } from "../../ai/client";
 import { fetchDeptData } from "../../lib/data-access";
@@ -10,6 +11,9 @@ import { PORTAL_CONFIG } from "../../lib/config";
 const EQC_SERVICE_URL = process.env.EQC_SERVICE_URL ?? "http://localhost:8134";
 
 export async function fetchEqcData(scopes: string[]): Promise<EqcDataBundle | null> {
+  const validScopes = parseScopes(scopes);
+  if (!validScopes) return null;
+  scopes = validScopes;
   return (await fetchDeptData("eqc", scopes)) as EqcDataBundle | null;
 }
 
@@ -17,6 +21,10 @@ export async function submitEqcAction(
   type: string,
   parameters: Record<string, unknown>
 ): Promise<{ success: boolean; message?: string }> {
+  const request = parseActionRequest(type, parameters);
+  if (!request) return { success: false, message: "Invalid request." };
+  type = request.type;
+  parameters = request.parameters;
   if (PORTAL_CONFIG.demoMode) {
     return { success: true, message: "Demo mode: action recorded locally (no live service)." };
   }
@@ -45,6 +53,9 @@ export async function submitEqcAction(
 // ── AI ─────────────────────────────────────────────────────────────
 
 export async function askEqc(question: string): Promise<{ answer: string; enabled: boolean }> {
+  const validQuestion = parseQuestion(question);
+  if (!validQuestion) return { answer: "Please enter a question.", enabled: false };
+  question = validQuestion;
   const data = await fetchEqcData(["eqc:claims", "eqc:cover"]);
   if (!data) {
     return { answer: "Unable to load your Earthquake Commission (Toka Tū Ake) information.", enabled: false };

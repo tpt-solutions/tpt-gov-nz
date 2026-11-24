@@ -1,5 +1,6 @@
 "use server";
 
+import { parseScopes, parseActionRequest, parseQuestion } from "@tpt/gov-schema";
 import type { EthnicDataBundle } from "@tpt/gov-schema";
 import { askWithContext } from "../../ai/client";
 import { fetchDeptData } from "../../lib/data-access";
@@ -10,6 +11,9 @@ import { PORTAL_CONFIG } from "../../lib/config";
 const ETHNIC_SERVICE_URL = process.env.ETHNIC_SERVICE_URL ?? "http://localhost:8128";
 
 export async function fetchEthnicData(scopes: string[]): Promise<EthnicDataBundle | null> {
+  const validScopes = parseScopes(scopes);
+  if (!validScopes) return null;
+  scopes = validScopes;
   return (await fetchDeptData("ethnic", scopes)) as EthnicDataBundle | null;
 }
 
@@ -17,6 +21,10 @@ export async function submitEthnicAction(
   type: string,
   parameters: Record<string, unknown>
 ): Promise<{ success: boolean; message?: string }> {
+  const request = parseActionRequest(type, parameters);
+  if (!request) return { success: false, message: "Invalid request." };
+  type = request.type;
+  parameters = request.parameters;
   if (PORTAL_CONFIG.demoMode) {
     return { success: true, message: "Demo mode: action recorded locally (no live service)." };
   }
@@ -45,6 +53,9 @@ export async function submitEthnicAction(
 // ── AI ─────────────────────────────────────────────────────────────
 
 export async function askEthnic(question: string): Promise<{ answer: string; enabled: boolean }> {
+  const validQuestion = parseQuestion(question);
+  if (!validQuestion) return { answer: "Please enter a question.", enabled: false };
+  question = validQuestion;
   const data = await fetchEthnicData(["ethnic:programmes", "ethnic:community-grants"]);
   if (!data) {
     return { answer: "Unable to load your Ministry for Ethnic Communities information.", enabled: false };

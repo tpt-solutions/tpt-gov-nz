@@ -1,5 +1,6 @@
 "use server";
 
+import { parseScopes, parseActionRequest, parseQuestion } from "@tpt/gov-schema";
 import type { DOCDataBundle } from "@tpt/gov-schema";
 import { askWithContext } from "../../ai/client";
 import { getCitizenDid } from "../../lib/session";
@@ -9,6 +10,9 @@ import { PORTAL_CONFIG } from "../../lib/config";
 const DOC_SERVICE_URL = process.env.DOC_SERVICE_URL ?? "http://localhost:8107";
 
 export async function fetchDocData(scopes: string[]): Promise<DOCDataBundle | null> {
+  const validScopes = parseScopes(scopes);
+  if (!validScopes) return null;
+  scopes = validScopes;
   const did = await getCitizenDid();
   if (!did) return null;
 
@@ -31,6 +35,10 @@ export async function submitDocAction(
   type: string,
   parameters: Record<string, unknown>
 ): Promise<{ success: boolean; message?: string }> {
+  const request = parseActionRequest(type, parameters);
+  if (!request) return { success: false, message: "Invalid request." };
+  type = request.type;
+  parameters = request.parameters;
   if (PORTAL_CONFIG.demoMode) {
     return { success: true, message: "Demo mode: action recorded locally (no live service)." };
   }
@@ -59,6 +67,9 @@ export async function submitDocAction(
 // ── AI: "what permits do I have?" (Stage 6) ─────────────
 
 export async function askDoc(question: string): Promise<{ answer: string; enabled: boolean }> {
+  const validQuestion = parseQuestion(question);
+  if (!validQuestion) return { answer: "Please enter a question.", enabled: false };
+  question = validQuestion;
   const data = await fetchDocData(["doc:permits", "doc:concessions"]);
   if (!data) {
     return { answer: "Unable to load your conservation information.", enabled: false };

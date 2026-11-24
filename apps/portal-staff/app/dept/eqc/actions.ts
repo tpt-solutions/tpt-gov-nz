@@ -1,5 +1,6 @@
 "use server";
 
+import { parseDid, parseScopes } from "@tpt/gov-schema";
 import type { EqcDataBundle } from "@tpt/gov-schema";
 
 const EQC_SERVICE_URL = process.env.EQC_SERVICE_URL ?? "http://localhost:8134";
@@ -11,6 +12,12 @@ export async function fetchEqcDataForCitizen(
   did: string,
   scopes: string[],
 ): Promise<EqcDataBundle | null> {
+  const validDid = parseDid(did);
+  if (!validDid) return null;
+  const validScopes = parseScopes(scopes);
+  if (!validScopes) return null;
+  did = validDid;
+  scopes = validScopes;
   if (!did) return null;
 
   try {

@@ -1,5 +1,6 @@
 "use server";
 
+import { parseDid, parseScopes } from "@tpt/gov-schema";
 import type { TearawhitiDataBundle } from "@tpt/gov-schema";
 
 const TEARAWHITI_SERVICE_URL = process.env.TEARAWHITI_SERVICE_URL ?? "http://localhost:8129";
@@ -11,6 +12,12 @@ export async function fetchTearawhitiDataForCitizen(
   did: string,
   scopes: string[],
 ): Promise<TearawhitiDataBundle | null> {
+  const validDid = parseDid(did);
+  if (!validDid) return null;
+  const validScopes = parseScopes(scopes);
+  if (!validScopes) return null;
+  did = validDid;
+  scopes = validScopes;
   if (!did) return null;
 
   try {

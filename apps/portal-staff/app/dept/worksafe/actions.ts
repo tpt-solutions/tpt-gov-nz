@@ -1,5 +1,6 @@
 "use server";
 
+import { parseDid, parseScopes } from "@tpt/gov-schema";
 import type { WorksafeDataBundle } from "@tpt/gov-schema";
 
 const WORKSAFE_SERVICE_URL = process.env.WORKSAFE_SERVICE_URL ?? "http://localhost:8131";
@@ -11,6 +12,12 @@ export async function fetchWorksafeDataForCitizen(
   did: string,
   scopes: string[],
 ): Promise<WorksafeDataBundle | null> {
+  const validDid = parseDid(did);
+  if (!validDid) return null;
+  const validScopes = parseScopes(scopes);
+  if (!validScopes) return null;
+  did = validDid;
+  scopes = validScopes;
   if (!did) return null;
 
   try {
