@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { listReferrals } from "../lib/referrals";
+import { getStaffSession } from "../lib/session";
 import { STAFF_DEPARTMENTS } from "../lib/config";
 
 export const metadata = { title: "Referrals — Staff — My Gov NZ" };
 
 export default async function ReferralsPage() {
-  const referrals = await listReferrals();
+  const session = await getStaffSession();
+  const referrals = await listReferrals(session?.displayName ?? "");
   const byDept = (id: string) => STAFF_DEPARTMENTS.find((d) => d.id === id)?.shortName ?? id;
 
   return (

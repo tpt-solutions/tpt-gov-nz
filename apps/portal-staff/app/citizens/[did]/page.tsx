@@ -128,7 +128,7 @@ export default async function CaseFilePage({ params }: { params: Promise<Params>
   const [results, notes, referrals] = await Promise.all([
     fetchStaffCase(did),
     listCaseNotes(did, session?.displayName ?? ""),
-    listReferralsForCitizen(did),
+    listReferralsForCitizen(did, session?.displayName ?? ""),
   ]);
 
   const consented = results.filter((r) => r.consentGranted);
