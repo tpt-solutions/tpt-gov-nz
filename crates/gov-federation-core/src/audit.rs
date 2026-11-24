@@ -101,10 +101,8 @@ mod tests {
 
     #[test]
     fn sign_and_verify_round_trip() {
-        use ed25519_dalek::SigningKey;
-        use rand::rngs::OsRng;
 
-        let signing_key = SigningKey::generate(&mut OsRng);
+        let signing_key = crate::random_signing_key();
         let verifying_key = signing_key.verifying_key();
 
         let mut entry = AuditLogEntry::new(
@@ -124,11 +122,9 @@ mod tests {
 
     #[test]
     fn verify_fails_with_wrong_key() {
-        use ed25519_dalek::SigningKey;
-        use rand::rngs::OsRng;
 
-        let signing_key = SigningKey::generate(&mut OsRng);
-        let wrong_key = SigningKey::generate(&mut OsRng);
+        let signing_key = crate::random_signing_key();
+        let wrong_key = crate::random_signing_key();
 
         let mut entry = AuditLogEntry::new(
             Uuid::new_v4(),
