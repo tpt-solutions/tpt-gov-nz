@@ -10,6 +10,13 @@
 //! Certificates are generated with `scripts/gen-mtls-certs.sh` (see repo root).
 //! Enable per service via env vars (see [`TlsPaths::from_env`]).
 
+pub mod server;
+
+pub use server::{
+    PeerCertificate, Transport, fingerprint_sha256, parse_fingerprint_list, require_allowed_peer,
+    restrict_to_peers, serve, transport_from_env,
+};
+
 use std::fs;
 use std::io::BufRead;
 use std::net::ToSocketAddrs;
@@ -111,9 +118,20 @@ fn ca_store(path: &PathBuf) -> Result<RootCertStore> {
     Ok(store)
 }
 
+/// Install the ring crypto provider as rustls' process default. rustls panics when a
+/// config is built with no provider installed, so every builder calls this first.
+/// Safe to call repeatedly.
+pub fn install_crypto_provider() {
+    static ONCE: std::sync::Once = std::sync::Once::new();
+    ONCE.call_once(|| {
+        let _ = rustls::crypto::ring::default_provider().install_default();
+    });
+}
+
 /// Build a rustls [`ServerConfig`] that **requires** a valid client certificate
 /// issued by the internal CA. Used by every internal service's listener.
 pub fn server_config(paths: &TlsPaths) -> Result<ServerConfig> {
+    install_crypto_provider();
     let certs = load_certs(&paths.cert)?;
     let key = load_key(&paths.key)?;
     let roots = ca_store(&paths.ca)?;
@@ -131,6 +149,7 @@ pub fn server_config(paths: &TlsPaths) -> Result<ServerConfig> {
 /// Build a rustls [`ClientConfig`] that presents this service's client
 /// certificate and verifies the peer against the internal CA.
 pub fn client_config(paths: &TlsPaths) -> Result<ClientConfig> {
+    install_crypto_provider();
     let certs = load_certs(&paths.cert)?;
     let key = load_key(&paths.key)?;
     let roots = ca_store(&paths.ca)?;

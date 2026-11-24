@@ -14,7 +14,9 @@ rustls = { workspace = true }
 tokio = { workspace = true }
 tokio-rustls = "0.26"
 hyper = { workspace = true }
-hyper-util = { version = "0.1", features = ["client-legacy", "http1", "http2", "server", "server-auto"] }
+hyper-util = { version = "0.1", features = ["client-legacy", "http1", "http2", "server", "server-auto", "service"] }
+axum = { workspace = true }
+sha2 = { workspace = true }
 http = "1"
 http-body-util = "0.1"
 bytes = "1"
@@ -23,4 +25,5 @@ base64 = { workspace = true }
 tracing = { workspace = true }
 
 [dev-dependencies]
+rcgen = "0.13"
 tokio = { workspace = true, features = ["macros", "net", "rt-multi-thread"] }
