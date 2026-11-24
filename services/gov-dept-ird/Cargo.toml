@@ -14,6 +14,7 @@ gov-consent = { path = "../../crates/gov-consent" }
 gov-federation-core = { path = "../../crates/gov-federation-core" }
 gov-federation-node = { path = "../../crates/gov-federation-node" }
 gov-identity-core = { path = "../../crates/gov-identity-core" }
+gov-mtls = { path = "../../crates/gov-mtls" }
 tokio = { workspace = true }
 axum = { workspace = true }
 tower-http = { workspace = true }

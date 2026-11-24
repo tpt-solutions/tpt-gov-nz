@@ -30,6 +30,9 @@ services:
       TPT__GOV__IDENTITY_API_KEY: ${TPT__GOV__IDENTITY_API_KEY:-}
       TPT__GOV__HTTP_LISTEN: "0.0.0.0:8090"
       TPT__GOV__FEDERATION_LISTEN: "0.0.0.0:7001"
+      # Local development only: plain HTTP, no client authentication. Remove for any shared
+      # or production environment, and set TPT__GOV__MTLS_* instead (ADR 0002).
+      TPT__GOV__ENV: development
       RUST_LOG: "gov_dept_ird=info,tower_http=debug"
     ports:
       - "8090:8090"
