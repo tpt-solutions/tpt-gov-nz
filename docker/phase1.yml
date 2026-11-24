@@ -2403,6 +2403,24 @@ services:
     volumes:
       - audit-data:/var/lib/postgresql/data
 
+  # --- Staff portal database (case notes, append-only, with access log) ---
+
+  staff-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: gov_staff
+      POSTGRES_USER: staff
+      POSTGRES_PASSWORD: staff_dev_password
+    ports:
+      - "5488:5432"
+    volumes:
+      - staff-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U staff"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   # --- Schema registry ---
 
   dept-schema:
@@ -2486,4 +2504,5 @@ volumes:
   treasury-data:
   identity-data:
   audit-data:
+  staff-data:
   schema-data:

@@ -127,7 +127,7 @@ export default async function CaseFilePage({ params }: { params: Promise<Params>
   const session = await getStaffSession();
   const [results, notes, referrals] = await Promise.all([
     fetchStaffCase(did),
-    listCaseNotes(did),
+    listCaseNotes(did, session?.displayName ?? ""),
     listReferralsForCitizen(did),
   ]);
 
