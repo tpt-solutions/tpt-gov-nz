@@ -267,7 +267,10 @@ pub async fn check_inbound_policy(
     if let (Some(revocation), false) = (
         &state.revocation_client,
         envelope.consent_grant_ids.is_empty(),
-    ) && revocation.ensure_active(&envelope.consent_grant_ids).await.is_err()
+    ) && revocation
+        .ensure_active(&envelope.consent_grant_ids)
+        .await
+        .is_err()
     {
         warn!(from = %envelope.from_dept_id, "consent grant revoked or unknown");
         return Err((

@@ -457,12 +457,11 @@ async fn citizen_id(pool: &PgPool) -> uuid::Uuid {
 async fn direct_read_writes_granted_audit_row(pool: PgPool) {
     let _ = fetch_data(&pool, &["ird:kiwisaver"]).await;
 
-    let rows: Vec<(String, bool, Vec<String>)> = sqlx::query_as(
-        "SELECT outcome, direct_access, scopes FROM data_access_log ORDER BY id",
-    )
-    .fetch_all(&pool)
-    .await
-    .unwrap();
+    let rows: Vec<(String, bool, Vec<String>)> =
+        sqlx::query_as("SELECT outcome, direct_access, scopes FROM data_access_log ORDER BY id")
+            .fetch_all(&pool)
+            .await
+            .unwrap();
     assert_eq!(rows.len(), 1, "one audit row per read");
     assert_eq!(rows[0].0, "granted");
     assert!(rows[0].1, "portal reads are direct access");
@@ -485,14 +484,17 @@ async fn denied_cross_department_read_is_audited(pool: PgPool) {
         .body(Body::from(body))
         .unwrap();
     let resp = app.oneshot(req).await.unwrap();
-    assert_ne!(resp.status(), StatusCode::OK, "ungranted cross-department read must be refused");
+    assert_ne!(
+        resp.status(),
+        StatusCode::OK,
+        "ungranted cross-department read must be refused"
+    );
 
-    let outcomes: Vec<(String, bool)> = sqlx::query_as(
-        "SELECT outcome, direct_access FROM data_access_log ORDER BY id",
-    )
-    .fetch_all(&pool)
-    .await
-    .unwrap();
+    let outcomes: Vec<(String, bool)> =
+        sqlx::query_as("SELECT outcome, direct_access FROM data_access_log ORDER BY id")
+            .fetch_all(&pool)
+            .await
+            .unwrap();
     assert_eq!(outcomes, vec![("denied".to_string(), false)]);
 }
 
