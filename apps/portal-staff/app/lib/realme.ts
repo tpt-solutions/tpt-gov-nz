@@ -257,7 +257,8 @@ export interface ParsedSamlResponse {
 function parseXml(xml: string): Document {
   // Entity declarations enable XML bombs and external entity tricks. SAML never needs them.
   if (/<!DOCTYPE/i.test(xml)) throw new Error("DOCTYPE declarations are not allowed in SAML responses");
-  const doc = new DOMParser().parseFromString(xml, "text/xml");
+  // xmldom returns its own Document type, which is structurally different from the DOM lib's.
+  const doc = new DOMParser().parseFromString(xml, "text/xml") as unknown as Document;
   if (!doc.documentElement) throw new Error("could not parse SAML XML");
   return doc;
 }
