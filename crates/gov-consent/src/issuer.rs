@@ -44,7 +44,9 @@ mod tests {
 
     #[test]
     fn decodes_standard_and_url_safe_base64() {
-        let key = SigningKey::generate(&mut rand::rngs::OsRng);
+        let mut seed = [0u8; 32];
+        rand::RngCore::fill_bytes(&mut rand::rngs::OsRng, &mut seed);
+        let key = SigningKey::from_bytes(&seed);
         let verifying = key.verifying_key();
         let bytes = verifying.as_bytes();
 
