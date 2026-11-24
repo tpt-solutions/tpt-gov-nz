@@ -154,7 +154,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
 opentelemetry = "0.28"
 
 # Config
-config = "0.14"
+config = "0.15"
 dotenvy = "0.15"
 
 # Error handling
