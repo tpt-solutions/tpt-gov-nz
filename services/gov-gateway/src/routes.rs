@@ -253,6 +253,15 @@ fn extract_requesting_dept(claims: &Claims, target_dept: &str) -> Option<String>
         .and_then(|s| s.split(':').next().map(|p| p.to_string()))
 }
 
+/// Requesting department for a proxied call. A citizen token acting on its own data is
+/// the `citizen` self-access caller. Other tokens use the scope-derived department.
+fn requesting_department(claims: &Claims, target_dept: &str) -> Option<String> {
+    if claims.typ.as_deref() == Some("citizen") {
+        return Some("citizen".to_string());
+    }
+    extract_requesting_dept(claims, target_dept)
+}
+
 pub async fn proxy_dept(
     State(app_state): State<AppState>,
     Extension(claims): Extension<Claims>,
@@ -272,7 +281,7 @@ pub async fn proxy_dept(
     }
 
     // Determine the requesting department from JWT scopes
-    let requesting_dept = extract_requesting_dept(&claims, &dept_id)
+    let requesting_dept = requesting_department(&claims, &dept_id)
         .ok_or_else(|| {
             tracing::warn!(sub = %claims.sub, dept = %dept_id, "no scope found to determine requesting department");
             StatusCode::FORBIDDEN
@@ -380,5 +389,32 @@ mod tests {
             build_target("http://localhost:8090", "health", None, true),
             "https://localhost:8090/health"
         );
+    }
+}
+
+#[cfg(test)]
+mod requesting_department_tests {
+    use super::requesting_department;
+    use crate::auth::Claims;
+
+    fn claims(typ: Option<&str>, scopes: &[&str]) -> Claims {
+        Claims {
+            sub: "did:gov:nz:citizen001".into(),
+            exp: 0,
+            scopes: scopes.iter().map(|s| s.to_string()).collect(),
+            typ: typ.map(str::to_string),
+        }
+    }
+
+    #[test]
+    fn citizen_token_acting_on_own_data_is_self_access() {
+        let c = claims(Some("citizen"), &["ird:income"]);
+        assert_eq!(requesting_department(&c, "ird").as_deref(), Some("citizen"));
+    }
+
+    #[test]
+    fn untyped_token_keeps_scope_derived_department() {
+        let c = claims(None, &["winz:benefit-status"]);
+        assert_eq!(requesting_department(&c, "ird").as_deref(), Some("winz"));
     }
 }

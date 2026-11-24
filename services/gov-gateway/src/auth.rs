@@ -35,6 +35,10 @@ pub struct Claims {
     /// Consent scopes granted to this token, e.g. `ird:income`.
     #[serde(default)]
     pub scopes: Vec<String>,
+    /// Token type. `citizen` marks a token minted for the citizen portal, where the
+    /// subject is acting on their own data. Absent for other callers.
+    #[serde(default)]
+    pub typ: Option<String>,
 }
 
 impl Claims {
@@ -148,6 +152,7 @@ mod tests {
             sub: "did:gov:nz:citizen001".into(),
             exp,
             scopes,
+            typ: None,
         };
         encode(
             &Header::new(Algorithm::HS256),
@@ -191,6 +196,7 @@ mod tests {
             sub: "did:gov:nz:citizen001".into(),
             exp: 0,
             scopes: vec!["ird:income".into(), "winz:benefit-status".into()],
+            typ: None,
         };
         assert!(claims.permits_dept("ird"));
         assert!(claims.permits_dept("winz"));
