@@ -131,7 +131,7 @@ quinn = "0.11"
 rustls = { version = "0.23", features = ["ring"] }
 
 # Crypto / identity
-ed25519-dalek = { version = "2", features = ["rand_core"] }
+ed25519-dalek = { version = "3", features = ["rand_core"] }
 rand = "0.8"
 sha2 = "0.10"
 base64 = "0.22"
