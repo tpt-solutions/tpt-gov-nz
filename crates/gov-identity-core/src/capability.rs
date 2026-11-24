@@ -20,7 +20,6 @@
 use base64::Engine;
 use base64::engine::general_purpose::STANDARD;
 use ed25519_dalek::{Signature, Signer, SigningKey, Verifier, VerifyingKey};
-use rand::rngs::OsRng;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use uuid::Uuid;
@@ -113,7 +112,7 @@ pub struct HolderKey(SigningKey);
 
 impl HolderKey {
     pub fn generate() -> Self {
-        Self(SigningKey::generate(&mut OsRng))
+        Self(crate::random_signing_key())
     }
 
     /// Base64 public key. Put this in a grant's or link's `holder_public_key`.

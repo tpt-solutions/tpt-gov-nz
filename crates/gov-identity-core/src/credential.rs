@@ -158,8 +158,7 @@ pub struct CredentialIssuer {
 
 impl CredentialIssuer {
     pub fn generate() -> Self {
-        use rand::rngs::OsRng;
-        let signing_key = SigningKey::generate(&mut OsRng);
+        let signing_key = crate::random_signing_key();
         let did = GovDid::from_verifying_key(&signing_key.verifying_key());
         Self { signing_key, did }
     }
