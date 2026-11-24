@@ -10,7 +10,7 @@ use std::time::Duration;
 
 use anyhow::{Context, Result};
 use base64::Engine;
-use gov_federation_core::{FederationEnvelope, NodeKeypair};
+use gov_federation_core::FederationEnvelope;
 use quinn::{ClientConfig, Endpoint, ServerConfig, TransportConfig};
 use rcgen::{CertificateParams, DistinguishedName, DnType, Ia5String, KeyPair, SanType};
 use rustls::RootCertStore;
@@ -122,7 +122,7 @@ impl QuicTransport {
         &self,
         peer_addr: SocketAddr,
         peer_public_key_b64: &str,
-        mut envelope: FederationEnvelope,
+        envelope: FederationEnvelope,
     ) -> Result<FederationEnvelope> {
         // Connect to peer
         let connection = self
@@ -277,45 +277,13 @@ pub async fn serve_quic(endpoint: Endpoint, state: InboundState) -> Result<()> {
                         warn!(from_dept = %from_dept, "QUIC envelope signature verification failed");
                         return;
                     }
-                    // Check timestamp freshness
-                    let now_ms = chrono::Utc::now().timestamp_millis();
-                    if (now_ms - envelope.timestamp_ms).abs()
-                        > crate::transport::MAX_TIMESTAMP_SKEW_SECS * 1000
+                    // Addressing, freshness, rate limit, replay and revocation
+                    // (shared with the HTTP transport).
+                    if let Err((_, reason)) =
+                        crate::transport::check_inbound_policy(&state, &envelope).await
                     {
-                        warn!(from_dept = %from_dept, "QUIC envelope timestamp skew exceeded");
+                        warn!(from_dept = %from_dept, reason = %reason, "QUIC envelope rejected");
                         return;
-                    }
-
-                    // Replay protection
-                    if state
-                        .replay_protection
-                        .lock()
-                        .await
-                        .check_and_insert(envelope.message_id)
-                        .is_err()
-                    {
-                        warn!(from_dept = %from_dept, msg_id = %envelope.message_id, "QUIC replay detected");
-                        return;
-                    }
-
-                    // Rate limiting
-                    if state.federation_rate_limiter.check(from_dept).is_err() {
-                        warn!(from_dept = %from_dept, "QUIC rate limit exceeded");
-                        return;
-                    }
-
-                    // Revocation check
-                    if let Some(revocation) = &state.revocation_client {
-                        if !envelope.consent_grant_ids.is_empty() {
-                            let grant_ids: Vec<_> =
-                                envelope.consent_grant_ids.iter().copied().collect();
-                            if !grant_ids.is_empty() {
-                                if revocation.ensure_active(&grant_ids).await.is_err() {
-                                    warn!(from_dept = %from_dept, "QUIC grant revoked or unknown");
-                                    return;
-                                }
-                            }
-                        }
                     }
 
                     // Dispatch to handler
@@ -363,7 +331,6 @@ pub async fn serve_quic(endpoint: Endpoint, state: InboundState) -> Result<()> {
 #[cfg(all(test, feature = "quic"))]
 mod tests {
     use super::*;
-    use gov_federation_core::NodeKeypair;
     use std::net::SocketAddr;
     use std::sync::Once;
 

@@ -34,11 +34,12 @@ async fn main() -> anyhow::Result<()> {
     let audit_keypair = Arc::new(load_or_create_audit_keypair(&dept_id).await?);
 
     let fed_config = FederationNodeConfig::from_env()?;
-    let fed_node = FederationNode::new(fed_config);
+    let fed_node = Arc::new(FederationNode::try_new(fed_config)?);
 
     // Run federation node in background, HTTP server in foreground.
+    let fed_node_http = fed_node.clone();
     let fed_node_handle = tokio::spawn(async move {
-        if let Err(e) = fed_node.start().await {
+        if let Err(e) = fed_node_http.start().await {
             tracing::error!(error = %e, "Federation node stopped");
         }
     });

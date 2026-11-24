@@ -30,7 +30,7 @@ async fn main() -> anyhow::Result<()> {
         listen_addr: "0.0.0.0:7017".parse().expect("valid federation addr"),
         peers: vec![],
     });
-    let fed_node = FederationNode::new(fed_config);
+    let fed_node = FederationNode::try_new(fed_config)?;
     let fed_public_key = fed_node.public_key_b64();
     tokio::spawn(async move {
         if let Err(e) = fed_node.start().await {

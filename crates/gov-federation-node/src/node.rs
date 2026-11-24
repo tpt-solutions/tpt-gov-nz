@@ -29,8 +29,31 @@ pub struct FederationNode {
 }
 
 impl FederationNode {
+    /// Build a node with an ephemeral keypair. Intended for tests and local
+    /// experiments; production nodes should use [`Self::try_new`] so their
+    /// identity survives restarts.
     pub fn new(config: FederationNodeConfig) -> Self {
-        let keypair = Arc::new(NodeKeypair::generate(&config.dept_id));
+        let keypair = NodeKeypair::generate(&config.dept_id);
+        Self::with_keypair(config, keypair)
+    }
+
+    /// Build a node whose identity is persistent.
+    ///
+    /// The keypair is taken from, in order:
+    /// 1. `TPT__GOV__FEDERATION_SECRET_KEY` (base64 Ed25519 secret);
+    /// 2. the key file at `TPT__GOV__FEDERATION_KEY_FILE`, if it exists;
+    /// 3. otherwise a new key is generated and written to that file, so the
+    ///    node keeps the same identity on the next start.
+    ///
+    /// Without either variable the node falls back to an ephemeral key and logs
+    /// a warning, because peers' registered public keys would stop matching.
+    pub fn try_new(config: FederationNodeConfig) -> anyhow::Result<Self> {
+        let keypair = load_or_create_keypair(&config.dept_id)?;
+        Ok(Self::with_keypair(config, keypair))
+    }
+
+    fn with_keypair(config: FederationNodeConfig, keypair: NodeKeypair) -> Self {
+        let keypair = Arc::new(keypair);
         info!(
             dept_id = %config.dept_id,
             public_key = %keypair.public_key_b64(),
@@ -185,10 +208,90 @@ impl FederationNode {
             .get()
             .ok_or_else(|| anyhow::anyhow!("QUIC server not started on this node"))?;
         let transport = crate::quic::QuicTransport::new(cert_der.to_vec())?;
-        Ok(transport
+        let response = transport
             .send(quic_addr, &peer.public_key_b64, envelope)
-            .await?)
+            .await?;
+        Ok(response)
     }
+}
+
+/// Environment variable holding the node's base64 Ed25519 secret key.
+pub const FEDERATION_SECRET_KEY_ENV: &str = "TPT__GOV__FEDERATION_SECRET_KEY";
+/// Environment variable naming the file where the node's secret key is kept.
+pub const FEDERATION_KEY_FILE_ENV: &str = "TPT__GOV__FEDERATION_KEY_FILE";
+
+/// Resolve the node keypair from the environment according to
+/// [`FederationNode::try_new`].
+fn load_or_create_keypair(dept_id: &str) -> anyhow::Result<NodeKeypair> {
+    resolve_keypair(
+        dept_id,
+        std::env::var(FEDERATION_SECRET_KEY_ENV).ok(),
+        std::env::var(FEDERATION_KEY_FILE_ENV)
+            .ok()
+            .map(std::path::PathBuf::from),
+    )
+}
+
+/// Pure key resolution: explicit secret first, then the key file (created if
+/// missing), then an ephemeral key with a warning.
+fn resolve_keypair(
+    dept_id: &str,
+    secret: Option<String>,
+    key_file: Option<std::path::PathBuf>,
+) -> anyhow::Result<NodeKeypair> {
+    if let Some(secret) = secret {
+        return NodeKeypair::from_secret_b64_with_dept_id(&secret, dept_id)
+            .map_err(|e| anyhow::anyhow!("invalid {FEDERATION_SECRET_KEY_ENV}: {e}"));
+    }
+
+    let Some(path) = key_file else {
+        tracing::warn!(
+            dept_id,
+            "no federation key configured; using an ephemeral key. Set {} or {} for a stable identity.",
+            FEDERATION_SECRET_KEY_ENV,
+            FEDERATION_KEY_FILE_ENV
+        );
+        return Ok(NodeKeypair::generate(dept_id));
+    };
+
+    match std::fs::read_to_string(&path) {
+        Ok(secret) => NodeKeypair::from_secret_b64_with_dept_id(&secret, dept_id)
+            .map_err(|e| anyhow::anyhow!("invalid federation key file {}: {e}", path.display())),
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+            let keypair = NodeKeypair::generate(dept_id);
+            write_secret_file(&path, &keypair.secret_key_b64())?;
+            info!(path = %path.display(), "created new federation key file");
+            Ok(keypair)
+        }
+        Err(e) => Err(anyhow::anyhow!(
+            "cannot read federation key file {}: {e}",
+            path.display()
+        )),
+    }
+}
+
+/// Write a secret without overwriting an existing file, restricting it to the
+/// owner on Unix.
+fn write_secret_file(path: &std::path::Path, contents: &str) -> anyhow::Result<()> {
+    use std::io::Write;
+
+    if let Some(parent) = path.parent().filter(|p| !p.as_os_str().is_empty()) {
+        std::fs::create_dir_all(parent)?;
+    }
+    let mut options = std::fs::OpenOptions::new();
+    options.write(true).create_new(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        options.mode(0o600);
+    }
+    let mut file = options.open(path).map_err(|e| {
+        anyhow::anyhow!("cannot create federation key file {}: {e}", path.display())
+    })?;
+    file.write_all(contents.as_bytes())?;
+    file.write_all(b"\n")?;
+    file.sync_all()?;
+    Ok(())
 }
 
 /// Default inbound handler: acknowledges a request with an empty `DataResponse`
@@ -209,4 +312,59 @@ pub(crate) fn default_handler() -> EnvelopeHandler {
             })
         })
     })
+}
+
+#[cfg(test)]
+mod keypair_tests {
+    use super::*;
+
+    fn temp_key_path(name: &str) -> std::path::PathBuf {
+        let dir =
+            std::env::temp_dir().join(format!("tpt-fed-key-{}-{}", name, uuid::Uuid::new_v4()));
+        dir.join("node.key")
+    }
+
+    #[test]
+    fn key_file_is_created_once_and_reloaded_with_same_identity() {
+        let path = temp_key_path("reload");
+        let first = resolve_keypair("ird", None, Some(path.clone())).unwrap();
+        assert!(path.exists());
+
+        let second = resolve_keypair("ird", None, Some(path.clone())).unwrap();
+        assert_eq!(first.public_key_b64(), second.public_key_b64());
+        assert_eq!(second.dept_id, "ird");
+
+        let _ = std::fs::remove_dir_all(path.parent().unwrap());
+    }
+
+    #[test]
+    fn explicit_secret_takes_precedence_over_key_file() {
+        let secret = NodeKeypair::generate("x").secret_key_b64();
+        let expected = NodeKeypair::from_secret_b64(&secret)
+            .unwrap()
+            .public_key_b64();
+        let path = temp_key_path("precedence");
+
+        let kp = resolve_keypair("winz", Some(secret), Some(path.clone())).unwrap();
+        assert_eq!(kp.public_key_b64(), expected);
+        assert_eq!(kp.dept_id, "winz");
+        assert!(
+            !path.exists(),
+            "no key file should be written when a secret is given"
+        );
+    }
+
+    #[test]
+    fn invalid_secret_fails_closed() {
+        assert!(resolve_keypair("ird", Some("not-a-key".into()), None).is_err());
+    }
+
+    #[test]
+    fn write_secret_file_never_overwrites() {
+        let path = temp_key_path("no-overwrite");
+        write_secret_file(&path, "first").unwrap();
+        assert!(write_secret_file(&path, "second").is_err());
+        assert_eq!(std::fs::read_to_string(&path).unwrap().trim(), "first");
+        let _ = std::fs::remove_dir_all(path.parent().unwrap());
+    }
 }

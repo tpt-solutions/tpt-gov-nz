@@ -189,17 +189,12 @@ pub struct InboundState {
 }
 
 /// Build the axum router exposing the inbound envelope endpoint.
+///
+/// The replay window, rate limiter and revocation client are taken from `state`
+/// as given, so the caller controls their lifetime (one shared instance per node).
+/// If no revocation client is supplied, one is built from the environment.
 pub fn router(state: InboundState) -> Router {
-    // Ensure replay protection is initialized in the state
     let state = InboundState {
-        replay_protection: Arc::new(tokio::sync::Mutex::new(ReplayProtection::new(
-            REPLAY_WINDOW_SIZE,
-        ))),
-        federation_rate_limiter: Arc::new(FederationRateLimiter::new(
-            DEFAULT_FEDERATION_RATE_LIMIT_RPM,
-            Duration::from_secs(60),
-            DEFAULT_FEDERATION_RATE_LIMIT_MAX_PEERS,
-        )),
         revocation_client: state
             .revocation_client
             .or_else(|| RevocationClient::from_env().ok().map(Arc::new)),
@@ -208,6 +203,80 @@ pub fn router(state: InboundState) -> Router {
     Router::new()
         .route(ENVELOPE_PATH, post(receive_envelope))
         .with_state(state)
+}
+
+/// Policy checks applied to every inbound envelope after its signature has been
+/// verified. Shared by the HTTP mock transport and the QUIC transport.
+///
+/// Fails closed. Checks, in order:
+/// 1. the envelope is addressed to this node (`to_dept_id`);
+/// 2. the timestamp is within [`MAX_TIMESTAMP_SKEW_SECS`] of now;
+/// 3. the sender is within its per-peer rate limit;
+/// 4. the message ID has not been seen before (replay);
+/// 5. every consent grant the envelope cites is still active.
+///
+/// Signature verification must happen first, so that forged envelopes cannot
+/// consume replay-window or rate-limit slots.
+pub async fn check_inbound_policy(
+    state: &InboundState,
+    envelope: &FederationEnvelope,
+) -> Result<(), (StatusCode, String)> {
+    if envelope.to_dept_id != state.keypair.dept_id {
+        warn!(
+            from = %envelope.from_dept_id,
+            to = %envelope.to_dept_id,
+            "rejecting envelope not addressed to this node"
+        );
+        return Err((
+            StatusCode::MISDIRECTED_REQUEST,
+            "envelope is not addressed to this node".into(),
+        ));
+    }
+
+    let now_ms = chrono::Utc::now().timestamp_millis();
+    if (now_ms - envelope.timestamp_ms).abs() > MAX_TIMESTAMP_SKEW_SECS * 1000 {
+        warn!(from = %envelope.from_dept_id, "rejecting envelope outside timestamp skew");
+        return Err((
+            StatusCode::BAD_REQUEST,
+            "envelope timestamp is outside the allowed skew".into(),
+        ));
+    }
+
+    if let Err(retry_after) = state.federation_rate_limiter.check(&envelope.from_dept_id) {
+        warn!(from = %envelope.from_dept_id, "federation rate limit exceeded");
+        return Err((
+            StatusCode::TOO_MANY_REQUESTS,
+            format!("rate limit exceeded; retry in {retry_after}s"),
+        ));
+    }
+
+    if state
+        .replay_protection
+        .lock()
+        .await
+        .check_and_insert(envelope.message_id)
+        .is_err()
+    {
+        warn!(from = %envelope.from_dept_id, msg_id = %envelope.message_id, "replay detected");
+        return Err((
+            StatusCode::CONFLICT,
+            "replay detected: duplicate message_id".into(),
+        ));
+    }
+
+    if let (Some(revocation), false) = (
+        &state.revocation_client,
+        envelope.consent_grant_ids.is_empty(),
+    ) && revocation.ensure_active(&envelope.consent_grant_ids).await.is_err()
+    {
+        warn!(from = %envelope.from_dept_id, "consent grant revoked or unknown");
+        return Err((
+            StatusCode::FORBIDDEN,
+            "consent grant is revoked or unknown".into(),
+        ));
+    }
+
+    Ok(())
 }
 
 async fn receive_envelope(
@@ -230,6 +299,8 @@ async fn receive_envelope(
         warn!(from = %envelope.from_dept_id, error = %e, "envelope signature verification failed");
         (StatusCode::UNAUTHORIZED, e.to_string())
     })?;
+
+    check_inbound_policy(&state, &envelope).await?;
 
     debug!(
         from = %envelope.from_dept_id,
@@ -443,6 +514,95 @@ mod tests {
 
         let transport = HttpMockTransport::new();
         let err = transport.send(&peer, env).await.unwrap_err();
+        assert!(matches!(err, FederationError::Transport(_)));
+    }
+
+    /// Inbound state for an `ird` node that knows `winz` as its only peer.
+    /// Revocation is disabled so the tests stay offline.
+    fn ird_state_for_winz(client_kp: &NodeKeypair) -> InboundState {
+        let server_kp = Arc::new(NodeKeypair::generate("ird"));
+        let mut peers = HashMap::new();
+        peers.insert(
+            "winz".to_string(),
+            PeerConfig {
+                dept_id: "winz".into(),
+                addr: "127.0.0.1:1".parse().unwrap(),
+                public_key_b64: client_kp.public_key_b64(),
+            },
+        );
+        InboundState {
+            keypair: server_kp,
+            peers: Arc::new(peers),
+            handler: echo_handler(),
+            replay_protection: Arc::new(tokio::sync::Mutex::new(ReplayProtection::new(
+                REPLAY_WINDOW_SIZE,
+            ))),
+            federation_rate_limiter: Arc::new(FederationRateLimiter::new(
+                DEFAULT_FEDERATION_RATE_LIMIT_RPM,
+                Duration::from_secs(60),
+                DEFAULT_FEDERATION_RATE_LIMIT_MAX_PEERS,
+            )),
+            revocation_client: None,
+        }
+    }
+
+    /// The `ird` server as seen from the `winz` client.
+    fn ird_peer(addr: std::net::SocketAddr, server: &NodeKeypair) -> PeerConfig {
+        PeerConfig {
+            dept_id: "ird".into(),
+            addr,
+            public_key_b64: server.public_key_b64(),
+        }
+    }
+
+    #[tokio::test]
+    async fn rejects_envelope_not_addressed_to_this_node() {
+        let client_kp = NodeKeypair::generate("winz");
+        let state = ird_state_for_winz(&client_kp);
+        let server_kp = state.keypair.clone();
+        let addr = spawn_server(state).await;
+        let peer = ird_peer(addr, &server_kp);
+
+        let mut env =
+            FederationEnvelope::new_request("winz", "dia", vec![], "payload".into(), String::new());
+        env.sign(&client_kp.signing_key);
+
+        let err = HttpMockTransport::new().send(&peer, env).await.unwrap_err();
+        assert!(matches!(err, FederationError::Transport(_)));
+    }
+
+    #[tokio::test]
+    async fn rejects_replayed_envelope() {
+        let client_kp = NodeKeypair::generate("winz");
+        let state = ird_state_for_winz(&client_kp);
+        let server_kp = state.keypair.clone();
+        let addr = spawn_server(state).await;
+        let peer = ird_peer(addr, &server_kp);
+
+        let mut env =
+            FederationEnvelope::new_request("winz", "ird", vec![], "payload".into(), String::new());
+        env.sign(&client_kp.signing_key);
+
+        let transport = HttpMockTransport::new();
+        transport.send(&peer, env.clone()).await.unwrap();
+        let err = transport.send(&peer, env).await.unwrap_err();
+        assert!(matches!(err, FederationError::Transport(_)));
+    }
+
+    #[tokio::test]
+    async fn rejects_stale_timestamp() {
+        let client_kp = NodeKeypair::generate("winz");
+        let state = ird_state_for_winz(&client_kp);
+        let server_kp = state.keypair.clone();
+        let addr = spawn_server(state).await;
+        let peer = ird_peer(addr, &server_kp);
+
+        let mut env =
+            FederationEnvelope::new_request("winz", "ird", vec![], "payload".into(), String::new());
+        env.timestamp_ms -= 10 * 60 * 1000;
+        env.sign(&client_kp.signing_key);
+
+        let err = HttpMockTransport::new().send(&peer, env).await.unwrap_err();
         assert!(matches!(err, FederationError::Transport(_)));
     }
 
