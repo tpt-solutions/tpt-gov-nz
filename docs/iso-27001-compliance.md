@@ -98,7 +98,7 @@ enforced everywhere), **Planned** (not in code).
 | The read audit is implemented in the IRD service only; the other department services have not adopted it | Audit: IRD read audit, real `citizen_did` on actions |
 | Audit rows are not signed or hash-chained in the IRD service, and are not exported to a SIEM | Audit; Observability: audit-log export for SIEM |
 | RealMe SAML2 has no live IdP configuration, and staff roles are not implemented | RealMe SAML2 integration |
-| Staff referrals are stored in a local JSON file, not in a database | Staff portal case notes and referrals |
+| No code path changes referral status yet; referral status is set to `open` only | Staff portal referrals |
 | Schema registry for versioned data contracts (service exists; not enforced by consumers) | Schema registry |
 | Māori data sovereignty layer (iwi nodes) | Optional Māori data sovereignty layer |
 | ISO 27001 certification audit | External security audit |
