@@ -28,10 +28,10 @@ jsonwebtoken = "9"
 chrono = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
-opentelemetry = "0.28"
-opentelemetry_sdk = { version = "0.28", features = ["rt-tokio"] }
+opentelemetry = "0.33"
+opentelemetry_sdk = { version = "0.33", features = ["rt-tokio"] }
 opentelemetry-otlp = { version = "0.33", features = ["grpc-tonic"] }
-tracing-opentelemetry = "0.29"
+tracing-opentelemetry = "0.34"
 anyhow = { workspace = true }
 config = { workspace = true }
 dotenvy = { workspace = true }
