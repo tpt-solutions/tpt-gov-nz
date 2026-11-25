@@ -191,6 +191,8 @@ pub async fn fetch_data(
 
 #[derive(Deserialize)]
 pub struct ActionRequest {
+    /// The citizen the action is for. Recorded in the audit log, so it is required.
+    pub did: String,
     pub r#type: String,
     #[allow(dead_code)]
     pub parameters: serde_json::Value,
@@ -204,7 +206,7 @@ pub async fn submit_action(
         &state,
         AuditEvent {
             dept_id: consent::providing_dept_id(),
-            citizen_did: "unknown".into(),
+            citizen_did: req.did.clone(),
             action: "submit_action".into(),
             requesting_dept: None,
             scopes: vec![],

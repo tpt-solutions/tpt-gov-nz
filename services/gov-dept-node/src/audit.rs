@@ -72,6 +72,29 @@ pub async fn ensure_schema(pool: &PgPool) -> anyhow::Result<()> {
         .execute(pool)
         .await?;
 
+    // Append-only: rows can be read and inserted, never changed or removed. The hash chain
+    // only gives tamper evidence if the database itself refuses UPDATE and DELETE.
+    sqlx::query(
+        "CREATE OR REPLACE FUNCTION reject_audit_log_change() RETURNS trigger AS $$
+        BEGIN
+            RAISE EXCEPTION 'audit_log is append-only';
+        END;
+        $$ LANGUAGE plpgsql",
+    )
+    .execute(pool)
+    .await?;
+
+    sqlx::query("DROP TRIGGER IF EXISTS audit_log_append_only ON audit_log")
+        .execute(pool)
+        .await?;
+    sqlx::query(
+        "CREATE TRIGGER audit_log_append_only
+            BEFORE UPDATE OR DELETE ON audit_log
+            FOR EACH ROW EXECUTE FUNCTION reject_audit_log_change()",
+    )
+    .execute(pool)
+    .await?;
+
     Ok(())
 }
 
