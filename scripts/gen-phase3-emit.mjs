@@ -125,6 +125,33 @@ ON CONFLICT DO NOTHING;
   }
   mig["093_ingester_idempotency.sql"] = `-- Idempotency keys for the ingester.\n` + idem;
 
+  // Read audit: every /citizen/data call writes one row, granted or denied. Same shape as the
+  // IRD migration 010. Append-only by trigger, so the rows cannot be edited or removed.
+  mig["094_data_access_log.sql"] = `-- Read audit for ${d.name} citizen data. One row per /citizen/data call, granted or denied.
+CREATE TABLE IF NOT EXISTS data_access_log (
+    id                  BIGSERIAL PRIMARY KEY,
+    citizen_id          UUID NOT NULL REFERENCES citizens(id),
+    requesting_dept_id  TEXT NOT NULL,
+    scopes              TEXT[] NOT NULL,
+    direct_access       BOOLEAN NOT NULL,
+    outcome             TEXT NOT NULL CHECK (outcome IN ('granted', 'denied')),
+    accessed_at         TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS data_access_log_citizen_idx ON data_access_log (citizen_id, accessed_at DESC);
+
+CREATE OR REPLACE FUNCTION reject_data_access_log_change() RETURNS trigger AS $$
+BEGIN
+    RAISE EXCEPTION 'data_access_log is append-only';
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS data_access_log_append_only ON data_access_log;
+CREATE TRIGGER data_access_log_append_only
+    BEFORE UPDATE OR DELETE ON data_access_log
+    FOR EACH ROW EXECUTE FUNCTION reject_data_access_log_change();
+`;
+
   for (const [name, content] of Object.entries(mig)) {
     W(`${svc}/migrations/${name}`, content);
   }
@@ -274,6 +301,33 @@ pub struct CitizenRow {
 }
 
 ${rows}
+
+/// One row for `data_access_log`.
+#[derive(Debug)]
+pub struct DataAccessEntry<'a> {
+    pub citizen_id: Uuid,
+    pub requesting_dept_id: &'a str,
+    pub scopes: &'a [String],
+    pub direct_access: bool,
+    pub granted: bool,
+}
+
+/// Append a read-audit row. Callers must propagate the error: a request whose access cannot be
+/// recorded must not return data.
+pub async fn log_data_access(pool: &PgPool, entry: DataAccessEntry<'_>) -> sqlx::Result<()> {
+    sqlx::query(
+        r#"INSERT INTO data_access_log (citizen_id, requesting_dept_id, scopes, direct_access, outcome)
+           VALUES ($1, $2, $3, $4, $5)"#,
+    )
+    .bind(entry.citizen_id)
+    .bind(entry.requesting_dept_id)
+    .bind(entry.scopes)
+    .bind(entry.direct_access)
+    .bind(if entry.granted { "granted" } else { "denied" })
+    .execute(pool)
+    .await?;
+    Ok(())
+}
 
 pub async fn resolve_by_did(pool: &PgPool, did: &str) -> sqlx::Result<Option<CitizenRow>> {
     sqlx::query_as!(
@@ -432,7 +486,10 @@ pub async fn fetch_data(
         .await?
         .ok_or(${P}Error::CitizenNotFound)?;
 
-    if !is_direct_access(&req.requesting_dept_id) {
+    let direct_access = is_direct_access(&req.requesting_dept_id);
+    let decision: Result<(), ${P}Error> = if direct_access {
+        Ok(())
+    } else {
         let input = consent::ConsentInput {
             requesting_dept_id: req.requesting_dept_id.as_deref().unwrap_or("unknown"),
             citizen_did: &citizen.did,
@@ -442,10 +499,25 @@ pub async fn fetch_data(
 
         // Signature and revocation are always enforced; OPA can only further restrict.
         match opa::evaluate(&input).await {
-            Some(false) => return Err(${P}Error::ScopeNotGranted(req.scopes.join(","))),
-            Some(true) | None => consent::enforce_signed_and_unrevoked(&input).await?,
+            Some(false) => Err(${P}Error::ScopeNotGranted(req.scopes.join(","))),
+            Some(true) | None => consent::enforce_signed_and_unrevoked(&input).await,
         }
-    }
+    };
+
+    // Read audit: every attempt is recorded, granted or denied. If the row cannot be written,
+    // the request fails and no data is returned.
+    db::log_data_access(
+        &pool,
+        db::DataAccessEntry {
+            citizen_id: citizen.id,
+            requesting_dept_id: req.requesting_dept_id.as_deref().unwrap_or("unknown"),
+            scopes: &req.scopes,
+            direct_access,
+            granted: decision.is_ok(),
+        },
+    )
+    .await?;
+    decision?;
 
     let has_scope = |s: &str| req.scopes.contains(&s.to_owned());
 
