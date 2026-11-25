@@ -101,7 +101,6 @@ mod tests {
 
     #[test]
     fn sign_and_verify_round_trip() {
-
         let signing_key = crate::random_signing_key();
         let verifying_key = signing_key.verifying_key();
 
@@ -122,7 +121,6 @@ mod tests {
 
     #[test]
     fn verify_fails_with_wrong_key() {
-
         let signing_key = crate::random_signing_key();
         let wrong_key = crate::random_signing_key();
 
