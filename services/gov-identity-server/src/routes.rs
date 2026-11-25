@@ -1172,7 +1172,9 @@ mod tests {
         use base64::Engine;
         use ed25519_dalek::SigningKey;
 
-        let key = SigningKey::generate(&mut rand::rngs::OsRng);
+        let mut seed = [0u8; 32];
+        rand::RngCore::fill_bytes(&mut rand::rngs::OsRng, &mut seed);
+        let key = SigningKey::from_bytes(&seed);
         let verifying_key = key.verifying_key();
         let bytes = verifying_key.as_bytes();
 
@@ -1192,7 +1194,9 @@ mod tests {
     fn did_must_match_public_key() {
         use ed25519_dalek::SigningKey;
 
-        let key = SigningKey::generate(&mut rand::rngs::OsRng);
+        let mut seed = [0u8; 32];
+        rand::RngCore::fill_bytes(&mut rand::rngs::OsRng, &mut seed);
+        let key = SigningKey::from_bytes(&seed);
         let did = gov_identity_core::GovDid::from_verifying_key(&key.verifying_key());
         assert_eq!(
             did.as_str(),
