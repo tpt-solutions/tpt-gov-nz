@@ -29,6 +29,9 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>("en");
 
   useEffect(() => {
+    // Deliberately read after mount: the cookie is not available during SSR,
+    // so reading it in render would cause a hydration mismatch.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLocaleState(readInitialLocale());
   }, []);
 

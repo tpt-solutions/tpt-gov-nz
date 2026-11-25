@@ -22,6 +22,9 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Deliberately read after mount: the wallet lives in browser storage,
+    // which is not available during SSR (avoids a hydration mismatch).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setWallet(getWallet());
   }, []);
 

@@ -20,6 +20,8 @@ export default async function DiaOverviewPage() {
   const passport = data.passport;
   const expiringSoon =
     passport &&
+    // Server component: reading the clock once per request is intended.
+    // eslint-disable-next-line react-hooks/purity
     new Date(passport.expiryDate).getTime() - Date.now() < 1000 * 60 * 60 * 24 * 365;
 
   return (

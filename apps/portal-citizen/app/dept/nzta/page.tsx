@@ -20,6 +20,8 @@ export default async function NztaOverviewPage() {
   const licence = data.driverLicence;
   const licenceExpiringSoon =
     licence &&
+    // Server component: reading the clock once per request is intended.
+    // eslint-disable-next-line react-hooks/purity
     new Date(licence.expiryDate).getTime() - Date.now() < 1000 * 60 * 60 * 24 * 365;
 
   return (
