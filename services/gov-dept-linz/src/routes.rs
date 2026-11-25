@@ -63,7 +63,10 @@ pub async fn fetch_data(
         .await?
         .ok_or(LinzError::CitizenNotFound)?;
 
-    if !is_direct_access(&req.requesting_dept_id) {
+    let direct_access = is_direct_access(&req.requesting_dept_id);
+    let decision: Result<(), LinzError> = if direct_access {
+        Ok(())
+    } else {
         let input = consent::ConsentInput {
             requesting_dept_id: req.requesting_dept_id.as_deref().unwrap_or("unknown"),
             citizen_did: &citizen.did,
@@ -72,11 +75,26 @@ pub async fn fetch_data(
         };
 
         match opa::evaluate(&input).await {
-            Some(true) => consent::enforce_signed_and_unrevoked(&input).await?,
-            Some(false) => return Err(LinzError::ScopeNotGranted(req.scopes.join(","))),
-            None => consent::enforce_signed_and_unrevoked(&input).await?,
+            Some(true) => consent::enforce_signed_and_unrevoked(&input).await,
+            Some(false) => Err(LinzError::ScopeNotGranted(req.scopes.join(","))),
+            None => consent::enforce_signed_and_unrevoked(&input).await,
         }
-    }
+    };
+
+    // Read audit: every attempt is recorded, granted or denied. If the row cannot be written,
+    // the request fails and no data is returned.
+    db::log_data_access(
+        &pool,
+        db::DataAccessEntry {
+            citizen_id: citizen.id,
+            requesting_dept_id: req.requesting_dept_id.as_deref().unwrap_or("unknown"),
+            scopes: &req.scopes,
+            direct_access,
+            granted: decision.is_ok(),
+        },
+    )
+    .await?;
+    decision?;
 
     let has_scope = |s: &str| req.scopes.contains(&s.to_owned());
 
