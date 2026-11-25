@@ -14,8 +14,12 @@
 //!   has not expired;
 //! - each link commits to the signature before it, so links cannot be reordered or spliced.
 //!
-//! Not covered yet: purpose and max-use caveats, revocation of delegated links, and dept
-//! nodes accepting only chains. See `TODO.md`.
+//! `verify_chain_with_revocation` also rejects any chain whose root or link id the caller
+//! reports as revoked. The caller supplies the revocation check, so this crate stays free of
+//! storage.
+//!
+//! Not covered yet: purpose and max-use caveats, and dept nodes accepting only chains. See
+//! `TODO.md`.
 
 use base64::Engine;
 use base64::engine::general_purpose::STANDARD;
@@ -46,6 +50,10 @@ pub enum CapabilityError {
     Widened(usize, String),
     #[error("link {0}: expires after its parent")]
     Outlives(usize),
+    #[error("root grant has been revoked")]
+    RootRevoked,
+    #[error("link {0}: has been revoked")]
+    Revoked(usize),
 }
 
 /// One delegation step: the holder of the previous element authorises a narrower capability
@@ -165,16 +173,32 @@ fn parse_signature(b64: &str) -> Option<Signature> {
 
 /// Verify a capability chain against the identity server's public key at time `now` (Unix
 /// seconds). On success, returns what the chain authorises.
+///
+/// This does not check revocation. Use `verify_chain_with_revocation` where revocation applies.
 pub fn verify_chain(
     chain: &CapabilityChain,
     issuer_key: &VerifyingKey,
     now: i64,
+) -> Result<EffectiveCapability, CapabilityError> {
+    verify_chain_with_revocation(chain, issuer_key, now, &|_| false)
+}
+
+/// As `verify_chain`, and also rejects the chain if the root or any link id is reported as
+/// revoked by `is_revoked`. A revoked id anywhere in the chain revokes everything after it.
+pub fn verify_chain_with_revocation(
+    chain: &CapabilityChain,
+    issuer_key: &VerifyingKey,
+    now: i64,
+    is_revoked: &dyn Fn(&Uuid) -> bool,
 ) -> Result<EffectiveCapability, CapabilityError> {
     let root = &chain.root;
     root.verify_signature(issuer_key)
         .map_err(|e| CapabilityError::Root(e.to_string()))?;
     if now > root.expires_at {
         return Err(CapabilityError::Root(IdentityError::Expired.to_string()));
+    }
+    if is_revoked(&root.id) {
+        return Err(CapabilityError::RootRevoked);
     }
 
     let mut scopes = root.scopes.clone();
@@ -188,6 +212,9 @@ pub fn verify_chain(
         let signer_key =
             parse_verifying_key(signer_b64).ok_or(CapabilityError::BadHolderKey(index))?;
 
+        if is_revoked(&link.id) {
+            return Err(CapabilityError::Revoked(index));
+        }
         if now > link.expires_at {
             return Err(CapabilityError::Expired(index));
         }
@@ -560,6 +587,51 @@ mod tests {
                 f.now
             ),
             Err(CapabilityError::BadHolderKey(0))
+        );
+    }
+
+    #[test]
+    fn a_revoked_root_is_rejected() {
+        let f = fixture();
+        let revoked = f.root.id;
+        assert_eq!(
+            verify_chain_with_revocation(
+                &chain(&f.root, vec![]),
+                &f.issuer.verifying_key(),
+                f.now,
+                &|id| *id == revoked,
+            ),
+            Err(CapabilityError::RootRevoked)
+        );
+    }
+
+    #[test]
+    fn a_revoked_link_rejects_the_link_and_everything_after_it() {
+        let f = fixture();
+        let first = f.a.delegate(
+            &f.root.signature,
+            vec!["ird:income".into()],
+            f.root.expires_at - 60,
+            f.b.public_key_b64(),
+        );
+        let second = f.b.delegate(
+            &first.signature,
+            vec!["ird:income".into()],
+            f.root.expires_at - 120,
+            f.c.public_key_b64(),
+        );
+        let revoked = first.id;
+        let links = vec![first.clone(), second];
+        let c = chain(&f.root, links);
+        assert_eq!(
+            verify_chain_with_revocation(&c, &f.issuer.verifying_key(), f.now, &|id| *id
+                == revoked),
+            Err(CapabilityError::Revoked(0))
+        );
+        // Nothing revoked: the same chain is still valid.
+        assert!(
+            verify_chain_with_revocation(&c, &f.issuer.verifying_key(), f.now, &|_| false)
+                .is_ok()
         );
     }
 
